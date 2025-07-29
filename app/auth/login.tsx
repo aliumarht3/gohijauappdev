@@ -19,20 +19,35 @@
 //   );
 // }
 import SubmitButton from '@/components/atoms/SubmitButton';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useUser } from '../../services/userService';
+
 export default function LoginScreen() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { loadUserProfile, loginUser } = useUser();
 
   const handleLogin = async () => {
-    // Normally you'd call an API here and get a token
-    await AsyncStorage.setItem('auth_token', 'dummy-token');
-    router.replace('/'); // Redirect to main app
+    setLoading(true);
+    try {
+      loginUser(email, password);
+      router.push('/');
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        Alert.alert('Timeout', 'The request took too long. Please try again.');
+      } else {
+        console.error('Login error:', error);
+        Alert.alert('Login Failed', error.message || 'Something went wrong');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <ImageBackground 
       source={require('../../assets/images/plantsoil.jpg')} 
@@ -59,7 +74,11 @@ export default function LoginScreen() {
           onChangeText={setPassword} 
         />
 
+        {loading ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
         <SubmitButton title="Login" onPress={handleLogin} backgroundColor="#388E3C" />
+        )}
 
         <TouchableOpacity onPress={() => router.push('/auth/signup')}>
           <Text style={styles.linkText}>Don’t have an account? Sign up</Text>
