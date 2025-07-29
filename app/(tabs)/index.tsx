@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import CustomAlert from '../../components/molecules/CustomAlert';
 import { generateQrToken } from '../../services/qrService';
-
 export default function HomeScreen() {
   const stats = [
     { label: "Saved CO₂", value: "5.2 kg" },
@@ -11,6 +11,7 @@ export default function HomeScreen() {
     { label: "Oil Recycled", value: "12 L" },
   ];
   const router = useRouter();
+  const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
   const handleGenerateToken = async () => {
   const token = await generateQrToken('21'); // Pass userId here
   if (token) {
@@ -19,7 +20,7 @@ export default function HomeScreen() {
       params: { token }
     });
   } else {
-    alert('Failed to generate token');
+    setAlertFailedToGenerateVisible(true);
   }
 };
   return (
@@ -61,6 +62,12 @@ export default function HomeScreen() {
           <Ionicons name="time" size={28} color="#fff" />
           <Text style={styles.actionText}>History</Text>
         </TouchableOpacity>
+           <CustomAlert
+                      visible={alertFailedToGenerateVisible}
+                      title="Failed!"
+                      message="Failed to generate QR code. Please try again."
+                      onClose={() =>{setAlertFailedToGenerateVisible(false);} }
+                    />
       </View>
 
       {/* ✅ Nearby Collection Points */}
