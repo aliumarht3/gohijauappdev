@@ -1,21 +1,28 @@
 import { Ionicons } from '@expo/vector-icons';
-import React from 'react';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
+import CustomAlert from '../../components/molecules/CustomAlert';
+import { generateQrToken } from '../../services/qrService';
 export default function HomeScreen() {
   const stats = [
     { label: "Saved CO₂", value: "5.2 kg" },
     { label: "Points", value: "240" },
     { label: "Oil Recycled", value: "12 L" },
   ];
-
-  const categories = [
-    { name: "Used Oil", icon: "water", color: "#4CAF50" },
-    { name: "Plastic", icon: "cube", color: "#FFB74D" },
-    { name: "Glass", icon: "wine", color: "#64B5F6" },
-    { name: "Paper", icon: "document-text", color: "#81C784" },
-  ];
-
+  const router = useRouter();
+  const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
+  const handleGenerateToken = async () => {
+  const token = await generateQrToken('21'); // Pass userId here
+  if (token) {
+    router.push({
+      pathname: '/QRCodeScreen',
+      params: { token }
+    });
+  } else {
+    setAlertFailedToGenerateVisible(true);
+  }
+};
   return (
     <ScrollView style={styles.container}>
       {/* ✅ Greeting + Profile */}
@@ -42,7 +49,8 @@ export default function HomeScreen() {
 
       {/* ✅ Quick Actions */}
       <View style={styles.quickActions}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton}
+            onPress={handleGenerateToken}>
           <Ionicons name="qr-code" size={28} color="#fff" />
           <Text style={styles.actionText}>Scan</Text>
         </TouchableOpacity>
@@ -54,6 +62,12 @@ export default function HomeScreen() {
           <Ionicons name="time" size={28} color="#fff" />
           <Text style={styles.actionText}>History</Text>
         </TouchableOpacity>
+           <CustomAlert
+                      visible={alertFailedToGenerateVisible}
+                      title="Failed!"
+                      message="Failed to generate QR code. Please try again."
+                      onClose={() =>{setAlertFailedToGenerateVisible(false);} }
+                    />
       </View>
 
       {/* ✅ Nearby Collection Points */}
@@ -67,18 +81,6 @@ export default function HomeScreen() {
           <Text style={styles.mapButtonText}>View on Map</Text>
         </TouchableOpacity>
       </View>
-
-      {/* ✅ Material Categories */}
-      <Text style={styles.sectionTitle}>Recycle Materials</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 30 }}>
-        {categories.map((cat, index) => (
-          <View key={index} style={[styles.categoryCard, { backgroundColor: cat.color }]}>
-            
-            <Ionicons name={cat.icon as any} size={32} color="#fff" />
-            <Text style={styles.categoryText}>{cat.name}</Text>
-          </View>
-        ))}
-      </ScrollView>
     </ScrollView>
   );
 }
