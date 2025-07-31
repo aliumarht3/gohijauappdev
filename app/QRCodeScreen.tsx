@@ -12,6 +12,7 @@ export default function QRCodeScreen() {
   const router = useRouter();
   const [connection, setConnection] = useState<SignalR.HubConnection | null>(null);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [alertFinalizingVisible, setAlertFinalizingVisible] = useState(false);
   const [pouringVisible, setPouringVisible] = useState(false);
   const {signalRUrl} = Constants.expoConfig?.extra ?? {};
    useEffect(() => {
@@ -34,8 +35,15 @@ export default function QRCodeScreen() {
            
           }
         });
+        newConnection.on("Finalizing", (data) => {
+          if (data.token === token) {
+             setPouringVisible(false); 
+            setAlertFinalizingVisible(true);
+           
+          }
+        });
         newConnection.on("PouringComplete", (data) => {
-          setPouringVisible(false); // Hide overlay
+          setAlertFinalizingVisible(false); // Hide overlay
           router.push({
             pathname: '/FinalDataScreen',
             params: { oilPoured: data.oilAmount, pointsEarned: data.points },
@@ -66,7 +74,8 @@ export default function QRCodeScreen() {
               message="You can now lift the lid and start pouring."
               onClose={() =>{setAlertVisible(false); setPouringVisible(true);} }
             />
-      <CustomOverlay visible={pouringVisible} />
+      <CustomOverlay visible={pouringVisible}text='Pouring in progress...' />
+      <CustomOverlay visible={alertFinalizingVisible} text='Finalizing. Please wait...' />
     </View>
   );
 }
