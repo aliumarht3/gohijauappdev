@@ -17,6 +17,7 @@
 //   );
 // }
 import SubmitButton from '@/components/atoms/SubmitButton';
+import Constants from "expo-constants";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -28,6 +29,8 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [phone, setPhone] = useState('');
+  const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
+
   const handleSignup = async () => {
     if (!name || !email || !password || !passwordConfirm || !phone) {
       Alert.alert('Missing fields', 'Please fill in all the fields.');
@@ -39,7 +42,7 @@ export default function SignupScreen() {
       return;
     }
 
-    const signupUrl = 'http://10.0.2.2:7192/api/auth/signup';
+    const signupUrl = `${apiBaseUrl}/auth/signup`;
 
     const payload = {
       name,

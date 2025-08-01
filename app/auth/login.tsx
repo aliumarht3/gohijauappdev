@@ -34,8 +34,13 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      loginUser(email, password);
-      router.push('/');
+      const success = await loginUser(email, password);
+      
+      if (success) {
+        router.push('/');
+      } else {
+        Alert.alert('Login Failed', 'Invalid credentials.');
+      }
     } catch (error) {
       if (error.name === 'AbortError') {
         Alert.alert('Timeout', 'The request took too long. Please try again.');

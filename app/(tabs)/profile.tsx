@@ -1,26 +1,45 @@
-import React from 'react';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import authStorage from '../../api/authStorage';
+import CustomAlert from '../../components/molecules/CustomAlert';
+import { useUser } from '../../services/userService';
 
 export default function ProfileScreen() {
-      const handleLogout = () => {
-    // Implement your logout logic here (e.g., clear tokens, navigate to login)
-    console.log('User logged out');
+  const router = useRouter();
+  const { user, loadUserProfile } = useUser();
+  const [alertVisible, setAlertVisible] = useState(false);
+
+  const handleLogout = async () => {
+      try {
+      await authStorage.clear();
+      router.replace('/auth/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      setAlertVisible(true);
+    }
   };
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>My Profile</Text>
       <View style={styles.card}>
         <Text style={styles.label}>Name</Text>
-        <Text style={styles.value}>John Doe</Text>
+        <Text style={styles.value}>{user?.name}</Text>
         <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>john@example.com</Text>
+        <Text style={styles.value}>{user?.email}</Text>
         <Text style={styles.label}>Phone</Text>
-        <Text style={styles.value}>+60123456789</Text>
+        <Text style={styles.value}>{user?.phone}</Text>
       </View>
          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
+      <CustomAlert
+        visible={alertVisible}
+        title="Logout Failed!"
+        message="Something went wrong during logout."
+        onClose={() =>{setAlertVisible(false);} }
+      />
     </SafeAreaView>
   );
 }

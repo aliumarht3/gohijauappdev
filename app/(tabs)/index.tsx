@@ -27,7 +27,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
   const handleGenerateToken = async () => {
-  const token = await generateQrToken('21'); // Pass userId here
+  const token = await generateQrToken();
   if (token) {
     router.push({
       pathname: '/QRCodeScreen',

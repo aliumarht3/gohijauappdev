@@ -1,5 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import api from '../api/apiClient';
+import authStorage from '../api/authStorage';
 
 const UserContext = createContext(null);
 
@@ -10,56 +11,37 @@ export const UserProvider = ({ children }) => {
 
   const loadUserProfile = async () => {
     try {
-      const token = await AsyncStorage.getItem('auth_token');
+      const token = await authStorage.getAccessToken();
       if (!token) {
         setUser(null);
         return;
       }
-
-      const res = await fetch('http://10.0.2.2:7192/api/user/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error('Failed to fetch user');
-
-      const data = await res.json();
-      setUser(data);
+      const res = await api.get('/user/profile');
+      setUser(res.data);
     } catch (error) {
       console.error('Error loading user:', error);
       setUser(null);
     }
   };
 
-  const loginUser = async (email: string, password: string) => {
-      let url = 'http://10.0.2.2:7192/api/auth/login';
+    const loginUser = async (email: string, password: string) => {
+    try {
+      const response = await api.post('/auth/login', { email, password });
 
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const { accessToken, refreshToken } = response.data;
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal,
-      });
+      // WILL BE REMOVED SOON
+      // const token = accessToken;
+      // const decoded = jwtDecode<{ exp: number; [key: string]: any }>(token);
+      // const expiresAt = new Date(decoded.exp * 1000);
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          throw new Error('Invalid credentials');
-        }
-        throw new Error(`Login failed (Status ${response.status})`);
-      }
-
-      const data = await response.json();
-      // Store token
-      await AsyncStorage.setItem('auth_token', data.token);
+      await authStorage.setAccessToken(accessToken);
+      await authStorage.setRefreshToken(refreshToken);
       loadUserProfile();
+      return true;
+    } catch (error) {
+      throw error;
+    }
   };
 
   useEffect(() => {
