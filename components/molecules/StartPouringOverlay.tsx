@@ -4,9 +4,10 @@ import { Modal, StyleSheet, Text, View } from 'react-native';
 
 interface StartPouringOverlayProps {
   visible: boolean;
+  text?: string;
 }
 
-export default function StartPouringOverlay({ visible }: StartPouringOverlayProps) {
+export default function StartPouringOverlay({ visible,text }: StartPouringOverlayProps) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
@@ -17,7 +18,7 @@ export default function StartPouringOverlay({ visible }: StartPouringOverlayProp
             loop
             style={styles.animation}
           />
-          <Text style={styles.text}>Pouring in progress...</Text>
+          <Text style={styles.text}>{text}</Text>
         </View>
       </View>
     </Modal>
