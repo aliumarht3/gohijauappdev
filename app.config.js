@@ -10,6 +10,9 @@ export default ({ config }) => {
       signalRUrl: isDev 
         ? "http://10.0.2.2:7192" 
         : "https://services.gohijau.org/",
+      eas: {
+        projectId: "07f255f3-aa75-4a53-99ef-19078c357204"
+      }
     },
   };
 };

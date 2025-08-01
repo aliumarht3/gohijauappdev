@@ -17,9 +17,10 @@
 //   );
 // }
 import SubmitButton from '@/components/atoms/SubmitButton';
+import Constants from "expo-constants";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -28,9 +29,64 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [phone, setPhone] = useState('');
-  const handleSignup = () => {
-    // Handle signup (API call, save token)
-    router.replace('/auth/login'); // After signup, go to login
+  const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
+
+  const handleSignup = async () => {
+    if (!name || !email || !password || !passwordConfirm || !phone) {
+      Alert.alert('Missing fields', 'Please fill in all the fields.');
+      return;
+    }
+
+    if (password !== passwordConfirm) {
+      Alert.alert('Password mismatch', 'Passwords do not match.');
+      return;
+    }
+
+    const signupUrl = `${apiBaseUrl}/auth/signup`;
+
+    const payload = {
+      name,
+      email,
+      password,
+      phone,
+    };
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+    try {
+      const response = await fetch(signupUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);  
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || `Signup failed (status ${response.status})`);
+      }
+
+      Alert.alert('Success', 'Account created. Please login.');
+      router.replace('/auth/login');
+
+    } catch (error) {
+      clearTimeout(timeoutId);
+
+      if (error.name === 'AbortError') {
+        Alert.alert('Timeout', 'Request took too long. Please try again.');
+      } else if (
+        error.message === 'Network request failed' ||
+        error.message.includes('Network')
+      ) {
+        Alert.alert('Network Error', 'Could not connect to the server. Please check your connection or server status.');
+      } else {
+        Alert.alert('Signup Failed', error.message || 'An unexpected error occurred.');
+      }
+
+      console.error('Signup error:', error);
+    }
   };
   return (
     <ImageBackground 
@@ -44,7 +100,7 @@ export default function SignupScreen() {
 
         <TextInput 
           style={styles.input} 
-          placeholder="Full Name"
+          placeholder="Name"
           placeholderTextColor="#ddd"
           value={name} 
           onChangeText={setName} 

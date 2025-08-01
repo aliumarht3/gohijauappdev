@@ -1,10 +1,24 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { generateQrToken } from '../../services/qrService';
+import { useUser } from '../../services/userService';
+
 export default function HomeScreen() {
+  const { user, loadUserProfile } = useUser();
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await loadUserProfile();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const stats = [
     { label: "Saved CO₂", value: "5.2 kg" },
     { label: "Points", value: "240" },
@@ -13,7 +27,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
   const handleGenerateToken = async () => {
-  const token = await generateQrToken('21'); // Pass userId here
+  const token = await generateQrToken();
   if (token) {
     router.push({
       pathname: '/QRCodeScreen',
@@ -24,11 +38,15 @@ export default function HomeScreen() {
   }
 };
   return (
-    <ScrollView style={styles.container}>
-      {/* ✅ Greeting + Profile */}
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hello, Liknesh 👋</Text>
+          <Text style={styles.greeting}>Hello, {user?.name} 👋</Text>
           <Text style={styles.subtitle}>Thanks for keeping the planet clean 🌍</Text>
         </View>
         <Image 
