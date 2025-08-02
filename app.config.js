@@ -4,14 +4,15 @@ export default ({ config }) => {
   return {
     name: "GoHijauApp",
     slug: "GoHijauApp",
-    version: "1.0.0",
+    version: "1.0.1",
     orientation: "portrait",
     icon: "./assets/images/icon.jpeg",
     scheme: "gohijauapp",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      buildNumber: "2" 
     },
     android: {
       package: "com.yourcompany.gohijau",
@@ -19,7 +20,8 @@ export default ({ config }) => {
         foregroundImage: "./assets/images/adaptive-icon.png",
         backgroundColor: "#ffffff"
       },
-      edgeToEdgeEnabled: true
+      edgeToEdgeEnabled: true,
+      versionCode: 2,
     },
     web: {
       bundler: "metro",
