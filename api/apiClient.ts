@@ -1,8 +1,11 @@
 import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 import Constants from "expo-constants";
+import { useRouter } from 'expo-router';
 import authStorage from './authStorage';
 
 const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
+
+const router = useRouter();
 
 const api = axios.create({
   baseURL: apiBaseUrl,
@@ -56,13 +59,14 @@ api.interceptors.response.use(
 
       try {
         const refreshToken = await authStorage.getRefreshToken();
+        if (!refreshToken) {
+          // justLogout();
+          await authStorage.clear();
+          router.replace('/auth/login');
+          return Promise.reject(new Error("No refresh token available"));
+        }
 
-        const res = await axios.post(`${apiBaseUrl}/auth/refreshToken`, {
-          refreshToken,
-        });
-
-        const newAccessToken = res.data.accessToken;
-        await authStorage.setAccessToken(newAccessToken);
+        const newAccessToken = await refreshTokenfunc(refreshToken);
 
         processQueue(null, newAccessToken);
         api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
@@ -74,7 +78,9 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (err) {
         processQueue(err as AxiosError, null);
+        // justLogout();
         await authStorage.clear();
+        router.replace('/auth/login');
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
@@ -84,5 +90,16 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+const refreshTokenfunc = async (refreshToken: string): Promise<string> => {
+  const res = await axios.post(`${apiBaseUrl}/auth/refreshToken`, {
+          refreshToken,
+        });
+
+        const newAccessToken = res.data.accessToken;
+        await authStorage.setAccessToken(newAccessToken);
+        await authStorage.setRefreshToken(res.data.refreshToken);
+        return newAccessToken;
+};
 
 export default api;
