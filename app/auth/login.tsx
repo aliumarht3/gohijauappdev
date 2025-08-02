@@ -21,7 +21,7 @@
 import SubmitButton from '@/components/atoms/SubmitButton';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useUser } from '../../services/userService';
 
 export default function LoginScreen() {
@@ -60,6 +60,13 @@ export default function LoginScreen() {
       resizeMode="cover"
     >
       <View style={styles.overlay}>
+
+        <Image 
+          source={require('../../assets/images/icon.jpeg')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+
         <Text style={styles.title}>Recycle Used Oil</Text>
         <Text style={styles.subtitle}>Turn waste into a cleaner planet</Text>
 
@@ -143,4 +150,10 @@ const styles = StyleSheet.create({
     color: '#c0f0c0',
     textDecorationLine: 'underline',
   },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 20,
+    alignSelf: 'center',
+  }
 });

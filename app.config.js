@@ -32,10 +32,10 @@ export default ({ config }) => {
       },
       apiBaseUrl: isDev 
         ? "http://10.0.2.2:7192/api" 
-        : "https://services.gohijau.org/api",
+        : "http://services.gohijau.org/api",
       signalRUrl: isDev 
         ? "http://10.0.2.2:7192" 
-        : "https://services.gohijau.org/"
+        : "http://services.gohijau.org/"
     },
     plugins: [
       "expo-router",

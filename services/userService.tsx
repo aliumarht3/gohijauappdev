@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import api from '../api/apiClient';
 import authStorage from '../api/authStorage';
@@ -7,6 +8,7 @@ const UserContext = createContext(null);
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }) => {
+  const router = useRouter();
   const [user, setUser] = useState(null);
 
   const loadUserProfile = async () => {
@@ -14,14 +16,21 @@ export const UserProvider = ({ children }) => {
       const token = await authStorage.getAccessToken();
       if (!token) {
         setUser(null);
-        return;
+        await justLogout();
+        return Promise.reject(new Error("Token Expired"));
       }
       const res = await api.get('/user/profile');
       setUser(res.data);
     } catch (error) {
       console.error('Error loading user:', error);
+      await justLogout();
       setUser(null);
     }
+  };
+
+  const justLogout = async () => {
+    await authStorage.clear();
+    router.replace('/auth/login');
   };
 
     const loginUser = async (email: string, password: string) => {
@@ -49,7 +58,7 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loadUserProfile, loginUser }}>
+    <UserContext.Provider value={{ user, loadUserProfile, loginUser, justLogout }}>
       {children}
     </UserContext.Provider>
   );

@@ -21,6 +21,7 @@ import Constants from "expo-constants";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useUser } from '../../services/userService';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function SignupScreen() {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [phone, setPhone] = useState('');
   const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
+  const { justLogout } = useUser();
 
   const handleSignup = async () => {
     if (!name || !email || !password || !passwordConfirm || !phone) {
@@ -69,7 +71,7 @@ export default function SignupScreen() {
       }
 
       Alert.alert('Success', 'Account created. Please login.');
-      router.replace('/auth/login');
+      await justLogout();
 
     } catch (error) {
       clearTimeout(timeoutId);

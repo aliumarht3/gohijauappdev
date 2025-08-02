@@ -31,6 +31,7 @@ export default function RootLayout() {
       const token = await authStorage.getAccessToken();
       if (!token || isTokenExpired(token)) {
         await authStorage.clear();
+        // router.replace('/auth/login');
         setIsLoggedIn(false);
       } else {
         setIsLoggedIn(true);
