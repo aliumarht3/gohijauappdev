@@ -4,7 +4,7 @@ import api from '../api/apiClient';
 export async function generateQrToken(): Promise<string | null> {
 const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
   try {
-    const result = await api.post('/user/profile');
+    const result = await api.post('/qr/generate');
 
     if (result.data.success) {
       return result.data.token;
