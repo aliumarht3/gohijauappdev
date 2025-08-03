@@ -1,5 +1,5 @@
 export default ({ config }) => {
-  const isDev = process.env.NODE_ENV === "development";
+  const isDev = process.env.APP_ENV === "development";
 
   return {
     name: "GoHijauApp",
@@ -17,11 +17,11 @@ export default ({ config }) => {
     android: {
       package: "com.yourcompany.gohijau",
       adaptiveIcon: {
-        foregroundImage: "./assets/images/adaptive-icon.png",
+        foregroundImage: "./assets/images/icon.jpeg",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 2,
+      versionCode: 2
     },
     web: {
       bundler: "metro",
@@ -34,17 +34,17 @@ export default ({ config }) => {
       },
       apiBaseUrl: isDev 
         ? "http://10.0.2.2:7192/api" 
-        : "http://services.gohijau.org/api",
+        : "https://services.gohijau.org/api",
       signalRUrl: isDev 
         ? "http://10.0.2.2:7192" 
-        : "http://services.gohijau.org/"
+        : "https://services.gohijau.org/"
     },
     plugins: [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/splash-icon.png",
+          image: "./assets/images/icon.jpeg",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff"
