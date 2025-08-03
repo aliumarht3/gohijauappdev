@@ -5,7 +5,8 @@ export async function generateQrToken(): Promise<string | null> {
 const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
   try {
     const token = await authStorage.getAccessToken();
-
+    console.log(apiBaseUrl);
+    console.log('Token:', token);
     const response = await fetch(`${apiBaseUrl}/qr/generate`, {
       method: 'POST',
       headers: {

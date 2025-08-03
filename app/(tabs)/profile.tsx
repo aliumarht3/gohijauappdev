@@ -1,6 +1,7 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import authStorage from '../../api/authStorage';
 import CustomAlert from '../../components/molecules/CustomAlert';
@@ -10,7 +11,10 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, loadUserProfile } = useUser();
   const [alertVisible, setAlertVisible] = useState(false);
-
+    const resetOnboarding = async () => {
+    await AsyncStorage.removeItem('hasSeenOnboarding');
+    router.replace('/OnboardingScreen');
+  };
   const handleLogout = async () => {
       try {
       await authStorage.clear();
@@ -34,6 +38,7 @@ export default function ProfileScreen() {
          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
+        <Button title="Reset Onboarding" onPress={resetOnboarding} />
       <CustomAlert
         visible={alertVisible}
         title="Logout Failed!"

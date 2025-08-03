@@ -1,15 +1,27 @@
+import HelpCarousel from '@/components/atoms/HelpCarousel';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { generateQrToken } from '../../services/qrService';
 import { useUser } from '../../services/userService';
+const { width } = Dimensions.get('window');
+interface HelpStep {
+  image: any;
+  text: string;
+}
 
+interface HelpTopic {
+  router:string;
+  title: string;
+  description: string;
+  color: string;
+}
 export default function HomeScreen() {
   const { user, loadUserProfile } = useUser();
   const [refreshing, setRefreshing] = React.useState(false);
-
+  const [isModalVisible, setModalVisible] = useState(false);
   const onRefresh = async () => {
     try {
       setRefreshing(true);
@@ -24,10 +36,26 @@ export default function HomeScreen() {
     { label: "Points", value: "240" },
     { label: "Oil Recycled", value: "12 L" },
   ];
+const topics: HelpTopic[] = [
+  {
+    router: '/GetStartedScreen',
+    title: "How to Begin",
+    description: "Learn how to start scanning and recycling oil easily.",
+    color: "#4CAF50",
+  },
+  {
+    router: '/GetStartedScreen',
+    title: "Withdrawal",
+    description: "Withdraw your earned points for rewards or benefits.",
+    color: "#FF9800",
+  }
+];
+  const [selectedTopic, setSelectedTopic] = useState<HelpTopic | null>(null);
   const router = useRouter();
   const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
   const handleGenerateToken = async () => {
   const token = await generateQrToken();
+  console.log('Generated Token:', token);
   if (token) {
     router.push({
       pathname: '/QRCodeScreen',
@@ -99,13 +127,17 @@ export default function HomeScreen() {
           <Text style={styles.mapButtonText}>View on Map</Text>
         </TouchableOpacity>
       </View>
+      <View >
+      
+    </View>
+    <HelpCarousel topics={topics} onSelectTopic={setSelectedTopic} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 0,
     backgroundColor: '#f2f8f3', // soft eco-friendly green background
     paddingHorizontal: 20,
     paddingTop: 50,
@@ -221,5 +253,54 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontWeight: 'bold',
   },
+  //modal styles
+    modalCard: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+    modalText: {
+    fontSize: 18,
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  stepContainer: {
+    width: width - 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  stepImage: {
+    width: 200,
+    height: 200,
+  },
+  stepText: {
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 16,
+    color: '#444',
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: '#4CAF50',
+    borderRadius: 10,
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
 });
-

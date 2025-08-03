@@ -6,7 +6,7 @@ const UserContext = createContext(null);
 
 export const useUser = () => useContext(UserContext);
 
-export const UserProvider = ({ children }) => {
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState(null);
 
   const loadUserProfile = async () => {

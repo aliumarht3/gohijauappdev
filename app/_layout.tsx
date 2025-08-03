@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { LoadingScreen } from '@/components/molecules/loading';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 import authStorage from '../api/authStorage';
 import { UserProvider } from '../services/userService';
@@ -14,7 +15,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+  const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
   const router = useRouter();
   
   const isTokenExpired = (token: string): boolean => {
@@ -29,12 +30,15 @@ export default function RootLayout() {
   useEffect(() => {
     const checkAuth = async () => {
       const token = await authStorage.getAccessToken();
+      console.log('Access Token:', token);
       if (!token || isTokenExpired(token)) {
         await authStorage.clear();
         setIsLoggedIn(false);
       } else {
         setIsLoggedIn(true);
       }
+         const seenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
+      setHasSeenOnboarding(seenOnboarding === 'true');
       setIsAuthChecked(true);
     };
     checkAuth();
@@ -50,17 +54,21 @@ export default function RootLayout() {
     );
   }
 
-  return (
+   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <UserProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        {isLoggedIn ? (
-          <Stack.Screen name="(tabs)" />
-        ): (
-          <Stack.Screen name="auth" />
-        )}
-        <Stack.Screen name="+not-found" />
-      </Stack>
+        <Stack screenOptions={{ headerShown: false }}>
+          {isLoggedIn ? (
+            !hasSeenOnboarding ? (
+              <Stack.Screen name="onboarding" />
+            ) : (
+              <Stack.Screen name="(tabs)" />
+            )
+          ) : (
+            <Stack.Screen name="auth" />
+          )}
+          <Stack.Screen name="+not-found" />
+        </Stack>
       </UserProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
