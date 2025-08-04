@@ -1,18 +1,47 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { generateQrToken } from '../../services/qrService';
+import { getTotalTransaction } from '../../services/transactionService';
 import { useUser } from '../../services/userService';
 
 export default function HomeScreen() {
   const { user, loadUserProfile } = useUser();
   const [refreshing, setRefreshing] = React.useState(false);
+  const [totalOilPoured, setTotalOilPoured] = React.useState(0);
+  const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
+  const [pointsAwarded, setPointsAwarded] = React.useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+    try {
+      setRefreshing(true);
+      const result = await getTotalTransaction();
+      if (result) {
+        setTotalOilPoured(result.totalOilPoured);
+        setTotalCO2Saved(result.totalCO2Saved);
+        setPointsAwarded(result.pointsAwarded);
+      }
+      await loadUserProfile();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  fetchData();
+  }, []);
 
   const onRefresh = async () => {
     try {
       setRefreshing(true);
+      const result = await getTotalTransaction();
+      if (result) {
+        setTotalOilPoured(result.totalOilPoured);
+        setTotalCO2Saved(result.totalCO2Saved);
+        setPointsAwarded(result.pointsAwarded);
+      }
       await loadUserProfile();
     } finally {
       setRefreshing(false);
@@ -20,9 +49,9 @@ export default function HomeScreen() {
   };
 
   const stats = [
-    { label: "Saved CO₂", value: "5.2 kg" },
-    { label: "Points", value: "240" },
-    { label: "Oil Recycled", value: "12 L" },
+    { label: "Saved CO₂", value: totalCO2Saved },
+    { label: "Points", value: pointsAwarded },
+    { label: "Oil Recycled", value: totalOilPoured },
   ];
   const router = useRouter();
   const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
