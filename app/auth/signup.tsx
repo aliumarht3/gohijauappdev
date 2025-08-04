@@ -21,6 +21,7 @@ import Constants from "expo-constants";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import api from '../../api/apiClient';
 import { useUser } from '../../services/userService';
 
 export default function SignupScreen() {
@@ -56,19 +57,11 @@ export default function SignupScreen() {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
-      const response = await fetch(signupUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+      const response = await api.post('/user/profile', payload, {
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);  
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || `Signup failed (status ${response.status})`);
-      }
 
       Alert.alert('Success', 'Account created. Please login.');
       await justLogout();
