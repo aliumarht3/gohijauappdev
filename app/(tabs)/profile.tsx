@@ -3,13 +3,12 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Button, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import authStorage from '../../api/authStorage';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { useUser } from '../../services/userService';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, loadUserProfile } = useUser();
+  const { user, loadUserProfile, justLogout } = useUser();
   const [alertVisible, setAlertVisible] = useState(false);
     const resetOnboarding = async () => {
     await AsyncStorage.removeItem('hasSeenOnboarding');
@@ -17,8 +16,7 @@ export default function ProfileScreen() {
   };
   const handleLogout = async () => {
       try {
-      await authStorage.clear();
-      router.replace('/auth/login');
+      await justLogout();
     } catch (error) {
       console.error('Error during logout:', error);
       setAlertVisible(true);

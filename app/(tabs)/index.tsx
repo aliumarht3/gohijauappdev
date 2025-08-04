@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { generateQrToken } from '../../services/qrService';
+import { getTotalTransaction } from '../../services/transactionService';
 import { useUser } from '../../services/userService';
 const { width } = Dimensions.get('window');
 interface HelpStep {
@@ -21,10 +22,38 @@ interface HelpTopic {
 export default function HomeScreen() {
   const { user, loadUserProfile } = useUser();
   const [refreshing, setRefreshing] = React.useState(false);
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [totalOilPoured, setTotalOilPoured] = React.useState(0);
+  const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
+  const [pointsAwarded, setPointsAwarded] = React.useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+    try {
+      setRefreshing(true);
+      const result = await getTotalTransaction();
+      if (result) {
+        setTotalOilPoured(result.totalOilPoured);
+        setTotalCO2Saved(result.totalCO2Saved);
+        setPointsAwarded(result.pointsAwarded);
+      }
+      await loadUserProfile();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  fetchData();
+  }, []);
+
   const onRefresh = async () => {
     try {
       setRefreshing(true);
+      const result = await getTotalTransaction();
+      if (result) {
+        setTotalOilPoured(result.totalOilPoured);
+        setTotalCO2Saved(result.totalCO2Saved);
+        setPointsAwarded(result.pointsAwarded);
+      }
       await loadUserProfile();
     } finally {
       setRefreshing(false);

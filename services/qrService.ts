@@ -1,24 +1,13 @@
 import Constants from "expo-constants";
-import authStorage from '../api/authStorage';
+import api from '../api/apiClient';
 
 export async function generateQrToken(): Promise<string | null> {
 const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
   try {
-    const token = await authStorage.getAccessToken();
-    console.log(apiBaseUrl);
-    console.log('Token:', token);
-    const response = await fetch(`${apiBaseUrl}/qr/generate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const result = await api.post('/qr/generate');
 
-    const result = await response.json();
-
-    if (result.success) {
-      return result.token;
+    if (result.data.success) {
+      return result.data.token;
     } else {
       return null;
     }
