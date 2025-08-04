@@ -38,7 +38,8 @@ export default function RootLayout() {
         setIsLoggedIn(true);
       }
          const seenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
-      setHasSeenOnboarding(seenOnboarding === 'true');
+      console.log('Has seen onboarding:', seenOnboarding);
+      setHasSeenOnboarding(seenOnboarding === 'true' ? true : seenOnboarding === 'false' || seenOnboarding === null ? false : null);
       setIsAuthChecked(true);
     };
     checkAuth();
@@ -60,7 +61,7 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false }}>
           {isLoggedIn ? (
             !hasSeenOnboarding ? (
-              <Stack.Screen name="onboarding" />
+              <Stack.Screen name="OnboardingScreen" />
             ) : (
               <Stack.Screen name="(tabs)" />
             )

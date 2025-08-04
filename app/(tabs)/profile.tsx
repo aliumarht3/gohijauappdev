@@ -38,7 +38,10 @@ export default function ProfileScreen() {
          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
-        <Button title="Reset Onboarding" onPress={resetOnboarding} />
+      {process.env.NODE_ENV === "development" && (
+      <Button title="Reset Onboarding" onPress={resetOnboarding} />
+    )}
+        
       <CustomAlert
         visible={alertVisible}
         title="Logout Failed!"

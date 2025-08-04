@@ -25,13 +25,13 @@ export default function OnboardingScreen() {
         },
         {
           backgroundColor: '#FF9800',
-          image: <Image source={require('../assets/help/qr.png')} style={styles.image} />,
+          image: <Image source={require('../assets/help/withdrawal.png')} style={styles.image} />,
           title: 'Track Rewards',
           subtitle: 'Earn points and redeem them for benefits.',
         },
         {
           backgroundColor: '#2196F3',
-          image: <Image source={require('../assets/help/qr.png')} style={styles.image} />,
+          image: <Image source={require('../assets/help/map.png')} style={styles.image} />,
           title: 'Find Collection Points',
           subtitle: 'Locate nearby oil recycling points with ease.',
         },

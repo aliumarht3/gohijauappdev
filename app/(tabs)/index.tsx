@@ -104,7 +104,8 @@ const topics: HelpTopic[] = [
           <Ionicons name="gift" size={28} color="#fff" />
           <Text style={styles.actionText}>Rewards</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton}
+        onPress={() => router.push('/OilHistoryScreen')}>
           <Ionicons name="time" size={28} color="#fff" />
           <Text style={styles.actionText}>History</Text>
         </TouchableOpacity>
@@ -120,10 +121,10 @@ const topics: HelpTopic[] = [
       <View style={styles.mapCard}>
         <Text style={styles.mapTitle}>Nearby Collection Points</Text>
         <Image 
-          source={{ uri: 'https://images.unsplash.com/photo-1593625289153-f28c2fcb54e6' }}
+          source={require('../../assets/images/mapbackground.jpg')}
           style={styles.mapImage}
         />
-        <TouchableOpacity style={styles.mapButton}>
+        <TouchableOpacity style={styles.mapButton} onPress={() => router.push('/MapScreen')}>
           <Text style={styles.mapButtonText}>View on Map</Text>
         </TouchableOpacity>
       </View>
