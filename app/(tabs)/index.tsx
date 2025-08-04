@@ -1,7 +1,7 @@
 import HelpCarousel from '@/components/atoms/HelpCarousel';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { generateQrToken } from '../../services/qrService';
@@ -60,10 +60,10 @@ export default function HomeScreen() {
     }
   };
 
-  const stats = [
-    { label: "Saved CO₂", value: "5.2 kg" },
-    { label: "Points", value: "240" },
-    { label: "Oil Recycled", value: "12 L" },
+   const stats = [
+    { label: "Saved CO₂", value: totalCO2Saved },
+    { label: "Points", value: pointsAwarded },
+    { label: "Oil Recycled", value: totalOilPoured },
   ];
 const topics: HelpTopic[] = [
   {
