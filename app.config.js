@@ -4,7 +4,7 @@ export default ({ config }) => {
   return {
     name: "GoHijauApp",
     slug: "GoHijauApp",
-    version: "1.0.1",
+    version: "3.0.1",
     orientation: "portrait",
     icon: "./assets/images/icon.jpeg",
     scheme: "gohijauapp",
@@ -12,16 +12,20 @@ export default ({ config }) => {
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      buildNumber: "2" 
+      buildNumber: "1",
+      bundleIdentifier: "com.myro.gohijau",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
-      package: "com.yourcompany.gohijau",
+      package: "com.myro.gohijau",
       adaptiveIcon: {
         foregroundImage: "./assets/images/icon.jpeg",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 2
+      versionCode: 15
     },
     web: {
       bundler: "metro",
