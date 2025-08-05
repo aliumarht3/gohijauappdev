@@ -1,33 +1,90 @@
+import HelpCarousel from '@/components/atoms/HelpCarousel';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { generateQrToken } from '../../services/qrService';
+import { getTotalTransaction } from '../../services/transactionService';
 import { useUser } from '../../services/userService';
+const { width } = Dimensions.get('window');
+interface HelpStep {
+  image: any;
+  text: string;
+}
 
+interface HelpTopic {
+  router:string;
+  title: string;
+  description: string;
+  color: string;
+}
 export default function HomeScreen() {
   const { user, loadUserProfile } = useUser();
   const [refreshing, setRefreshing] = React.useState(false);
+  const [totalOilPoured, setTotalOilPoured] = React.useState(0);
+  const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
+  const [pointsAwarded, setPointsAwarded] = React.useState(0);
 
-  const onRefresh = async () => {
+  useEffect(() => {
+    const fetchData = async () => {
     try {
       setRefreshing(true);
+      const result = await getTotalTransaction();
+      if (result) {
+        setTotalOilPoured(result.totalOilPoured);
+        setTotalCO2Saved(result.totalCO2Saved);
+        setPointsAwarded(result.pointsAwarded);
+      }
       await loadUserProfile();
     } finally {
       setRefreshing(false);
     }
   };
 
-  const stats = [
-    { label: "Saved CO₂", value: "5.2 kg" },
-    { label: "Points", value: "240" },
-    { label: "Oil Recycled", value: "12 L" },
+  fetchData();
+  }, []);
+
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      const result = await getTotalTransaction();
+      if (result) {
+        setTotalOilPoured(result.totalOilPoured);
+        setTotalCO2Saved(result.totalCO2Saved);
+        setPointsAwarded(result.pointsAwarded);
+      }
+      await loadUserProfile();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+   const stats = [
+    { label: "Saved CO₂", value: totalCO2Saved },
+    { label: "Points", value: pointsAwarded },
+    { label: "Oil Recycled", value: totalOilPoured },
   ];
+const topics: HelpTopic[] = [
+  {
+    router: '/GetStartedScreen',
+    title: "How to Begin",
+    description: "Learn how to start scanning and recycling oil easily.",
+    color: "#4CAF50",
+  },
+  {
+    router: '/GetStartedScreen',
+    title: "Withdrawal",
+    description: "Withdraw your earned points for rewards or benefits.",
+    color: "#FF9800",
+  }
+];
+  const [selectedTopic, setSelectedTopic] = useState<HelpTopic | null>(null);
   const router = useRouter();
   const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
   const handleGenerateToken = async () => {
   const token = await generateQrToken();
+  console.log('Generated Token:', token);
   if (token) {
     router.push({
       pathname: '/QRCodeScreen',
@@ -76,7 +133,8 @@ export default function HomeScreen() {
           <Ionicons name="gift" size={28} color="#fff" />
           <Text style={styles.actionText}>Rewards</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton}
+        onPress={() => router.push('/OilHistoryScreen')}>
           <Ionicons name="time" size={28} color="#fff" />
           <Text style={styles.actionText}>History</Text>
         </TouchableOpacity>
@@ -92,20 +150,24 @@ export default function HomeScreen() {
       <View style={styles.mapCard}>
         <Text style={styles.mapTitle}>Nearby Collection Points</Text>
         <Image 
-          source={{ uri: 'https://images.unsplash.com/photo-1593625289153-f28c2fcb54e6' }}
+          source={require('../../assets/images/mapbackground.jpg')}
           style={styles.mapImage}
         />
-        <TouchableOpacity style={styles.mapButton}>
+        <TouchableOpacity style={styles.mapButton} onPress={() => router.push('/MapScreen')}>
           <Text style={styles.mapButtonText}>View on Map</Text>
         </TouchableOpacity>
       </View>
+      <View >
+      
+    </View>
+    <HelpCarousel topics={topics} onSelectTopic={setSelectedTopic} />
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 0,
     backgroundColor: '#f2f8f3', // soft eco-friendly green background
     paddingHorizontal: 20,
     paddingTop: 50,
@@ -221,5 +283,54 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontWeight: 'bold',
   },
+  //modal styles
+    modalCard: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+    modalText: {
+    fontSize: 18,
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  stepContainer: {
+    width: width - 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  stepImage: {
+    width: 200,
+    height: 200,
+  },
+  stepText: {
+    textAlign: 'center',
+    marginTop: 10,
+    fontSize: 16,
+    color: '#444',
+  },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: '#4CAF50',
+    borderRadius: 10,
+    alignSelf: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
 });
-
