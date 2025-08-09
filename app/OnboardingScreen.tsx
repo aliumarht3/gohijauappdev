@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, StyleSheet } from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -13,30 +14,32 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <Onboarding
-      onSkip={completeOnboarding}
-      onDone={completeOnboarding}
-      pages={[
-        {
-          backgroundColor: '#4CAF50',
-          image: <Image source={require('../assets/help/qr.png')} style={styles.image} />,
-          title: 'Scan Used Oil',
-          subtitle: 'Quickly scan and recycle used oil at collection points.',
-        },
-        {
-          backgroundColor: '#FF9800',
-          image: <Image source={require('../assets/help/withdrawal.png')} style={styles.image} />,
-          title: 'Track Rewards',
-          subtitle: 'Earn points and redeem them for benefits.',
-        },
-        {
-          backgroundColor: '#2196F3',
-          image: <Image source={require('../assets/help/map.png')} style={styles.image} />,
-          title: 'Find Collection Points',
-          subtitle: 'Locate nearby oil recycling points with ease.',
-        },
-      ]}
-    />
+    <SafeAreaView style={{ flex: 1 }} edges={['bottom']}>
+      <Onboarding
+        onSkip={completeOnboarding}
+        onDone={completeOnboarding}
+        pages={[
+          {
+            backgroundColor: '#4CAF50',
+            image: <Image source={require('../assets/help/qr.png')} style={styles.image} />,
+            title: 'Scan Used Oil',
+            subtitle: 'Quickly scan and recycle used oil at collection points.',
+          },
+          {
+            backgroundColor: '#FF9800',
+            image: <Image source={require('../assets/help/withdrawal.png')} style={styles.image} />,
+            title: 'Track Rewards',
+            subtitle: 'Earn points and redeem them for benefits.',
+          },
+          {
+            backgroundColor: '#2196F3',
+            image: <Image source={require('../assets/help/map.png')} style={styles.image} />,
+            title: 'Find Collection Points',
+            subtitle: 'Locate nearby oil recycling points with ease.',
+          },
+        ]}
+      />
+    </SafeAreaView>
   );
 }
 
