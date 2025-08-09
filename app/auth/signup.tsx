@@ -106,6 +106,8 @@ export default function SignupScreen() {
           style={styles.input} 
           placeholder="Email"
           placeholderTextColor="#ddd"
+          autoCapitalize="none"
+          keyboardType="email-address"
           value={email} 
           onChangeText={setEmail} 
         />
