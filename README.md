@@ -55,3 +55,6 @@ eas build --platform android --profile preview
 
 Release
 eas build --platform android --profile preview
+
+Submit iOS/Android
+eas submit -p ios
