@@ -20,7 +20,7 @@ import SubmitButton from '@/components/atoms/SubmitButton';
 import Constants from "expo-constants";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import api from '../../api/apiClient';
 import { useUser } from '../../services/userService';
 
@@ -45,8 +45,6 @@ export default function SignupScreen() {
       return;
     }
 
-    const signupUrl = `${apiBaseUrl}/auth/signup`;
-
     const payload = {
       name,
       email,
@@ -57,9 +55,7 @@ export default function SignupScreen() {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
-      const response = await api.post('/user/profile', payload, {
-        signal: controller.signal,
-      });
+      const response = await api.post('/auth/signup', payload);
 
       clearTimeout(timeoutId);  
 
@@ -89,6 +85,12 @@ export default function SignupScreen() {
       style={styles.container}
       resizeMode="cover"
     >
+      <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 0} // adjust if needed
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.overlay}>
         <Text style={styles.title}>Join the Green Movement</Text>
         <Text style={styles.subtitle}>Recycle used oil & make a difference</Text>
@@ -136,6 +138,8 @@ export default function SignupScreen() {
           <Text style={styles.linkText}>Already have an account? Login</Text>
         </TouchableOpacity>
       </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
     </ImageBackground>
   );
 }
@@ -143,6 +147,11 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center', // or 'flex-start' if you want top-aligned form
+    padding: 20,
   },
   overlay: {
     flex: 1,
