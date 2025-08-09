@@ -61,9 +61,9 @@ export default function HomeScreen() {
   };
 
    const stats = [
-    { label: "Saved CO₂", value: totalCO2Saved },
-    { label: "Points", value: pointsAwarded },
-    { label: "Oil Recycled", value: totalOilPoured },
+    { label: "Saved CO₂", value: totalCO2Saved, unit: "kg" },
+    { label: "Points", value: pointsAwarded, unit: "RM" },
+    { label: "Oil Recycled", value: totalOilPoured, unit: "L" },
   ];
 const topics: HelpTopic[] = [
   {
@@ -116,7 +116,14 @@ const topics: HelpTopic[] = [
       <View style={styles.statsContainer}>
         {stats.map((item, index) => (
           <View key={index} style={styles.statCard}>
-            <Text style={styles.statValue}>{item.value}</Text>
+            <Text 
+              style={styles.statValue}
+              // numberOfLines={1}
+            >
+              {item.label === "Points"
+                ? `${item.unit} ${item.value}`
+                : `${item.value} ${item.unit}`}
+            </Text>
             <Text style={styles.statLabel}>{item.label}</Text>
           </View>
         ))}
@@ -211,6 +218,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#388E3C',
+    textAlign: 'center',
+    flexShrink: 1,
   },
   statLabel: {
     fontSize: 12,
