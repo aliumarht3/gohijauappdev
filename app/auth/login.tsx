@@ -19,9 +19,10 @@
 //   );
 // }
 import SubmitButton from '@/components/atoms/SubmitButton';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { ActivityIndicator, Alert, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useUser } from '../../services/userService';
 
 export default function LoginScreen() {
@@ -30,6 +31,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { loadUserProfile, loginUser } = useUser();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -37,7 +39,7 @@ export default function LoginScreen() {
       const success = await loginUser(email, password);
       
       if (success) {
-        router.push('/');
+        router.replace('/');
       } else {
         Alert.alert('Login Failed', 'Invalid credentials.');
       }
@@ -54,51 +56,71 @@ export default function LoginScreen() {
   };
 
   return (
-    <ImageBackground 
-      source={require('../../assets/images/plantsoil.jpg')} 
-      style={styles.container}
-      resizeMode="cover"
-    >
-      <View style={styles.overlay}>
+      <ImageBackground 
+        source={require('../../assets/images/plantsoil.jpg')} 
+        style={styles.container}
+        resizeMode="cover"
+      >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // iOS = smooth padding, Android = height
+          style={{ flex: 1 }}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0} // adjust if header exists
+        >
+          <ScrollView 
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled" // allow taps while keyboard open
+          >
+            <View style={styles.overlay}>
 
-        <Image 
-          source={require('../../assets/images/icon.jpeg')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+              <Image 
+                source={require('../../assets/images/icon.jpeg')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
 
-        <Text style={styles.title}>Recycle Used Oil</Text>
-        <Text style={styles.subtitle}>Turn waste into a cleaner planet</Text>
+              <Text style={styles.title}>Recycle Used Oil</Text>
+              <Text style={styles.subtitle}>Turn waste into a cleaner planet</Text>
 
-        <TextInput 
-          style={styles.input} 
-          placeholder="Email" 
-          placeholderTextColor="#ccc"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email} 
-          onChangeText={setEmail} 
-        />
-        <TextInput 
-          style={styles.input} 
-          placeholder="Password" 
-          placeholderTextColor="#ccc"
-          secureTextEntry 
-          value={password} 
-          onChangeText={setPassword} 
-        />
+              <TextInput 
+                style={styles.input} 
+                placeholder="Email" 
+                placeholderTextColor="#ccc"
+                autoCapitalize="none"
+                keyboardType="email-address"
+                value={email} 
+                onChangeText={setEmail} 
+              />
+              <View style={styles.passwordContainer}>
+                <TextInput 
+                  style={styles.passwordInput} 
+                  placeholder="Password" 
+                  autoCapitalize="none"
+                  secureTextEntry={!showPassword}
+                  placeholderTextColor="#ccc"
+                  value={password} 
+                  onChangeText={setPassword} 
+                />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                  <Ionicons 
+                    name={showPassword ? 'eye' : 'eye-off'} 
+                    size={20} 
+                    color="#666" 
+                  />
+                </TouchableOpacity>
+              </View>
+              {loading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+              ) : (
+              <SubmitButton title="Login" onPress={handleLogin} backgroundColor="#388E3C" />
+              )}
 
-        {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-        <SubmitButton title="Login" onPress={handleLogin} backgroundColor="#388E3C" />
-        )}
-
-        <TouchableOpacity onPress={() => router.push('/auth/signup')}>
-          <Text style={styles.linkText}>Don’t have an account? Sign up</Text>
-        </TouchableOpacity>
-      </View>
-    </ImageBackground>
+              <TouchableOpacity onPress={() => router.push('/auth/signup')}>
+                <Text style={styles.linkText}>Don’t have an account? Sign up</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
   );
 }
 
@@ -124,6 +146,21 @@ const styles = StyleSheet.create({
     color: '#e0ffe0',
     marginBottom: 30,
     textAlign: 'center',
+  },
+  passwordContainer: {
+    width: '90%',
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    color: '#fff',
+    paddingVertical: 0, 
   },
   input: {
     width: '90%',

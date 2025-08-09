@@ -17,6 +17,7 @@
 //   );
 // }
 import SubmitButton from '@/components/atoms/SubmitButton';
+import { Ionicons } from '@expo/vector-icons';
 import Constants from "expo-constants";
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -33,6 +34,8 @@ export default function SignupScreen() {
   const [phone, setPhone] = useState('');
   const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
   const { justLogout } = useUser();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRetypePassword, setShowRetypePassword] = useState(false);
 
   const handleSignup = async () => {
     if (!name || !email || !password || !passwordConfirm || !phone) {
@@ -111,28 +114,50 @@ export default function SignupScreen() {
           value={email} 
           onChangeText={setEmail} 
         />
-        <TextInput 
-          style={styles.input} 
-          placeholder="Password"
-          placeholderTextColor="#ddd"
-          secureTextEntry
-          value={password} 
-          onChangeText={setPassword} 
-        />
-         <TextInput 
-          style={styles.input} 
-          placeholder="Password"
-          placeholderTextColor="#ddd"
-          secureTextEntry
-          value={passwordConfirm} 
-          onChangeText={setPasswordConfirm} 
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput 
+            style={styles.passwordInput} 
+            placeholder="Password"
+            autoCapitalize="none"
+            placeholderTextColor="#ddd"
+            secureTextEntry={!showPassword}
+            value={password} 
+            onChangeText={setPassword} 
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons 
+              name={showPassword ? 'eye' : 'eye-off'} 
+              size={20} 
+              color="#666" 
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.passwordContainer}>
+          <TextInput 
+            style={styles.passwordInput} 
+            placeholder="Retype Password"
+            autoCapitalize="none"
+            placeholderTextColor="#ddd"
+            secureTextEntry={!showRetypePassword}
+            value={passwordConfirm} 
+            onChangeText={setPasswordConfirm} 
+          />
+          <TouchableOpacity onPress={() => setShowRetypePassword(!showRetypePassword)}>
+            <Ionicons 
+              name={showRetypePassword ? 'eye' : 'eye-off'} 
+              size={20} 
+              color="#666" 
+            />
+          </TouchableOpacity>
+        </View>
          <TextInput 
           style={styles.input} 
           placeholder="Phone Number"
           placeholderTextColor="#ddd"
           value={phone} 
-          onChangeText={setPhone} 
+          onChangeText={setPhone}
+          keyboardType="numeric"
+          maxLength={15}
         />
         <SubmitButton title="Sign Up" onPress={handleSignup} backgroundColor="#66BB6A" />
 
@@ -183,6 +208,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     marginBottom: 15,
     color: '#fff',
+  },
+  passwordContainer: {
+    width: '90%',
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    color: '#fff',
+    paddingVertical: 0, 
   },
   button: {
     backgroundColor: '#4CAF50',
