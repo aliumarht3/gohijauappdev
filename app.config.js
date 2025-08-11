@@ -11,8 +11,8 @@ export default ({ config }) => {
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
-      supportsTablet: true,
-      buildNumber: "1",
+      supportsTablet: false,
+      buildNumber: "2",
       bundleIdentifier: "com.myro.gohijau",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,

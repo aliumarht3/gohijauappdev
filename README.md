@@ -54,7 +54,7 @@ APK
 eas build --platform android --profile preview
 
 Release
-eas build --platform android --profile preview
+eas build --platform android --profile production
 
 Submit iOS/Android
-eas submit -p ios
+eas submit --platform ios
