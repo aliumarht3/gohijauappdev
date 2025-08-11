@@ -12,7 +12,7 @@ export default ({ config }) => {
     newArchEnabled: true,
     ios: {
       supportsTablet: false,
-      buildNumber: "2",
+      buildNumber: "3",
       bundleIdentifier: "com.myro.gohijau",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -25,7 +25,7 @@ export default ({ config }) => {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 15
+      versionCode: 16
     },
     web: {
       bundler: "metro",
