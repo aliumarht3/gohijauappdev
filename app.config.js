@@ -41,7 +41,7 @@ export default ({ config }) => {
         : "https://services.gohijau.org/api",
       signalRUrl: isDev 
         ? "http://10.0.2.2:7192" 
-        : "https://services.gohijau.org/"
+        : "https://services.gohijau.org"
     },
     plugins: [
       "expo-router",
