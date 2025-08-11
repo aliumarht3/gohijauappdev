@@ -73,7 +73,7 @@ export default function LoginScreen() {
             <View style={styles.overlay}>
 
               <Image 
-                source={require('../../assets/images/icon.jpeg')}
+                source={require('../../assets/images/icon.png')}
                 style={styles.logo}
                 resizeMode="contain"
               />
@@ -134,6 +134,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     backgroundColor: 'rgba(0, 50, 0, 0.3)', // eco-friendly green overlay
+    marginTop: -130,
   },
   title: {
     fontSize: 32,
@@ -190,8 +191,8 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
     marginBottom: 20,
     alignSelf: 'center',
   }

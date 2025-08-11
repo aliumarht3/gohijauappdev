@@ -6,7 +6,7 @@ export default ({ config }) => {
     slug: "GoHijauApp",
     version: "3.0.1",
     orientation: "portrait",
-    icon: "./assets/images/icon.jpeg",
+    icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
@@ -21,7 +21,7 @@ export default ({ config }) => {
     android: {
       package: "com.myro.gohijau",
       adaptiveIcon: {
-        foregroundImage: "./assets/images/icon.jpeg",
+        foregroundImage: "./assets/images/icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
@@ -48,7 +48,7 @@ export default ({ config }) => {
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/icon.jpeg",
+          image: "./assets/images/icon.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff"
