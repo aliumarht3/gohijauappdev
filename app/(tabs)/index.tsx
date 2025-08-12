@@ -107,7 +107,7 @@ const topics: HelpTopic[] = [
           <Text style={styles.subtitle}>Thanks for keeping the planet clean 🌍</Text>
         </View>
         <Image 
-          source={{ uri: 'https://i.pravatar.cc/100' }} 
+          source={require('../../assets/images/icon.png')}
           style={styles.profileImage} 
         />
       </View>
