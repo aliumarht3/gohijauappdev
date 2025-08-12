@@ -5,9 +5,10 @@ import { Modal, StyleSheet, Text, View } from 'react-native';
 interface StartPouringOverlayProps {
   visible: boolean;
   text?: string;
+  subtext?: string;
 }
 
-export default function StartPouringOverlay({ visible,text }: StartPouringOverlayProps) {
+export default function StartPouringOverlay({ visible,text,subtext }: StartPouringOverlayProps) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
@@ -19,6 +20,7 @@ export default function StartPouringOverlay({ visible,text }: StartPouringOverla
             style={styles.animation}
           />
           <Text style={styles.text}>{text}</Text>
+          <Text style={styles.subtext}>{subtext}</Text>
         </View>
       </View>
     </Modal>
@@ -48,5 +50,12 @@ const styles = StyleSheet.create({
    animation: {
     width: 150,
     height: 150,
+  },
+  subtext: {
+    marginTop: 8,
+    fontSize: 14,
+    color: '#f30909ff',
+    fontWeight: '400',
+    textAlign: 'center',
   },
 });

@@ -4,24 +4,28 @@ export default ({ config }) => {
   return {
     name: "GoHijauApp",
     slug: "GoHijauApp",
-    version: "1.0.1",
+    version: "3.0.2",
     orientation: "portrait",
-    icon: "./assets/images/icon.jpeg",
+    icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
-      supportsTablet: true,
-      buildNumber: "2" 
+      supportsTablet: false,
+      buildNumber: "3",
+      bundleIdentifier: "com.myro.gohijau",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+      },
     },
     android: {
-      package: "com.yourcompany.gohijau",
+      package: "com.myro.gohijau",
       adaptiveIcon: {
-        foregroundImage: "./assets/images/icon.jpeg",
+        foregroundImage: "./assets/images/icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 2
+      versionCode: 16
     },
     web: {
       bundler: "metro",
@@ -37,14 +41,14 @@ export default ({ config }) => {
         : "https://services.gohijau.org/api",
       signalRUrl: isDev 
         ? "http://10.0.2.2:7192" 
-        : "https://services.gohijau.org/"
+        : "https://services.gohijau.org"
     },
     plugins: [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/icon.jpeg",
+          image: "./assets/images/icon.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff"

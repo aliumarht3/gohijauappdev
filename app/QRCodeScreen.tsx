@@ -74,7 +74,7 @@ export default function QRCodeScreen() {
               message="You can now lift the lid and start pouring."
               onClose={() =>{setAlertVisible(false); setPouringVisible(true);} }
             />
-      <CustomOverlay visible={pouringVisible}text='Pouring in progress...' />
+      <CustomOverlay visible={pouringVisible}text='Pouring in progress...' subtext='Please close the lid once done' />
       <CustomOverlay visible={alertFinalizingVisible} text='Finalizing. Please wait...' />
     </View>
   );

@@ -37,7 +37,9 @@ export default function ProfileScreen() {
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
       {process.env.NODE_ENV === "development" && (
-      <Button title="Reset Onboarding" onPress={resetOnboarding} />
+      <View style={{ marginTop: 15 }}>
+        <Button title="Reset Onboarding" onPress={resetOnboarding} />
+      </View>
     )}
         
       <CustomAlert
@@ -88,6 +90,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
+    padding: 10
   },
    logoutText: {
     color: '#fff',
