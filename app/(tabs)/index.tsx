@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const [totalOilPoured, setTotalOilPoured] = React.useState(0);
   const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
   const [pointsAwarded, setPointsAwarded] = React.useState(0);
-  const [alertVisible, setAlertVisible] = useState(false);
+  const [rewardsAlertVisible, setRewardsAlertVisible] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -138,15 +138,15 @@ const topics: HelpTopic[] = [
           <Text style={styles.actionText}>Scan</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}
-        onPress={() => setAlertVisible(true)}>
+        onPress={() => setRewardsAlertVisible(true)}>
           <Ionicons name="gift" size={28} color="#fff" />
           <Text style={styles.actionText}>Rewards</Text>
         </TouchableOpacity>
         <CustomAlert
-                visible={alertVisible}
+                visible={rewardsAlertVisible}
                 title="Rewards screen is in development!"
                 message="Thank you for your patience."
-                onClose={() =>{setAlertVisible(false);} }
+                onClose={() =>{setRewardsAlertVisible(false);} }
               />
         <TouchableOpacity style={styles.actionButton}
         onPress={() => router.push('/OilHistoryScreen')}>
