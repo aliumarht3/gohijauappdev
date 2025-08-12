@@ -1,6 +1,6 @@
 import LottieView from 'lottie-react-native';
-import React from 'react';
-import { Modal, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Animated, Modal, StyleSheet, Text, View } from 'react-native';
 
 interface StartPouringOverlayProps {
   visible: boolean;
@@ -8,21 +8,45 @@ interface StartPouringOverlayProps {
   subtext?: string;
 }
 
-export default function StartPouringOverlay({ visible,text,subtext }: StartPouringOverlayProps) {
+export default function StartPouringOverlay({ visible, text, subtext }: StartPouringOverlayProps) {
+  const [showModal, setShowModal] = useState(visible);
+  const opacity = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    if (visible) {
+      setShowModal(true);
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start(() => {
+        setShowModal(false); // Unmount after fade-out
+      });
+    }
+  }, [visible]);
+
+  if (!showModal) return null; // Fully unmounted
+
   return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.overlay}>
+    <Modal transparent animationType="none" visible={showModal}>
+      <Animated.View style={[styles.overlay, { opacity }]} pointerEvents={visible ? 'auto' : 'none'}>
         <View style={styles.container}>
-           <LottieView
+          <LottieView
             source={require('../../assets/animations/Recycle.json')}
             autoPlay
             loop
             style={styles.animation}
           />
-          <Text style={styles.text}>{text}</Text>
-          <Text style={styles.subtext}>{subtext}</Text>
+          {text ? <Text style={styles.text}>{text}</Text> : null}
+          {subtext ? <Text style={styles.subtext}>{subtext}</Text> : null}
         </View>
-      </View>
+      </Animated.View>
     </Modal>
   );
 }
@@ -30,32 +54,31 @@ export default function StartPouringOverlay({ visible,text,subtext }: StartPouri
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   container: {
     backgroundColor: '#fff',
-    padding: 30,
+    padding: 20,
     borderRadius: 12,
     alignItems: 'center',
-    elevation: 5,
+    width: '80%',
   },
-  text: {
-    marginTop: 15,
-    fontSize: 18,
-    color: '#2E7D32',
-    fontWeight: '600',
-  },
-   animation: {
+  animation: {
     width: 150,
     height: 150,
   },
-  subtext: {
-    marginTop: 8,
-    fontSize: 14,
-    color: '#f30909ff',
-    fontWeight: '400',
+  text: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 10,
     textAlign: 'center',
+  },
+  subtext: {
+    fontSize: 14,
+    marginTop: 5,
+    textAlign: 'center',
+    color: '#666',
   },
 });
