@@ -144,8 +144,8 @@ const topics: HelpTopic[] = [
         </TouchableOpacity>
         <CustomAlert
                 visible={rewardsAlertVisible}
-                title="Rewards screen is in development!"
-                message="Thank you for your patience."
+                title="Coming Soon!"
+                message="Rewards screen is in development.Thank you for your patience."
                 onClose={() =>{setRewardsAlertVisible(false);} }
               />
         <TouchableOpacity style={styles.actionButton}
