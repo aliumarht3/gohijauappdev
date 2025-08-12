@@ -2,7 +2,7 @@ export default ({ config }) => {
   const isDev = process.env.APP_ENV === "development";
 
   return {
-    name: "GoHijauApp",
+    name: "GoHijau",
     slug: "GoHijauApp",
     version: "3.0.2",
     orientation: "portrait",
