@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 18,
+    color: '#2E7D32',
     fontWeight: '600',
     marginTop: 10,
     textAlign: 'center',
@@ -79,6 +80,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginTop: 5,
     textAlign: 'center',
-    color: '#666',
+    color: '#f30909ff',
   },
 });
