@@ -4,7 +4,7 @@ export default ({ config }) => {
   return {
     name: "GoHijauApp",
     slug: "GoHijauApp",
-    version: "3.0.1",
+    version: "3.0.2",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
