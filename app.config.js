@@ -13,6 +13,9 @@ export default ({ config }) => {
     ios: {
       supportsTablet: false,
       buildNumber: "3",
+      config: {
+        "googleMapsApiKey": "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
+      },
       bundleIdentifier: "com.myro.gohijau",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -25,7 +28,12 @@ export default ({ config }) => {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 16
+      versionCode: 16,
+      config: {
+        googleMaps: {
+          apiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
+        }
+      }
     },
     web: {
       bundler: "metro",
