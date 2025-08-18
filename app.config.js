@@ -2,9 +2,9 @@ export default ({ config }) => {
   const isDev = process.env.APP_ENV === "development";
 
   return {
-    name: "GoHijauApp",
+    name: "GoHijau",
     slug: "GoHijauApp",
-    version: "3.0.2",
+    version: "3.0.3",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
@@ -12,10 +12,16 @@ export default ({ config }) => {
     newArchEnabled: true,
     ios: {
       supportsTablet: false,
-      buildNumber: "3",
+      buildNumber: "5",
+      config: {
+        googleMapsApiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
+      },
       bundleIdentifier: "com.myro.gohijau",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
+        NSLocationWhenInUseUsageDescription: "We need your location to show nearby oil collection points.",
+        NSLocationAlwaysAndWhenInUseUsageDescription: "We need your location to show nearby oil collection points.",
+        LSApplicationQueriesSchemes: ["waze", "comgooglemaps"],
       },
     },
     android: {
@@ -25,7 +31,12 @@ export default ({ config }) => {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 16
+      versionCode: 17,
+      config: {
+        googleMaps: {
+          apiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
+        }
+      }
     },
     web: {
       bundler: "metro",

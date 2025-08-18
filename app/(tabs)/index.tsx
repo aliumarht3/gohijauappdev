@@ -25,6 +25,7 @@ export default function HomeScreen() {
   const [totalOilPoured, setTotalOilPoured] = React.useState(0);
   const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
   const [pointsAwarded, setPointsAwarded] = React.useState(0);
+  const [rewardsAlertVisible, setRewardsAlertVisible] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,7 +108,7 @@ const topics: HelpTopic[] = [
           <Text style={styles.subtitle}>Thanks for keeping the planet clean 🌍</Text>
         </View>
         <Image 
-          source={{ uri: 'https://i.pravatar.cc/100' }} 
+          source={require('../../assets/images/icon.png')}
           style={styles.profileImage} 
         />
       </View>
@@ -136,10 +137,17 @@ const topics: HelpTopic[] = [
           <Ionicons name="qr-code" size={28} color="#fff" />
           <Text style={styles.actionText}>Scan</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton}
+        onPress={() => setRewardsAlertVisible(true)}>
           <Ionicons name="gift" size={28} color="#fff" />
           <Text style={styles.actionText}>Rewards</Text>
         </TouchableOpacity>
+        <CustomAlert
+                visible={rewardsAlertVisible}
+                title="Coming Soon!"
+                message="Rewards screen is in development.Thank you for your patience."
+                onClose={() =>{setRewardsAlertVisible(false);} }
+              />
         <TouchableOpacity style={styles.actionButton}
         onPress={() => router.push('/OilHistoryScreen')}>
           <Ionicons name="time" size={28} color="#fff" />

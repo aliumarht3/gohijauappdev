@@ -7,7 +7,7 @@ type HistoryItem = {
   id: string;
   createdAt: string;
   oilPoured: number;
-  co2Saved: number;
+  cO2Saved: number;
   pointsAwarded: number;
 };
 
@@ -71,7 +71,7 @@ export default function OilHistoryScreen() {
                     <Text style={styles.time}>{time}</Text>
                   </View>
                   <Text>Oil: {item.oilPoured} L</Text>
-                  <Text>CO₂ Saved: {item.co2Saved} kg</Text>
+                  <Text>CO₂ Saved: {item.cO2Saved} kg</Text>
                   <Text>Points: {item.pointsAwarded}</Text>
                 </View>
               );

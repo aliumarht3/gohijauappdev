@@ -33,6 +33,10 @@ export default function ProfileScreen() {
         <Text style={styles.label}>Phone</Text>
         <Text style={styles.value}>{user?.phone}</Text>
       </View>
+
+      <Text style={styles.comingSoon}>
+        User profile modification is coming soon 🚀
+      </Text>
          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
@@ -97,5 +101,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  comingSoon: {
+    marginTop: 12,
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  }
 });
 
