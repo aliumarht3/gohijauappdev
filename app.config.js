@@ -1,10 +1,10 @@
 export default ({ config }) => {
-  const isDev = process.env.APP_ENV === "development";
+  const isDev = process.env.NODE_ENV === "development";
 
   return {
     name: "GoHijau",
     slug: "GoHijauApp",
-    version: "3.0.3",
+    version: "3.0.4",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
@@ -12,7 +12,7 @@ export default ({ config }) => {
     newArchEnabled: true,
     ios: {
       supportsTablet: false,
-      buildNumber: "5",
+      buildNumber: "6",
       config: {
         googleMapsApiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
       },
@@ -31,7 +31,7 @@ export default ({ config }) => {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 17,
+      versionCode: 18,
       config: {
         googleMaps: {
           apiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"

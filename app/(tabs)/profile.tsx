@@ -1,25 +1,36 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Button, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { useUser } from '../../services/userService';
+import theme from "../themes/theme";
 
 import { Ionicons } from '@expo/vector-icons';
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, loadUserProfile, justLogout } = useUser();
   const [alertVisible, setAlertVisible] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUserProfile();
+    }, [])
+  );
+
+  useEffect(() => {
+      loadUserProfile();
+    }, []);
+
   const resetOnboarding = async () => {
     await AsyncStorage.removeItem('hasSeenOnboarding');
     router.replace('/OnboardingScreen');
   };
   const categories = [
-    { name: "Used Oil", icon: "water", color: "#4CAF50" },
-    { name: "Plastic", icon: "cube", color: "#FFB74D" },
-    { name: "Glass", icon: "wine", color: "#64B5F6" },
-    { name: "Paper", icon: "document-text", color: "#81C784" },
+    { name: "Update Profile", icon: "document-text", color: "#4CAF50", route: "/profiles/UpdateProfileScreen" },
+    { name: "Change Password", icon: "cube", color: "#FFB74D", route: "/profiles/ChangePasswordScreen"  },
   ];
   const handleLogout = async () => {
     try {
@@ -31,19 +42,39 @@ export default function ProfileScreen() {
   };
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView 
+      contentContainerStyle={{ paddingBottom: 30 }} 
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.title}>My Profile</Text>
+
       <View style={styles.card}>
         <Text style={styles.label}>Name</Text>
-        <Text style={styles.value}>{user?.name}</Text>
+        <Text style={styles.value}>{user.name}</Text>
         <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user?.email}</Text>
+        <Text style={styles.value}>{user.email}</Text>
         <Text style={styles.label}>Phone</Text>
-        <Text style={styles.value}>{user?.phone}</Text>
+        <Text style={styles.value}>{user.phone}</Text>
       </View>
 
-      <Text style={styles.comingSoon}>
-        User profile modification is coming soon 🚀
-      </Text>
+      <View style={{ marginTop: theme.spacing.lg }}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: theme.spacing.xl }}>
+          {categories.map((cat, index) => (
+            <TouchableOpacity
+            key={index}
+            style={[styles.categoryCard, { backgroundColor: cat.color }]}
+            onPress={() => {
+              if (cat.route) router.push(cat.route as any);
+            }}
+          >
+
+              <Ionicons name={cat.icon as any} size={32} color={theme.colors.cardText} />
+              <Text style={styles.categoryText}>{cat.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
@@ -52,16 +83,8 @@ export default function ProfileScreen() {
           <Button title="Reset Onboarding" onPress={resetOnboarding} />
         </View>
       )}
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 30 }}>
-        {categories.map((cat, index) => (
-          <View key={index} style={[styles.categoryCard, { backgroundColor: cat.color }]}>
-
-            <Ionicons name={cat.icon as any} size={32} color="#fff" />
-            <Text style={styles.categoryText}>{cat.name}</Text>
-          </View>
-        ))}
       </ScrollView>
+
       <CustomAlert
         visible={alertVisible}
         title="Logout Failed!"
@@ -125,17 +148,19 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   categoryCard: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
+    width: "45%",
+    aspectRatio: 1,
+    borderRadius: theme.borderRadius.lg,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: theme.spacing.md,
   },
   categoryText: {
-    color: '#fff',
-    marginTop: 8,
-    fontWeight: 'bold',
+    color: theme.colors.cardText,
+    textAlign: "center",
+    fontSize: theme.fontSize.sm,
+    fontWeight: "bold",
+    marginTop: theme.spacing.sm,
   },
 });
 
