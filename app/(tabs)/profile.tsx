@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   categoryText: {
     color: theme.colors.cardText,
     textAlign: "center",
-    fontSize: theme.fontSize.md,
+    fontSize: theme.fontSize.sm,
     fontWeight: "bold",
     marginTop: theme.spacing.sm,
   },
