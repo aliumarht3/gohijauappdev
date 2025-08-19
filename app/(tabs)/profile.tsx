@@ -30,7 +30,7 @@ export default function ProfileScreen() {
   };
   const categories = [
     { name: "Update Profile", icon: "document-text", color: "#4CAF50", route: "/profiles/UpdateProfileScreen" },
-    { name: "Change Password", icon: "cube", color: "#FFB74D", route: ""  },
+    { name: "Change Password", icon: "cube", color: "#FFB74D", route: "/profiles/ChangePasswordScreen"  },
   ];
   const handleLogout = async () => {
     try {
@@ -74,10 +74,6 @@ export default function ProfileScreen() {
           ))}
         </ScrollView>
       </View>
-      
-      <Text style={styles.comingSoon}>
-        User profile modification is coming soon 🚀
-      </Text>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Logout</Text>
@@ -152,8 +148,8 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   categoryCard: {
-    width: 140,
-    height: 120,
+    width: "45%",
+    aspectRatio: 1,
     borderRadius: theme.borderRadius.lg,
     justifyContent: "center",
     alignItems: "center",
@@ -161,6 +157,7 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     color: theme.colors.cardText,
+    textAlign: "center",
     fontSize: theme.fontSize.md,
     fontWeight: "bold",
     marginTop: theme.spacing.sm,
