@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Button, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { useUser } from '../../services/userService';
@@ -31,6 +31,7 @@ export default function ProfileScreen() {
   const categories = [
     { name: "Update Profile", icon: "document-text", color: "#4CAF50", route: "/profiles/UpdateProfileScreen" },
     { name: "Change Password", icon: "cube", color: "#FFB74D", route: "/profiles/ChangePasswordScreen"  },
+    { name: "Delete Account", icon: "trash-outline", color: "#FFB74D", route: "https://www.gohijau.org/contactus"  },
   ];
   const handleLogout = async () => {
     try {
@@ -64,7 +65,11 @@ export default function ProfileScreen() {
             key={index}
             style={[styles.categoryCard, { backgroundColor: cat.color }]}
             onPress={() => {
-              if (cat.route) router.push(cat.route as any);
+              if (cat.route.startsWith("http")) {
+                Linking.openURL(cat.route);
+              } else {
+                router.push(cat.route as any);
+              }
             }}
           >
 
@@ -148,7 +153,9 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   categoryCard: {
-    width: "45%",
+    flexBasis: "40%",
+    maxWidth: 160,
+    // width: "45%",
     aspectRatio: 1,
     borderRadius: theme.borderRadius.lg,
     justifyContent: "center",

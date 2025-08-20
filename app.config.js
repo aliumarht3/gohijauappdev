@@ -12,7 +12,7 @@ export default ({ config }) => {
     newArchEnabled: true,
     ios: {
       supportsTablet: false,
-      buildNumber: "6",
+      buildNumber: "7",
       config: {
         googleMapsApiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
       },
