@@ -25,6 +25,7 @@ export default function HomeScreen() {
   const [totalOilPoured, setTotalOilPoured] = React.useState(0);
   const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
   const [pointsAwarded, setPointsAwarded] = React.useState(0);
+  const [rewardsAlertVisible, setRewardsAlertVisible] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -61,9 +62,9 @@ export default function HomeScreen() {
   };
 
    const stats = [
-    { label: "Saved CO₂", value: totalCO2Saved },
-    { label: "Points", value: pointsAwarded },
-    { label: "Oil Recycled", value: totalOilPoured },
+    { label: "Saved CO₂", value: totalCO2Saved, unit: "kg" },
+    { label: "Points", value: pointsAwarded, unit: "RM" },
+    { label: "Oil Recycled", value: totalOilPoured, unit: "L" },
   ];
 const topics: HelpTopic[] = [
   {
@@ -107,7 +108,7 @@ const topics: HelpTopic[] = [
           <Text style={styles.subtitle}>Thanks for keeping the planet clean 🌍</Text>
         </View>
         <Image 
-          source={{ uri: 'https://i.pravatar.cc/100' }} 
+          source={require('../../assets/images/icon.png')}
           style={styles.profileImage} 
         />
       </View>
@@ -116,7 +117,14 @@ const topics: HelpTopic[] = [
       <View style={styles.statsContainer}>
         {stats.map((item, index) => (
           <View key={index} style={styles.statCard}>
-            <Text style={styles.statValue}>{item.value}</Text>
+            <Text 
+              style={styles.statValue}
+              // numberOfLines={1}
+            >
+              {item.label === "Points"
+                ? `${item.unit} ${item.value}`
+                : `${item.value} ${item.unit}`}
+            </Text>
             <Text style={styles.statLabel}>{item.label}</Text>
           </View>
         ))}
@@ -129,10 +137,17 @@ const topics: HelpTopic[] = [
           <Ionicons name="qr-code" size={28} color="#fff" />
           <Text style={styles.actionText}>Scan</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton}
+        onPress={() => setRewardsAlertVisible(true)}>
           <Ionicons name="gift" size={28} color="#fff" />
           <Text style={styles.actionText}>Rewards</Text>
         </TouchableOpacity>
+        <CustomAlert
+                visible={rewardsAlertVisible}
+                title="Coming Soon!"
+                message="Rewards screen is in development.Thank you for your patience."
+                onClose={() =>{setRewardsAlertVisible(false);} }
+              />
         <TouchableOpacity style={styles.actionButton}
         onPress={() => router.push('/OilHistoryScreen')}>
           <Ionicons name="time" size={28} color="#fff" />
@@ -211,6 +226,8 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#388E3C',
+    textAlign: 'center',
+    flexShrink: 1,
   },
   statLabel: {
     fontSize: 12,

@@ -1,27 +1,42 @@
 export default ({ config }) => {
-  const isDev = process.env.APP_ENV === "development";
+  const isDev = process.env.NODE_ENV === "development";
 
   return {
-    name: "GoHijauApp",
+    name: "GoHijau",
     slug: "GoHijauApp",
-    version: "1.0.1",
+    version: "3.0.4",
     orientation: "portrait",
-    icon: "./assets/images/icon.jpeg",
+    icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
-      supportsTablet: true,
-      buildNumber: "2" 
+      supportsTablet: false,
+      buildNumber: "7",
+      config: {
+        googleMapsApiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
+      },
+      bundleIdentifier: "com.myro.gohijau",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
+        NSLocationWhenInUseUsageDescription: "We need your location to show nearby oil collection points.",
+        NSLocationAlwaysAndWhenInUseUsageDescription: "We need your location to show nearby oil collection points.",
+        LSApplicationQueriesSchemes: ["waze", "comgooglemaps"],
+      },
     },
     android: {
-      package: "com.yourcompany.gohijau",
+      package: "com.myro.gohijau",
       adaptiveIcon: {
-        foregroundImage: "./assets/images/icon.jpeg",
+        foregroundImage: "./assets/images/icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 2
+      versionCode: 18,
+      config: {
+        googleMaps: {
+          apiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
+        }
+      }
     },
     web: {
       bundler: "metro",
@@ -37,14 +52,14 @@ export default ({ config }) => {
         : "https://services.gohijau.org/api",
       signalRUrl: isDev 
         ? "http://10.0.2.2:7192" 
-        : "https://services.gohijau.org/"
+        : "https://services.gohijau.org"
     },
     plugins: [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/icon.jpeg",
+          image: "./assets/images/icon.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff"
