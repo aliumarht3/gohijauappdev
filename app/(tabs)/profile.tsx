@@ -31,7 +31,7 @@ export default function ProfileScreen() {
   const categories = [
     { name: "Update Profile", icon: "document-text", color: "#4CAF50", route: "/profiles/UpdateProfileScreen" },
     { name: "Change Password", icon: "cube", color: "#FFB74D", route: "/profiles/ChangePasswordScreen"  },
-    { name: "Delete Account", icon: "trash-outline", color: "#FFB74D", route: "https://www.gohijau.org/contactus"  },
+    { name: "Delete Account", icon: "trash-outline", color: "#FFB74D", route: "/profiles/DeleteAccountScreen"  },
   ];
   const handleLogout = async () => {
     try {
