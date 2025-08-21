@@ -75,6 +75,3 @@ export default function RootLayout() {
     </ThemeProvider>
   );
 }
-
-// Simple loading UI (optional)
-
