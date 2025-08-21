@@ -63,7 +63,9 @@ export default function DeleteAccountScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Change Password',
+          title: 'Delete Account',
+          headerBackTitle: "Profile",
+          headerBackButtonDisplayMode: "minimal",
           headerShown: true,
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: Colors.light.background },
