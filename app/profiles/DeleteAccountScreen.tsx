@@ -50,8 +50,8 @@ export default function DeleteAccountScreen() {
             return;
         }
         Alert.alert(
-            "Confirm Delete",
-            "Are you sure to delete your account? This action cannot be undone.",
+            "Are you sure to delete your account? ",
+            "This action cannot be undone.",
             [
             { text: "Cancel", style: "cancel" },
             { text: "Delete", style: "destructive", onPress: handleDelete }
