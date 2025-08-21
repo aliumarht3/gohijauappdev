@@ -49,7 +49,7 @@ export default function RootLayout() {
   if (!isAuthChecked) {
     return (
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <StatusBar style="auto" />
+        <StatusBar style='dark' />
         <LoadingScreen />
       </ThemeProvider>
     );
@@ -71,10 +71,7 @@ export default function RootLayout() {
           <Stack.Screen name="+not-found" />
         </Stack>
       </UserProvider>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </ThemeProvider>
   );
 }
-
-// Simple loading UI (optional)
-

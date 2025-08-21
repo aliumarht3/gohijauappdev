@@ -52,6 +52,8 @@ export default function UpdateProfileScreen() {
       <Stack.Screen
         options={{
           title: 'Update Profile',
+          headerBackTitle: "Profile",
+          headerBackButtonDisplayMode: "minimal",
           headerShown: true,
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: Colors.light.background },

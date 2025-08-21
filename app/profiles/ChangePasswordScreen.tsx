@@ -54,6 +54,8 @@ export default function ChangePasswordScreen() {
       <Stack.Screen
         options={{
           title: 'Change Password',
+          headerBackTitle: "Profile",
+          headerBackButtonDisplayMode: "minimal",
           headerShown: true,
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: Colors.light.background },

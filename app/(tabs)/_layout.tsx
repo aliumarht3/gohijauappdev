@@ -1,10 +1,10 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
 import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
+import { Tabs } from 'expo-router';
+import React from 'react';
+import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
@@ -24,7 +24,7 @@ export default function TabLayout() {
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           position: 'absolute',
-          height: 40 + insets.bottom,
+          height: Platform.OS === 'ios' ? 30 + insets.bottom: 40 + insets.bottom,
           paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
           borderTopWidth: 0,
           elevation: 8,
