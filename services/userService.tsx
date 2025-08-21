@@ -30,6 +30,7 @@ export const UserProvider = ({ children }) => {
 
   const justLogout = async () => {
     await authStorage.clear();
+    router.dismissAll();
     router.replace('/auth/login');
   };
 
