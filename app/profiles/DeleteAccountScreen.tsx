@@ -2,43 +2,36 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import api from '../../api/apiClient';
 import CustomAlert from '../../components/molecules/CustomAlert';
+import { useUser } from '../../services/userService';
 import theme from "../themes/theme";
 
-export default function ChangePasswordScreen() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+export default function DeleteAccountScreen() {
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const { justLogout } = useUser();
 
 
-  const handleSave = async () => {
-    if (newPassword !== confirmPassword) {
-      setAlertTitle("Error!");
-      setAlertMessage("New password and confirm password do not match.");
-      setAlertVisible(true);
-      return;
-    }
-
+  const handleDelete = async () => {
     setLoading(true);
     const payload = {
-      currentPassword,
-      newPassword
+      password
     };
+      console.log("ress: ");
     
     try {
-      const res = await api.patch('/user/change-password', payload);
+      const res = await api.delete('/user/delete-account', {
+        data: payload
+    });      
       setAlertTitle("Success!");
-      setAlertMessage(res.data.message || "Password changed successfully.");
+      setAlertMessage(res.data.message || "Account Delete Successfully.");
       setAlertVisible(true);
     } catch (err: any) {
       setAlertTitle("Error!");
@@ -48,6 +41,23 @@ export default function ChangePasswordScreen() {
       setLoading(false);
     }
   };
+
+    const confirmDelete = () => {
+        if (!password.trim()) {
+            setAlertTitle("Error!");
+            setAlertMessage("Password is required to delete your account.");
+            setAlertVisible(true);
+            return;
+        }
+        Alert.alert(
+            "Are you sure to delete your account? ",
+            "This action cannot be undone.",
+            [
+            { text: "Cancel", style: "cancel" },
+            { text: "Delete", style: "destructive", onPress: handleDelete }
+            ]
+        );
+    };
 
   return (
     <>
@@ -68,78 +78,40 @@ export default function ChangePasswordScreen() {
                     visible={alertVisible}
                     title={alertTitle}
                     message={alertMessage}
-                    onClose={() =>{setAlertVisible(false); 
+                    onClose={async () =>{setAlertVisible(false); 
                       if (alertTitle === "Success!") {
-                        router.back();
+                        // router.back();
+                        await justLogout();
                       }
                     }}
                   />
       <View style={styles.container}>
 
-        <Text style={styles.label}>Current Password</Text>
+        <Text style={styles.label}>Password</Text>
         <View style={styles.passwordContainer}>
           <TextInput
-            placeholder="Current Password"
-            value={currentPassword}
+            placeholder="Password"
+            value={password}
             autoCapitalize="none"
-            secureTextEntry={!showCurrentPassword}
-            onChangeText={setCurrentPassword}
+            secureTextEntry={!showPassword}
+            onChangeText={setPassword}
             style={styles.input}
             placeholderTextColor="#888"
           />
-          <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <Ionicons 
-              name={showCurrentPassword ? 'eye' : 'eye-off'} 
+              name={showPassword ? 'eye' : 'eye-off'} 
               size={20} 
               color="#666" 
             />
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>New Password</Text>
-        <View style={styles.passwordContainer}>
-        <TextInput
-          placeholder="New Password"
-          value={newPassword}
-          autoCapitalize="none"
-          secureTextEntry={!showNewPassword}
-          onChangeText={setNewPassword}
-          style={styles.input}
-          placeholderTextColor="#888"
-        />
-          <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-            <Ionicons 
-              name={showNewPassword ? 'eye' : 'eye-off'} 
-              size={20} 
-              color="#666" 
-            />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.label}>Confirm Password</Text>
-        <View style={styles.passwordContainer}>
-        <TextInput
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          autoCapitalize="none"
-          secureTextEntry={!showConfirmPassword}
-          onChangeText={setConfirmPassword}
-          style={styles.input}
-          placeholderTextColor="#888"
-        />
-          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-            <Ionicons 
-              name={showConfirmPassword ? 'eye' : 'eye-off'} 
-              size={20} 
-              color="#666" 
-            />
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={styles.button} onPress={handleSave}>
+        <TouchableOpacity style={styles.button} onPress={confirmDelete}>
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Change Password</Text>
+            <Text style={styles.buttonText}>Delete Account</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -176,7 +148,7 @@ input: {
   color: theme.colors.text,
 },
   button: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: '#E53935',
     padding: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
     alignItems: "center",

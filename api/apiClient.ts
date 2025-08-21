@@ -40,6 +40,13 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
 
+    if (originalRequest?.url?.includes('/auth/login')) {
+        if (error.response) {
+          return Promise.reject(error.response.data);
+        }
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
         console.log("Requesting refresh token");
       originalRequest._retry = true;

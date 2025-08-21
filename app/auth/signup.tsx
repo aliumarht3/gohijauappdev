@@ -161,7 +161,7 @@ export default function SignupScreen() {
         />
         <SubmitButton title="Sign Up" onPress={handleSignup} backgroundColor="#66BB6A" />
 
-        <TouchableOpacity onPress={() => router.replace('/auth/login')}>
+        <TouchableOpacity onPress={()=> { router.dismissAll(); router.replace('/auth/login')}}>
           <Text style={styles.linkText}>Already have an account? Login</Text>
         </TouchableOpacity>
       </View>
