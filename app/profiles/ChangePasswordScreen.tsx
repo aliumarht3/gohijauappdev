@@ -37,8 +37,6 @@ export default function ChangePasswordScreen() {
     
     try {
       const res = await api.patch('/user/change-password', payload);
-      console.log("ress: ", res);
-      
       setAlertTitle("Success!");
       setAlertMessage(res.data.message || "Password changed successfully.");
       setAlertVisible(true);
