@@ -14,7 +14,7 @@ interface HelpStep {
 }
 
 interface HelpTopic {
-  router:string;
+  router: string;
   title: string;
   description: string;
   color: string;
@@ -29,21 +29,21 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const fetchData = async () => {
-    try {
-      setRefreshing(true);
-      const result = await getTotalTransaction();
-      if (result) {
-        setTotalOilPoured(result.totalOilPoured);
-        setTotalCO2Saved(result.totalCO2Saved);
-        setPointsAwarded(result.pointsAwarded);
+      try {
+        setRefreshing(true);
+        const result = await getTotalTransaction();
+        if (result) {
+          setTotalOilPoured(result.totalOilPoured);
+          setTotalCO2Saved(result.totalCO2Saved);
+          setPointsAwarded(result.pointsAwarded);
+        }
+        await loadUserProfile();
+      } finally {
+        setRefreshing(false);
       }
-      await loadUserProfile();
-    } finally {
-      setRefreshing(false);
-    }
-  };
+    };
 
-  fetchData();
+    fetchData();
   }, []);
 
   const onRefresh = async () => {
@@ -61,42 +61,42 @@ export default function HomeScreen() {
     }
   };
 
-   const stats = [
+  const stats = [
     { label: "Saved CO₂", value: totalCO2Saved, unit: "kg" },
     { label: "Points", value: pointsAwarded, unit: "RM" },
     { label: "Oil Recycled", value: totalOilPoured, unit: "L" },
   ];
-const topics: HelpTopic[] = [
-  {
-    router: '/GetStartedScreen',
-    title: "How to Begin",
-    description: "Learn how to start scanning and recycling oil easily.",
-    color: "#4CAF50",
-  },
-  {
-    router: '/GetStartedScreen',
-    title: "Withdrawal",
-    description: "Withdraw your earned points for rewards or benefits.",
-    color: "#FF9800",
-  }
-];
+  const topics: HelpTopic[] = [
+    {
+      router: '/GetStartedScreen',
+      title: "How to Begin",
+      description: "Learn how to start scanning and recycling oil easily.",
+      color: "#4CAF50",
+    },
+    {
+      router: '/GetStartedScreen',
+      title: "Withdrawal",
+      description: "Withdraw your earned points for rewards or benefits.",
+      color: "#FF9800",
+    }
+  ];
   const [selectedTopic, setSelectedTopic] = useState<HelpTopic | null>(null);
   const router = useRouter();
   const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
   const handleGenerateToken = async () => {
-  const token = await generateQrToken();
-  console.log('Generated Token:', token);
-  if (token) {
-    router.push({
-      pathname: '/QRCodeScreen',
-      params: { token }
-    });
-  } else {
-    setAlertFailedToGenerateVisible(true);
-  }
-};
+    const token = await generateQrToken();
+    console.log('Generated Token:', token);
+    if (token) {
+      router.push({
+        pathname: '/QRCodeScreen',
+        params: { token }
+      });
+    } else {
+      setAlertFailedToGenerateVisible(true);
+    }
+  };
   return (
-    <ScrollView 
+    <ScrollView
       style={styles.container}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -107,9 +107,9 @@ const topics: HelpTopic[] = [
           <Text style={styles.greeting}>Hello, {user?.name} 👋</Text>
           <Text style={styles.subtitle}>Thanks for keeping the planet clean 🌍</Text>
         </View>
-        <Image 
+        <Image
           source={require('../../assets/images/icon.png')}
-          style={styles.profileImage} 
+          style={styles.profileImage}
         />
       </View>
 
@@ -117,9 +117,9 @@ const topics: HelpTopic[] = [
       <View style={styles.statsContainer}>
         {stats.map((item, index) => (
           <View key={index} style={styles.statCard}>
-            <Text 
+            <Text
               style={styles.statValue}
-              // numberOfLines={1}
+            // numberOfLines={1}
             >
               {item.label === "Points"
                 ? `${item.unit} ${item.value}`
@@ -133,38 +133,38 @@ const topics: HelpTopic[] = [
       {/* ✅ Quick Actions */}
       <View style={styles.quickActions}>
         <TouchableOpacity style={styles.actionButton}
-            onPress={handleGenerateToken}>
+          onPress={handleGenerateToken}>
           <Ionicons name="qr-code" size={28} color="#fff" />
           <Text style={styles.actionText}>Scan</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}
-        onPress={() => setRewardsAlertVisible(true)}>
+          onPress={() => setRewardsAlertVisible(true)}>
           <Ionicons name="gift" size={28} color="#fff" />
           <Text style={styles.actionText}>Rewards</Text>
         </TouchableOpacity>
         <CustomAlert
-                visible={rewardsAlertVisible}
-                title="Coming Soon!"
-                message="Rewards screen is in development.Thank you for your patience."
-                onClose={() =>{setRewardsAlertVisible(false);} }
-              />
+          visible={rewardsAlertVisible}
+          title="Coming Soon!"
+          message={"Rewards screen is in development.\nThank you for your patience."}
+          onClose={() => { setRewardsAlertVisible(false); }}
+        />
         <TouchableOpacity style={styles.actionButton}
-        onPress={() => router.push('/OilHistoryScreen')}>
+          onPress={() => router.push('/OilHistoryScreen')}>
           <Ionicons name="time" size={28} color="#fff" />
           <Text style={styles.actionText}>History</Text>
         </TouchableOpacity>
-           <CustomAlert
-                      visible={alertFailedToGenerateVisible}
-                      title="Failed!"
-                      message="Failed to generate QR code. Please try again."
-                      onClose={() =>{setAlertFailedToGenerateVisible(false);} }
-                    />
+        <CustomAlert
+          visible={alertFailedToGenerateVisible}
+          title="Failed!"
+          message="Failed to generate QR code. Please try again."
+          onClose={() => { setAlertFailedToGenerateVisible(false); }}
+        />
       </View>
 
       {/* ✅ Nearby Collection Points */}
       <View style={styles.mapCard}>
         <Text style={styles.mapTitle}>Nearby Collection Points</Text>
-        <Image 
+        <Image
           source={require('../../assets/images/mapbackground.jpg')}
           style={styles.mapImage}
         />
@@ -173,9 +173,9 @@ const topics: HelpTopic[] = [
         </TouchableOpacity>
       </View>
       <View >
-      
-    </View>
-    <HelpCarousel topics={topics} onSelectTopic={setSelectedTopic} />
+
+      </View>
+      <HelpCarousel topics={topics} onSelectTopic={setSelectedTopic} />
     </ScrollView>
   );
 }
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   //modal styles
-    modalCard: {
+  modalCard: {
     width: '85%',
     backgroundColor: '#fff',
     borderRadius: 16,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-    modalText: {
+  modalText: {
     fontSize: 18,
     marginBottom: 15,
   },

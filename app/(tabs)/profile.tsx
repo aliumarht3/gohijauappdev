@@ -21,8 +21,8 @@ export default function ProfileScreen() {
   );
 
   useEffect(() => {
-      loadUserProfile();
-    }, []);
+    loadUserProfile();
+  }, []);
 
   const resetOnboarding = async () => {
     await AsyncStorage.removeItem('hasSeenOnboarding');
@@ -30,8 +30,8 @@ export default function ProfileScreen() {
   };
   const categories = [
     { name: "Update Profile", icon: "document-text", color: "#4CAF50", route: "/profiles/UpdateProfileScreen" },
-    { name: "Change Password", icon: "cube", color: "#FFB74D", route: "/profiles/ChangePasswordScreen"  },
-    { name: "Delete Account", icon: "trash-outline", color: "#FFB74D", route: "/profiles/DeleteAccountScreen"  },
+    { name: "Change Password", icon: "cube", color: "#FFB74D", route: "/profiles/ChangePasswordScreen" },
+    { name: "Delete Account", icon: "trash-outline", color: "#FFB74D", route: "/profiles/DeleteAccountScreen" },
   ];
   const handleLogout = async () => {
     try {
@@ -43,51 +43,58 @@ export default function ProfileScreen() {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-      contentContainerStyle={{ paddingBottom: 30 }} 
-      showsVerticalScrollIndicator={false}
-    >
-      <Text style={styles.title}>My Profile</Text>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 30 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.title}>My Profile</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Name</Text>
-        <Text style={styles.value}>{user.name}</Text>
-        <Text style={styles.label}>Email</Text>
-        <Text style={styles.value}>{user.email}</Text>
-        <Text style={styles.label}>Phone</Text>
-        <Text style={styles.value}>{user.phone}</Text>
-      </View>
-
-      <View style={{ marginTop: theme.spacing.lg }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: theme.spacing.xl }}>
-          {categories.map((cat, index) => (
-            <TouchableOpacity
-            key={index}
-            style={[styles.categoryCard, { backgroundColor: cat.color }]}
-            onPress={() => {
-              if (cat.route.startsWith("http")) {
-                Linking.openURL(cat.route);
-              } else {
-                router.push(cat.route as any);
-              }
-            }}
-          >
-
-              <Ionicons name={cat.icon as any} size={32} color={theme.colors.cardText} />
-              <Text style={styles.categoryText}>{cat.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-      {process.env.NODE_ENV === "development" && (
-        <View style={{ marginTop: 15 }}>
-          <Button title="Reset Onboarding" onPress={resetOnboarding} />
+        <View style={styles.card}>
+          <Text style={styles.label}>Name</Text>
+          <Text style={styles.value}>{user.name}</Text>
+          <Text style={styles.label}>Email</Text>
+          <Text style={styles.value}>{user.email}</Text>
+          <Text style={styles.label}>Phone</Text>
+          <Text style={styles.value}>{user.phone}</Text>
         </View>
-      )}
+
+        <View style={{ marginTop: theme.spacing.lg }}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: theme.spacing.xl }}>
+            {categories.map((cat, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[styles.categoryCard, { backgroundColor: cat.color }]}
+                onPress={() => {
+                  if (cat.route.startsWith("http")) {
+                    Linking.openURL(cat.route);
+                  } else {
+                    router.push(cat.route as any);
+                  }
+                }}
+              >
+
+                <Ionicons name={cat.icon as any} size={32} color={theme.colors.cardText} />
+                <Text
+                  style={styles.categoryText}
+                  numberOfLines={2}
+                  ellipsizeMode="tail"
+                >
+                  {cat.name}
+                </Text>
+
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+        {process.env.NODE_ENV === "development" && (
+          <View style={{ marginTop: 15 }}>
+            <Button title="Reset Onboarding" onPress={resetOnboarding} />
+          </View>
+        )}
       </ScrollView>
 
       <CustomAlert
@@ -168,6 +175,10 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     fontWeight: "bold",
     marginTop: theme.spacing.sm,
+    flexWrap: "wrap",          // allow wrapping
+    maxWidth: 100,             // adjust so text breaks nicely
+    lineHeight: 18,            // optional: gives good spacing
   },
+
 });
 
