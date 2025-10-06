@@ -1,6 +1,8 @@
+import CustomAlert from "@/components/molecules/CustomAlert";
+import { generateQrToken } from "@/services/qrService";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
     Dimensions,
     Image,
@@ -15,13 +17,27 @@ const { width } = Dimensions.get("window");
 
 export default function OilCollectorHomeScreen() {
     const router = useRouter();
-
+    const [UCOAlertVisible, setUCOAlertVisible] = useState(false);
+    const [paymentsAlertVisible, setPaymentsAlertVisible] = useState(false);
+    const [transactionsAlertVisible, setTransactionsAlertVisible] = useState(false);
+    const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
     const collectorStats = [
         { label: "UCO Levels", value: "75%", unit: "" },
         { label: "Collections Today", value: 5, unit: "" },
         { label: "Transactions", value: 12, unit: "" },
     ];
-
+    const handleGenerateToken = async () => {
+        const token = await generateQrToken();
+        console.log('Generated Token:', token);
+        if (token) {
+            router.push({
+                pathname: '/QRCodeScreen',
+                params: { token }
+            });
+        } else {
+            setAlertFailedToGenerateVisible(true);
+        }
+    };
     return (
         <ScrollView style={styles.container}>
             {/* Header */}
@@ -50,32 +66,56 @@ export default function OilCollectorHomeScreen() {
             <View style={styles.quickActions}>
                 <TouchableOpacity
                     style={styles.actionButton}
-                // onPress={() => router.push("/UcoMonitorScreen")}
+                    onPress={() => setUCOAlertVisible(true)}
                 >
                     <Ionicons name="water" size={28} color="#fff" />
                     <Text style={styles.actionText}>Monitor UCO</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionButton}
-                // onPress={() => router.push("/EmptyMachineScreen")}
+                    onPress={handleGenerateToken}
                 >
                     <Ionicons name="trash" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Empty Machine</Text>
+                    <Text style={styles.actionText}>Scan to collect</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionButton}
-                // onPress={() => router.push("/PaymentsScreen")}
+                    onPress={() => setPaymentsAlertVisible(true)}
                 >
                     <Ionicons name="card" size={28} color="#fff" />
                     <Text style={styles.actionText}>Payments</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionButton}
-                // onPress={() => router.push("/CollectorTransactionsScreen")}
+                    onPress={() => setTransactionsAlertVisible(true)}
                 >
                     <Ionicons name="time" size={28} color="#fff" />
                     <Text style={styles.actionText}>Transactions</Text>
                 </TouchableOpacity>
+                <CustomAlert
+                    visible={alertFailedToGenerateVisible}
+                    title="Failed!"
+                    message="Failed to generate QR code. Please try again."
+                    onClose={() => { setAlertFailedToGenerateVisible(false); }}
+                />
+                <CustomAlert
+                    visible={UCOAlertVisible}
+                    title="Coming Soon!"
+                    message={"UCO monitor screen is in development.\nThank you for your patience."}
+                    onClose={() => { setUCOAlertVisible(false); }}
+                />
+                <CustomAlert
+                    visible={paymentsAlertVisible}
+                    title="Coming Soon!"
+                    message={"Payment screen is in development.\nThank you for your patience."}
+                    onClose={() => { setPaymentsAlertVisible(false); }}
+                />
+                <CustomAlert
+                    visible={transactionsAlertVisible}
+                    title="Coming Soon!"
+                    message={"Transaction screen is in development.\nThank you for your patience."}
+                    onClose={() => { setTransactionsAlertVisible(false); }}
+                />
             </View>
 
             {/* Collection Map */}
