@@ -1,6 +1,7 @@
+import CustomAlert from "@/components/molecules/CustomAlert";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
     Dimensions,
     Image,
@@ -10,12 +11,26 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { generateQrToken } from '../services/qrService';
 
 const { width } = Dimensions.get("window");
 
 export default function TechnicianHomeScreen() {
+    const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
+    const [errorLogAlertVisible, setErrorLogAlertVisible] = useState(false);
     const router = useRouter();
-
+    const handleGenerateToken = async () => {
+        const token = await generateQrToken();
+        console.log('Generated Token:', token);
+        if (token) {
+            router.push({
+                pathname: '/QRCodeScreen',
+                params: { token }
+            });
+        } else {
+            setAlertFailedToGenerateVisible(true);
+        }
+    };
     const healthStats = [
         { label: "Hardware Status", value: "OK", unit: "" },
         { label: "Software Status", value: "OK", unit: "" },
@@ -50,25 +65,30 @@ export default function TechnicianHomeScreen() {
             <View style={styles.quickActions}>
                 <TouchableOpacity
                     style={styles.actionButton}
-                // onPress={() => router.push("/MaintenanceScreen")}
+                    onPress={handleGenerateToken}
                 >
                     <Ionicons name="construct" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Maintenance</Text>
+                    <Text style={styles.actionText}>Scan</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionButton}
-                // onPress={() => router.push("/TroubleshootScreen")}
-                >
-                    <Ionicons name="alert-circle" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Troubleshoot</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.actionButton}
-                // onPress={() => router.push("/ErrorLogsScreen")}
+                    onPress={() => setErrorLogAlertVisible(true)}
                 >
                     <Ionicons name="bug" size={28} color="#fff" />
                     <Text style={styles.actionText}>Error Logs</Text>
                 </TouchableOpacity>
+                <CustomAlert
+                    visible={errorLogAlertVisible}
+                    title="Coming Soon!"
+                    message={"Error Log screen is in development.\nThank you for your patience."}
+                    onClose={() => { setErrorLogAlertVisible(false); }}
+                />
+                <CustomAlert
+                    visible={alertFailedToGenerateVisible}
+                    title="Failed!"
+                    message="Failed to generate QR code. Please try again."
+                    onClose={() => { setAlertFailedToGenerateVisible(false); }}
+                />
             </View>
 
             {/* Machine Map */}
