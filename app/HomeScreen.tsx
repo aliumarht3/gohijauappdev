@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import CustomAlert from '../components/molecules/CustomAlert';
-import { generateQrToken } from '../services/qrService';
+import { generateQrTokenCustomer } from '../services/qrService';
 import { getTotalTransaction } from '../services/transactionService';
 import { useUser } from '../services/userService';
 const { width } = Dimensions.get('window');
@@ -84,12 +84,15 @@ export default function HomeScreen() {
     const router = useRouter();
     const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
     const handleGenerateToken = async () => {
-        const token = await generateQrToken();
+        const token = await generateQrTokenCustomer();
         console.log('Generated Token:', token);
         if (token) {
             router.push({
                 pathname: '/QRCodeScreen',
-                params: { token }
+                params: {
+                    token: token.token,
+                    panel: token.panel
+                }
             });
         } else {
             setAlertFailedToGenerateVisible(true);
