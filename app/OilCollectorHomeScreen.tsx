@@ -33,8 +33,7 @@ export default function OilCollectorHomeScreen() {
             router.push({
                 pathname: '/QRCodeScreen',
                 params: {
-                    token: token.token,
-                    panel: token.panel
+                    token
                 }
             });
         } else {

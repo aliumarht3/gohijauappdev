@@ -26,8 +26,7 @@ export default function TechnicianHomeScreen() {
             router.push({
                 pathname: '/QRCodeScreen',
                 params: {
-                    token: token.token,
-                    panel: token.panel
+                    token
                 }
             });
         } else {

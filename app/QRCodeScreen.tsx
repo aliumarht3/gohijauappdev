@@ -9,7 +9,7 @@ import CustomAlert from '../components/molecules/CustomAlert';
 import CustomOverlay from '../components/molecules/StartPouringOverlay';
 
 export default function QRCodeScreen() {
-  const { token, panel } = useLocalSearchParams();
+  const { token } = useLocalSearchParams();
   const router = useRouter();
   const [connection, setConnection] = useState<SignalR.HubConnection | null>(null);
   const [alertVisible, setAlertVisible] = useState(false);
@@ -18,13 +18,9 @@ export default function QRCodeScreen() {
   const [countdown, setCountdown] = useState(180); // 3 minutes
   const [expired, setExpired] = useState(false);
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
-  const qrValue = JSON.stringify({
-    token: token ?? '',
-    panel: panel ?? ''
-  });
   useEffect(() => {
-    console.log('QR Value:', qrValue);
-    if (!token || !panel) return;
+    console.log('Token in QRCodeScreen:', token);
+    if (!token) return;
 
     setCountdown(180);
     setExpired(false);
@@ -43,7 +39,7 @@ export default function QRCodeScreen() {
     return () => clearInterval(timer);
   }, [token]);
   useEffect(() => {
-    if (!token || !panel) return;
+    if (!token) return;
 
     const newConnection = new SignalR.HubConnectionBuilder()
       .withUrl(`${signalRUrl}/qrHub`) // ✅ Your SignalR hub endpoint
@@ -101,7 +97,7 @@ export default function QRCodeScreen() {
         </Text>
       )}
       <View style={styles.qrContainer}>
-        <QRCode value={qrValue} size={200} />
+        <QRCode value={Array.isArray(token) ? token[0] : token ?? ''} size={200} />
       </View>
       <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
         <Text style={styles.cancelText}>Cancel</Text>
