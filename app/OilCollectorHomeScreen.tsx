@@ -1,5 +1,5 @@
 import CustomAlert from "@/components/molecules/CustomAlert";
-import { generateQrToken } from "@/services/qrService";
+import { generateQrTokenCollector } from "@/services/qrService";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -27,12 +27,14 @@ export default function OilCollectorHomeScreen() {
         { label: "Transactions", value: 12, unit: "" },
     ];
     const handleGenerateToken = async () => {
-        const token = await generateQrToken();
+        const token = await generateQrTokenCollector();
         console.log('Generated Token:', token);
         if (token) {
             router.push({
                 pathname: '/QRCodeScreen',
-                params: { token }
+                params: {
+                    token
+                }
             });
         } else {
             setAlertFailedToGenerateVisible(true);

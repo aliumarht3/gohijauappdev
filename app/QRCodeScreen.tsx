@@ -18,8 +18,8 @@ export default function QRCodeScreen() {
   const [countdown, setCountdown] = useState(180); // 3 minutes
   const [expired, setExpired] = useState(false);
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
-
   useEffect(() => {
+    console.log('Token in QRCodeScreen:', token);
     if (!token) return;
 
     setCountdown(180);
@@ -82,6 +82,7 @@ export default function QRCodeScreen() {
       }
     };
   }, [token]);
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;

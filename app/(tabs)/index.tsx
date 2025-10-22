@@ -30,10 +30,10 @@ export default function TabIndex() {
     return <View><Text>No user found</Text></View>; // or redirect to login
   }
 
-  switch (user.role) {
-    case "technician":
+  switch (user.userRole) {
+    case "Technician":
       return <TechnicianHomeScreen />;
-    case "oil_collector":
+    case "OilCollector":
       return <OilCollectorHomeScreen />;
     default:
       return <HomeScreen />;

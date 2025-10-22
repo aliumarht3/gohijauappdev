@@ -11,7 +11,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { generateQrToken } from '../services/qrService';
+import { generateQrTokenTechnician } from '../services/qrService';
 
 const { width } = Dimensions.get("window");
 
@@ -20,12 +20,14 @@ export default function TechnicianHomeScreen() {
     const [errorLogAlertVisible, setErrorLogAlertVisible] = useState(false);
     const router = useRouter();
     const handleGenerateToken = async () => {
-        const token = await generateQrToken();
+        const token = await generateQrTokenTechnician();
         console.log('Generated Token:', token);
         if (token) {
             router.push({
                 pathname: '/QRCodeScreen',
-                params: { token }
+                params: {
+                    token
+                }
             });
         } else {
             setAlertFailedToGenerateVisible(true);
