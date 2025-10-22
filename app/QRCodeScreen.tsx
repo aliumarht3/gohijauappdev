@@ -1,3 +1,4 @@
+import TokenExpiredOverlay from '@/components/molecules/TokenExpiredOverlay';
 import * as SignalR from '@microsoft/signalr';
 import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -14,8 +15,30 @@ export default function QRCodeScreen() {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertFinalizingVisible, setAlertFinalizingVisible] = useState(false);
   const [pouringVisible, setPouringVisible] = useState(false);
-  const {signalRUrl} = Constants.expoConfig?.extra ?? {};
-   useEffect(() => {
+  const [countdown, setCountdown] = useState(180); // 3 minutes
+  const [expired, setExpired] = useState(false);
+  const { signalRUrl } = Constants.expoConfig?.extra ?? {};
+  useEffect(() => {
+    console.log('Token in QRCodeScreen:', token);
+    if (!token) return;
+
+    setCountdown(180);
+    setExpired(false);
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setExpired(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [token]);
+  useEffect(() => {
     if (!token) return;
 
     const newConnection = new SignalR.HubConnectionBuilder()
@@ -32,14 +55,14 @@ export default function QRCodeScreen() {
         newConnection.on("TokenVerified", (data) => {
           if (data.token === token) {
             setAlertVisible(true);
-           
+
           }
         });
         newConnection.on("Finalizing", (data) => {
           if (data.token === token) {
-             setPouringVisible(false); 
+            setPouringVisible(false);
             setAlertFinalizingVisible(true);
-           
+
           }
         });
         newConnection.on("PouringComplete", (data) => {
@@ -47,8 +70,8 @@ export default function QRCodeScreen() {
           router.push({
             pathname: '/FinalDataScreen',
             params: { oilPoured: data.oilAmount, pointsEarned: data.points },
+          });
         });
-    });
         setConnection(newConnection);
       })
       .catch(err => console.error("SignalR Connection Error: ", err));
@@ -59,22 +82,39 @@ export default function QRCodeScreen() {
       }
     };
   }, [token]);
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.instruction}>Show this QR code to the machine</Text>
+      {!expired && (
+        <Text style={styles.countdown}>
+          Expires in: {formatTime(countdown)}
+        </Text>
+      )}
       <View style={styles.qrContainer}>
-         <QRCode value={Array.isArray(token) ? token[0] : token ?? ''} size={200} />
+        <QRCode value={Array.isArray(token) ? token[0] : token ?? ''} size={200} />
       </View>
       <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
         <Text style={styles.cancelText}>Cancel</Text>
       </TouchableOpacity>
-       <CustomAlert
-              visible={alertVisible}
-              title="Authorized!"
-              message="You can now lift the lid and start pouring."
-              onClose={() =>{setAlertVisible(false); setPouringVisible(true);} }
-            />
-      <CustomOverlay visible={pouringVisible}text='Pouring in progress...' subtext='Please close the lid once done' />
+      <CustomAlert
+        visible={alertVisible}
+        title="Authorized!"
+        message="You can now lift the lid and start pouring."
+        onClose={() => { setAlertVisible(false); setPouringVisible(true); }}
+      />
+      <TokenExpiredOverlay
+        visible={expired}
+        onRegenerate={() => {
+          router.back();
+        }}
+      />
+      <CustomOverlay visible={pouringVisible} text='Pouring in progress...' subtext='Please close the lid once done' />
       <CustomOverlay visible={alertFinalizingVisible} text='Finalizing. Please wait...' />
     </View>
   );
@@ -106,5 +146,11 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#388E3C',
     fontWeight: 'bold',
+  },
+  countdown: {
+    marginTop: 15,
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#d32f2f',
   },
 });
