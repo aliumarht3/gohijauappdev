@@ -12,33 +12,39 @@ type HistoryItem = {
 };
 
 export default function OilHistoryScreen() {
-    const [history, setHistory] = useState<HistoryItem[]>([]);
-    useEffect(() => {
-       const handleGenerateToken = async () => {
-         const result = await getTransaction();
-            if (Array.isArray(result)) {
-            setHistory(result);
-            } else {
-            setHistory([]);
-            }
-       }; 
-       handleGenerateToken();
-    }, []);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  useEffect(() => {
+    const handleGenerateToken = async () => {
+      const result = await getTransaction();
+      if (Array.isArray(result)) {
+        setHistory(result);
+      } else {
+        setHistory([]);
+      }
+    };
+    handleGenerateToken();
+  }, []);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
 
-    let hours = date.getHours();
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
+    // Convert to Malaysia timezone (Asia/Kuala_Lumpur)
+    const options: Intl.DateTimeFormatOptions = {
+      timeZone: 'Asia/Kuala_Lumpur',
+      hour12: true,
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    };
+
+    const formatted = new Intl.DateTimeFormat('en-MY', options).format(date);
+    const [datePart, timePart] = formatted.split(',').map(s => s.trim());
 
     return {
-      date: `${day}-${month}-${year}`,
-      time: `${hours}:${minutes} ${ampm}`,
+      date: datePart, // e.g. "25/10/2025"
+      time: timePart, // e.g. "08:30 PM"
     };
   };
 
@@ -115,7 +121,7 @@ const styles = StyleSheet.create({
   },
   time: {
     fontWeight: 'bold',
-    color:'#2E7D32',
+    color: '#2E7D32',
   },
   separator: {
     height: 1,
