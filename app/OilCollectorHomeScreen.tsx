@@ -82,14 +82,7 @@ export default function OilCollectorHomeScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => setPaymentsAlertVisible(true)}
-                >
-                    <Ionicons name="card" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Payments</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => setTransactionsAlertVisible(true)}
+                    onPress={() => router.push('/CollectorTransactionScreen')}
                 >
                     <Ionicons name="time" size={28} color="#fff" />
                     <Text style={styles.actionText}>Transactions</Text>

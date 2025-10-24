@@ -13,19 +13,26 @@ export default function QRCodeScreen() {
   const router = useRouter();
   const [connection, setConnection] = useState<SignalR.HubConnection | null>(null);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [alertCollectorVisible, setAlertCollectorVisible] = useState(false);
   const [alertFinalizingVisible, setAlertFinalizingVisible] = useState(false);
   const [pouringVisible, setPouringVisible] = useState(false);
   const [countdown, setCountdown] = useState(180); // 3 minutes
   const [expired, setExpired] = useState(false);
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
+  const handleBack = () => {
+    setExpired(false);
+    setCountdown(0);
+    router.back();
+  };
   useEffect(() => {
-    console.log('Token in QRCodeScreen:', token);
     if (!token) return;
+
+    let timer: NodeJS.Timeout;
 
     setCountdown(180);
     setExpired(false);
 
-    const timer = setInterval(() => {
+    timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
@@ -36,7 +43,10 @@ export default function QRCodeScreen() {
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    // ✅ Cleanup when component unmounts
+    return () => {
+      clearInterval(timer);
+    };
   }, [token]);
   useEffect(() => {
     if (!token) return;
@@ -53,8 +63,19 @@ export default function QRCodeScreen() {
         newConnection.invoke("JoinTokenGroup", token); // Join group for this token
 
         newConnection.on("TokenVerified", (data) => {
+
           if (data.token === token) {
+            setExpired(false); // Mark token as expired
+            // setCountdown(0); // Stop countdown
             setAlertVisible(true);
+
+          }
+        });
+        newConnection.on("TokenVerifiedCollector", (data) => {
+          if (data.token === token) {
+            setExpired(false); // Mark token as expired
+            // setCountdown(0); // Stop countdown
+            setAlertCollectorVisible(true);
 
           }
         });
@@ -67,9 +88,20 @@ export default function QRCodeScreen() {
         });
         newConnection.on("PouringComplete", (data) => {
           setAlertFinalizingVisible(false); // Hide overlay
+          setExpired(false); // Mark token as expired
+          setCountdown(0); // Stop countdown
           router.push({
             pathname: '/FinalDataScreen',
             params: { oilPoured: data.oilAmount, pointsEarned: data.points },
+          });
+        });
+        newConnection.on("CollectionComplete", (data) => {
+          setAlertFinalizingVisible(false); // Hide overlay
+          setExpired(false); // Mark token as expired
+          setCountdown(0); // Stop countdown
+          router.push({
+            pathname: '/FinalDataScreen',
+            params: { oilPoured: data.oilAmount },
           });
         });
         setConnection(newConnection);
@@ -82,7 +114,8 @@ export default function QRCodeScreen() {
       }
     };
   }, [token]);
-
+  const pathname = (router as any)?.pathname ?? '';
+  const isActive = pathname.includes('QRCodeScreen');
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -99,7 +132,7 @@ export default function QRCodeScreen() {
       <View style={styles.qrContainer}>
         <QRCode value={Array.isArray(token) ? token[0] : token ?? ''} size={200} />
       </View>
-      <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
+      <TouchableOpacity onPress={handleBack} style={styles.cancelButton}>
         <Text style={styles.cancelText}>Cancel</Text>
       </TouchableOpacity>
       <CustomAlert
@@ -108,13 +141,19 @@ export default function QRCodeScreen() {
         message="You can now lift the lid and start pouring."
         onClose={() => { setAlertVisible(false); setPouringVisible(true); }}
       />
-      <TokenExpiredOverlay
-        visible={expired}
-        onRegenerate={() => {
-          router.back();
-        }}
+      <CustomAlert
+        visible={alertCollectorVisible}
+        title="Authorized!"
+        message="You can now start collecting."
+        onClose={() => { setAlertCollectorVisible(false); setPouringVisible(true); }}
       />
-      <CustomOverlay visible={pouringVisible} text='Pouring in progress...' subtext='Please close the lid once done' />
+      {expired && (
+        <TokenExpiredOverlay
+          visible={expired}
+          onRegenerate={() => router.back()}
+        />
+      )}
+      <CustomOverlay visible={pouringVisible} text='In progress...' subtext='Please close the lid once done' />
       <CustomOverlay visible={alertFinalizingVisible} text='Finalizing. Please wait...' />
     </View>
   );
