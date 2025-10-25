@@ -116,6 +116,26 @@ export default function QRCodeScreen() {
   }, [token]);
   const pathname = (router as any)?.pathname ?? '';
   const isActive = pathname.includes('QRCodeScreen');
+  const handleEndCollection = async () => {
+    try {
+      const connectionMachine = new SignalR.HubConnectionBuilder()
+        .withUrl(`${signalRUrl}/machineHub`)
+        .withAutomaticReconnect()
+        .build();
+
+      await connectionMachine.start();
+      console.log("✅ SignalR connected.MachineHUb for end Collection");
+
+      // Send the CollectorEnd command
+      await connectionMachine.invoke("SendCommand", "GO-000001", "CollectorEnd");
+      console.log("📤 Sent CollectorEnd command to machine GO-000001.");
+
+      await connectionMachine.stop();
+      console.log("🛑 SignalR connection stopped.");
+    } catch (error) {
+      console.error("❌ SignalR send failed:", error);
+    }
+  }
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -144,8 +164,12 @@ export default function QRCodeScreen() {
       <CustomAlert
         visible={alertCollectorVisible}
         title="Authorized!"
-        message="You can now start collecting."
-        onClose={() => { setAlertCollectorVisible(false); setPouringVisible(true); }}
+        message="You can now start collecting. Select 'End Collection' on the machine when done."
+        buttonText='End Collection'
+        onClose={async () => {
+          setAlertCollectorVisible(false);
+          await handleEndCollection();
+        }}
       />
       {expired && (
         <TokenExpiredOverlay
