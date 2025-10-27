@@ -49,7 +49,7 @@ export default function QRCodeScreen() {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          setExpired(true);
+          // setExpired(true);
           return 0;
         }
         return prev - 1;
@@ -111,12 +111,14 @@ export default function QRCodeScreen() {
         });
         newConnection.on("CollectionComplete", (data) => {
           setAlertFinalizingVisible(false); // Hide overlay
-          setExpired(false); // Mark token as expired
-          setCountdown(0); // Stop countdown
           router.push({
             pathname: '/FinalDataScreen',
             params: { oilPoured: data.oilAmount },
           });
+        });
+        newConnection.on("TokenExpired", (data) => {
+          setExpired(true); // Mark token as expired
+          setCountdown(0);
         });
         setConnection(newConnection);
       })
