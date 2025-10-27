@@ -176,7 +176,7 @@ export default function QRCodeScreen() {
       <CustomAlert
         visible={alertCollectorVisible}
         title="Authorized!"
-        message="You can now start collecting. Select 'End Collection' on the machine when done."
+        message="You can now start collecting. Select 'End Collection' when done."
         buttonText='End Collection'
         onClose={async () => {
           setAlertCollectorVisible(false);
