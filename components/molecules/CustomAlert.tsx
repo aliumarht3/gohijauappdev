@@ -5,10 +5,11 @@ interface CustomAlertProps {
   visible: boolean;
   title: string;
   message: string;
+  buttonText?: string;
   onClose: () => void;
 }
 
-export default function CustomAlert({ visible, title, message, onClose }: CustomAlertProps) {
+export default function CustomAlert({ visible, title, message, onClose, buttonText = "OK" }: CustomAlertProps) {
   return (
     <Modal
       transparent
@@ -22,7 +23,7 @@ export default function CustomAlert({ visible, title, message, onClose }: Custom
           <Text style={styles.message}>{message}</Text>
 
           <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>OK</Text>
+            <Text style={styles.buttonText}>{buttonText}</Text>
           </TouchableOpacity>
         </View>
       </View>

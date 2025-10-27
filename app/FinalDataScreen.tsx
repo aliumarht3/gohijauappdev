@@ -11,12 +11,14 @@ export default function FinalDataScreen() {
       <Text style={styles.title}>Great Job! 🎉</Text>
       <View style={styles.card}>
         <Text style={styles.value}>{oilPoured} L</Text>
-        <Text style={styles.label}>Oil Poured</Text>
+        <Text style={styles.label}>Oil Amount</Text>
       </View>
-      <View style={styles.card}>
-        <Text style={styles.value}>+{pointsEarned}</Text>
-        <Text style={styles.label}>Points Earned</Text>
-      </View>
+      {pointsEarned != null && pointsEarned !== "" && (
+        <View style={styles.card}>
+          <Text style={styles.value}>+{pointsEarned}</Text>
+          <Text style={styles.label}>Points Earned</Text>
+        </View>
+      )}
       <TouchableOpacity
         style={styles.button}
         onPress={() => router.replace('/')} // Clears stack and goes home

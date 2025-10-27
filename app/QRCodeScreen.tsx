@@ -5,38 +5,61 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import api from '../api/apiClient';
 import CustomAlert from '../components/molecules/CustomAlert';
 import CustomOverlay from '../components/molecules/StartPouringOverlay';
-
 export default function QRCodeScreen() {
   const { token } = useLocalSearchParams();
   const router = useRouter();
   const [connection, setConnection] = useState<SignalR.HubConnection | null>(null);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [alertCollectorVisible, setAlertCollectorVisible] = useState(false);
   const [alertFinalizingVisible, setAlertFinalizingVisible] = useState(false);
   const [pouringVisible, setPouringVisible] = useState(false);
   const [countdown, setCountdown] = useState(180); // 3 minutes
   const [expired, setExpired] = useState(false);
+  const [machineId, setMachineId] = useState('');
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
+  const handleBack = () => {
+    setExpired(false);
+    setCountdown(0);
+    router.back();
+  };
+  const getMachineId = async () => {
+    try {
+      let result = await api.post('/qr/getMachineId', { token });
+      if (result.data.success) {
+        setMachineId(result.data.success);
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to fetch machine ID:', error);
+    }
+  }
   useEffect(() => {
-    console.log('Token in QRCodeScreen:', token);
     if (!token) return;
+
+    let timer: NodeJS.Timeout;
 
     setCountdown(180);
     setExpired(false);
 
-    const timer = setInterval(() => {
+    timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          setExpired(true);
+          // setExpired(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
+    // ✅ Cleanup when component unmounts
+    return () => {
+      clearInterval(timer);
+    };
   }, [token]);
   useEffect(() => {
     if (!token) return;
@@ -53,9 +76,21 @@ export default function QRCodeScreen() {
         newConnection.invoke("JoinTokenGroup", token); // Join group for this token
 
         newConnection.on("TokenVerified", (data) => {
+
           if (data.token === token) {
+            setExpired(false); // Mark token as expired
+            // setCountdown(0); // Stop countdown
             setAlertVisible(true);
 
+          }
+        });
+        newConnection.on("TokenVerifiedCollector", async (data) => {
+          if (data.token === token) {
+            setExpired(false); // Mark token as expired
+            // setCountdown(0); // Stop countdown
+            setAlertCollectorVisible(true);
+            console.log("Fetching machine ID for collector...", token);
+            await getMachineId();
           }
         });
         newConnection.on("Finalizing", (data) => {
@@ -67,10 +102,23 @@ export default function QRCodeScreen() {
         });
         newConnection.on("PouringComplete", (data) => {
           setAlertFinalizingVisible(false); // Hide overlay
+          setExpired(false); // Mark token as expired
+          setCountdown(0); // Stop countdown
           router.push({
             pathname: '/FinalDataScreen',
             params: { oilPoured: data.oilAmount, pointsEarned: data.points },
           });
+        });
+        newConnection.on("CollectionComplete", (data) => {
+          setAlertFinalizingVisible(false); // Hide overlay
+          router.push({
+            pathname: '/FinalDataScreen',
+            params: { oilPoured: data.oilAmount },
+          });
+        });
+        newConnection.on("TokenExpired", (data) => {
+          setExpired(true); // Mark token as expired
+          setCountdown(0);
         });
         setConnection(newConnection);
       })
@@ -82,7 +130,26 @@ export default function QRCodeScreen() {
       }
     };
   }, [token]);
+  const handleEndCollection = async () => {
+    try {
+      const connectionMachine = new SignalR.HubConnectionBuilder()
+        .withUrl(`${signalRUrl}/machineHub`)
+        .withAutomaticReconnect()
+        .build();
 
+      await connectionMachine.start();
+      console.log("✅ SignalR connected.MachineHUb for end Collection");
+
+      // Send the CollectorEnd command
+      await connectionMachine.invoke("SendCommand", machineId, "CollectorEnd");
+      console.log("📤 Sent CollectorEnd command to machine", machineId);
+
+      await connectionMachine.stop();
+      console.log("🛑 SignalR connection stopped.");
+    } catch (error) {
+      console.error("❌ SignalR send failed:", error);
+    }
+  }
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -99,7 +166,7 @@ export default function QRCodeScreen() {
       <View style={styles.qrContainer}>
         <QRCode value={Array.isArray(token) ? token[0] : token ?? ''} size={200} />
       </View>
-      <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
+      <TouchableOpacity onPress={handleBack} style={styles.cancelButton}>
         <Text style={styles.cancelText}>Cancel</Text>
       </TouchableOpacity>
       <CustomAlert
@@ -108,13 +175,23 @@ export default function QRCodeScreen() {
         message="You can now lift the lid and start pouring."
         onClose={() => { setAlertVisible(false); setPouringVisible(true); }}
       />
-      <TokenExpiredOverlay
-        visible={expired}
-        onRegenerate={() => {
-          router.back();
+      <CustomAlert
+        visible={alertCollectorVisible}
+        title="Authorized!"
+        message="You can now start collecting. Select 'End Collection' when done."
+        buttonText='End Collection'
+        onClose={async () => {
+          setAlertCollectorVisible(false);
+          await handleEndCollection();
         }}
       />
-      <CustomOverlay visible={pouringVisible} text='Pouring in progress...' subtext='Please close the lid once done' />
+      {expired && (
+        <TokenExpiredOverlay
+          visible={expired}
+          onRegenerate={() => router.back()}
+        />
+      )}
+      <CustomOverlay visible={pouringVisible} text='In progress...' subtext='Please close the lid once done' />
       <CustomOverlay visible={alertFinalizingVisible} text='Finalizing. Please wait...' />
     </View>
   );
