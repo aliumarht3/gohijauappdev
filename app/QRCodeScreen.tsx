@@ -5,9 +5,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import api from '../api/apiClient';
 import CustomAlert from '../components/molecules/CustomAlert';
 import CustomOverlay from '../components/molecules/StartPouringOverlay';
-
 export default function QRCodeScreen() {
   const { token } = useLocalSearchParams();
   const router = useRouter();
@@ -18,12 +18,25 @@ export default function QRCodeScreen() {
   const [pouringVisible, setPouringVisible] = useState(false);
   const [countdown, setCountdown] = useState(180); // 3 minutes
   const [expired, setExpired] = useState(false);
+  const [machineId, setMachineId] = useState('');
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
   const handleBack = () => {
     setExpired(false);
     setCountdown(0);
     router.back();
   };
+  const getMachineId = async () => {
+    try {
+      let result = await api.post('/qr/getMachineId', { token });
+      if (result.data.success) {
+        setMachineId(result.data.success);
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error('Failed to fetch machine ID:', error);
+    }
+  }
   useEffect(() => {
     if (!token) return;
 
@@ -71,12 +84,13 @@ export default function QRCodeScreen() {
 
           }
         });
-        newConnection.on("TokenVerifiedCollector", (data) => {
+        newConnection.on("TokenVerifiedCollector", async (data) => {
           if (data.token === token) {
             setExpired(false); // Mark token as expired
             // setCountdown(0); // Stop countdown
             setAlertCollectorVisible(true);
-
+            console.log("Fetching machine ID for collector...", token);
+            await getMachineId();
           }
         });
         newConnection.on("Finalizing", (data) => {
@@ -114,8 +128,6 @@ export default function QRCodeScreen() {
       }
     };
   }, [token]);
-  const pathname = (router as any)?.pathname ?? '';
-  const isActive = pathname.includes('QRCodeScreen');
   const handleEndCollection = async () => {
     try {
       const connectionMachine = new SignalR.HubConnectionBuilder()
@@ -127,8 +139,8 @@ export default function QRCodeScreen() {
       console.log("✅ SignalR connected.MachineHUb for end Collection");
 
       // Send the CollectorEnd command
-      await connectionMachine.invoke("SendCommand", "GO-000001", "CollectorEnd");
-      console.log("📤 Sent CollectorEnd command to machine GO-000001.");
+      await connectionMachine.invoke("SendCommand", machineId, "CollectorEnd");
+      console.log("📤 Sent CollectorEnd command to machine", machineId);
 
       await connectionMachine.stop();
       console.log("🛑 SignalR connection stopped.");
