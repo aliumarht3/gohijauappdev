@@ -140,7 +140,7 @@ export default function HomeScreen() {
                     <Text style={styles.actionText}>Scan</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}
-                    onPress={() => setRewardsAlertVisible(true)}>
+                    onPress={() => router.push('/WithdrawalScreen')}>
                     <Ionicons name="gift" size={28} color="#fff" />
                     <Text style={styles.actionText}>Rewards</Text>
                 </TouchableOpacity>
