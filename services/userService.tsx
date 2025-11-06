@@ -1,40 +1,65 @@
 import { useRouter } from 'expo-router';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import api from '../api/apiClient';
 import authStorage from '../api/authStorage';
 
 const UserContext = createContext(null);
-
+export type BankAccount = {
+  bankCode: string;
+  accountNumber: string;
+};
 export const useUser = () => useContext(UserContext);
 
 export const UserProvider = ({ children }) => {
   const router = useRouter();
   const [user, setUser] = useState(null);
-
+  const [loading, setLoading] = useState(true);
+  const [bankAccount, setBankAccount] = useState<BankAccount | null>(null);
+  const [loadingBank, setLoadingBank] = useState(true);
   const loadUserProfile = async () => {
     try {
+      setLoading(true);
       const token = await authStorage.getAccessToken();
       if (!token) {
         setUser(null);
+        setBankAccount(null);
         await justLogout();
         return Promise.reject(new Error("Token Expired"));
       }
       const res = await api.get('/user/profile');
+      refreshBank();
       setUser(res.data);
     } catch (error) {
       console.error('Error loading user:', error);
       await justLogout();
       setUser(null);
+    } finally {
+      setLoading(false);
     }
   };
 
+  const refreshBank = async () => {
+    setLoadingBank(true);
+    try {
+      // Server should infer customerId from JWT
+      // If not found, return 204 or { bankCode: null, accountNumber: null }
+      const res = await api.get('/customer/get-bank-account');
+      console.log(res.data);
+      setBankAccount(res.data?.bankCode ? res.data as BankAccount : null);
+    } catch (e) {
+      // If 404/204, just treat as no bank account
+      setBankAccount(null);
+    } finally {
+      setLoadingBank(false);
+    }
+  };
   const justLogout = async () => {
     await authStorage.clear();
     router.dismissAll();
     router.replace('/auth/login');
   };
 
-    const loginUser = async (email: string, password: string) => {
+  const loginUser = async (email: string, password: string) => {
     try {
       const response = await api.post('/auth/login', { email, password });
 
@@ -54,12 +79,23 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  const updateBankAccount = async (bank: BankAccount) => {
+    // persist to backend, then update local state
+    console.log("Updating bank account:", bank);
+    await api.post("/customer/create-bank-account", bank); // ← create this endpoint
+    console.log("Bank account updated on server.", bank);
+    setBankAccount(bank);
+  };
+  const hasBankAccount = useMemo(
+    () => !!bankAccount?.bankCode && !!bankAccount?.accountNumber,
+    [bankAccount]
+  );
   useEffect(() => {
     loadUserProfile();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loadUserProfile, loginUser, justLogout }}>
+    <UserContext.Provider value={{ user, loading, loadUserProfile, loginUser, justLogout, updateBankAccount, hasBankAccount, bankAccount, refreshBank, loadingBank }}>
       {children}
     </UserContext.Provider>
   );
