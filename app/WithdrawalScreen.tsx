@@ -150,10 +150,7 @@ export default function WithdrawalScreen() {
       await api.post('/payout/customer', {
         amount,
       });
-      setHistory([
-        { id: Date.now().toString(), date: new Date().toISOString().split('T')[0], amount: withdrawalAmount },
-        ...history,
-      ]);
+      load();
       setWithdrawalAmount('');
       Alert.alert("Success", "Withdrawal request submitted.");
     } catch (e: any) {
