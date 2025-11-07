@@ -1,14 +1,16 @@
 import BankAccountModal from '@/components/molecules/BankAccountModal';
 import { getBankNameByCode } from '@/constants/Banks';
 import { Colors } from '@/constants/Colors';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
+import { getTotalTransaction } from '../services/transactionService';
 import { useUser } from '../services/userService';
 export default function WithdrawalScreen() {
-  const { pointsAwarded } = useLocalSearchParams();
+  // const { pointsAwarded } = useLocalSearchParams();
+  const [pointsAwarded, setPointsAwarded] = React.useState(0);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [history, setHistory] = useState<WithdrawalItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,15 +25,14 @@ export default function WithdrawalScreen() {
   type ApiWithdrawal = {
     id: string;
     amount: number | string;
-    status: string;          // e.g., "In progress", "COMPLETE", "DECLINED"
-    createdAt: string;       // ISO string
-    // ...other fields returned by API (ignored)
+    status: string;
+    createdAt: string;
   };
 
   type WithdrawalItem = {
     id: string;
-    date: string;            // formatted for display
-    amount: string;          // "123.45"
+    date: string;
+    amount: string;
     status: "PENDING" | "SUCCESS" | "DECLINED";
   };
   const normalizeStatus = (s: string): WithdrawalItem["status"] => {
@@ -39,13 +40,11 @@ export default function WithdrawalScreen() {
     if (["IN PROGRESS", "PENDING"].includes(val)) return "PENDING";
     if (["COMPLETE", "COMPLETED", "SUCCESS"].includes(val)) return "SUCCESS";
     if (["DECLINED", "REJECTED", "FAILED"].includes(val)) return "DECLINED";
-    // fallback
     return "PENDING";
   };
 
   const formatDate = (iso: string) => {
     const d = new Date(iso);
-    // adjust to your preference/locale
     return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
   };
 
@@ -74,6 +73,9 @@ export default function WithdrawalScreen() {
     try {
       setError(null);
       const res = await api.get<ApiWithdrawal[]>("/customer/get-withdrawal-history");
+      const result = await getTotalTransaction();
+      if (result == null) { setPointsAwarded(0); } else { setPointsAwarded(result.pointsAwarded); }
+
       setHistory(mapApiToUi(res.data));
     } catch (e: any) {
       setError(e?.message || "Failed to load withdrawal history.");
