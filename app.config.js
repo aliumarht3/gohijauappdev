@@ -4,7 +4,7 @@ export default ({ config }) => {
   return {
     name: "GoHijau",
     slug: "GoHijauApp",
-    version: "3.0.6",
+    version: "3.0.7",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
@@ -12,7 +12,7 @@ export default ({ config }) => {
     newArchEnabled: true,
     ios: {
       supportsTablet: false,
-      buildNumber: "10",
+      buildNumber: "11",
       config: {
         googleMapsApiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
       },
@@ -31,7 +31,7 @@ export default ({ config }) => {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 20,
+      versionCode: 21,
       config: {
         googleMaps: {
           apiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
