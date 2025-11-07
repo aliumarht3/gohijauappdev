@@ -2,33 +2,100 @@ import BankAccountModal from '@/components/molecules/BankAccountModal';
 import { getBankNameByCode } from '@/constants/Banks';
 import { Colors } from '@/constants/Colors';
 import { Stack } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Alert, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
 import { useUser } from '../services/userService';
 export default function WithdrawalScreen() {
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
-  const [history, setHistory] = useState([
-    { id: '1', date: '2025-08-01', amount: '50' },
-    { id: '2', date: '2025-07-25', amount: '30' },
-  ]);
+  const [history, setHistory] = useState<WithdrawalItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [bankModalVisible, setBankModalVisible] = useState(false);
 
-  const { user, loading, loadingBank, bankAccount, hasBankAccount, refreshBank } = useUser();
+  const { user, loadingBank, bankAccount, hasBankAccount, refreshBank } = useUser();
 
   // Example: you’ll likely compute this from API instead of hardcoding
   const totalAmount = 200;
+  type ApiWithdrawal = {
+    id: string;
+    amount: number | string;
+    status: string;          // e.g., "In progress", "COMPLETE", "DECLINED"
+    createdAt: string;       // ISO string
+    // ...other fields returned by API (ignored)
+  };
+
+  type WithdrawalItem = {
+    id: string;
+    date: string;            // formatted for display
+    amount: string;          // "123.45"
+    status: "PENDING" | "SUCCESS" | "DECLINED";
+  };
+  const normalizeStatus = (s: string): WithdrawalItem["status"] => {
+    const val = (s || "").trim().toUpperCase();
+    if (["IN PROGRESS", "PENDING"].includes(val)) return "PENDING";
+    if (["COMPLETE", "COMPLETED", "SUCCESS"].includes(val)) return "SUCCESS";
+    if (["DECLINED", "REJECTED", "FAILED"].includes(val)) return "DECLINED";
+    // fallback
+    return "PENDING";
+  };
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    // adjust to your preference/locale
+    return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
+  };
+
+  const mapApiToUi = (rows: ApiWithdrawal[]): WithdrawalItem[] =>
+    (rows || [])
+      .map(r => ({
+        id: r.id,
+        date: formatDate(r.createdAt),
+        amount: Number(r.amount ?? 0).toFixed(2),
+        status: normalizeStatus(r.status),
+      }))
+      // newest first
+      .sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()));
+  function StatusBadge({ status }: { status: WithdrawalItem["status"] }) {
+    const bg =
+      status === "SUCCESS" ? "#DCFCE7" : status === "DECLINED" ? "#FEE2E2" : "#F3F4F6";
+    const color =
+      status === "SUCCESS" ? "#166534" : status === "DECLINED" ? "#991B1B" : "#374151";
+    return (
+      <View style={[styles.badge, { backgroundColor: bg }]}>
+        <Text style={[styles.badgeText, { color }]}>{status}</Text>
+      </View>
+    );
+  }
+  const load = useCallback(async () => {
+    try {
+      setError(null);
+      const res = await api.get<ApiWithdrawal[]>("/customer/get-withdrawal-history");
+      setHistory(mapApiToUi(res.data));
+    } catch (e: any) {
+      setError(e?.message || "Failed to load withdrawal history.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   useEffect(() => {
-    console.log('Bank account changed:', bankAccount);
-    console.log('Loading Bank:', loadingBank);
-    console.log('Loading :', loading);
-    if (!loading && !loadingBank && !hasBankAccount) {
+    if (!loadingBank && !hasBankAccount) {
       setBankModalVisible(true);
     }
-  }, [loading, loadingBank, hasBankAccount, bankAccount]);
+  }, [loadingBank, hasBankAccount, bankAccount]);
 
+  useEffect(() => {
+    load();
+  }, [load]);
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawalAmount);
 
@@ -132,10 +199,15 @@ export default function WithdrawalScreen() {
             <FlatList
               data={history}
               keyExtractor={(item) => item.id}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+              ListEmptyComponent={<Text style={styles.empty}>No withdrawals yet.</Text>}
               renderItem={({ item }) => (
-                <View style={styles.historyItem}>
-                  <Text>{item.date}</Text>
-                  <Text style={styles.historyAmount}>RM {item.amount}</Text>
+                <View style={styles.row}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.date}>{item.date}</Text>
+                    <StatusBadge status={item.status} />
+                  </View>
+                  <Text style={styles.amount}>RM {item.amount}</Text>
                 </View>
               )}
             />
@@ -164,4 +236,16 @@ const styles = StyleSheet.create({
   historyTitle: { fontSize: 16, fontWeight: '600', color: '#2E7D32', marginBottom: 8 },
   historyItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#eee' },
   historyAmount: { color: '#2E7D32', fontWeight: '600' },
+  badge: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, marginTop: 4 },
+  badgeText: { fontSize: 12, fontWeight: "600" },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#e5e7eb",
+  },
+  date: { fontSize: 14, color: "#374151" },
+  amount: { fontWeight: "700", fontSize: 16 },
+  empty: { textAlign: "center", color: "#6b7280", marginTop: 24 },
 });
