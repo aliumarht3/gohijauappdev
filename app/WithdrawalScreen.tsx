@@ -1,13 +1,14 @@
 import BankAccountModal from '@/components/molecules/BankAccountModal';
 import { getBankNameByCode } from '@/constants/Banks';
 import { Colors } from '@/constants/Colors';
-import { Stack } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
 import { useUser } from '../services/userService';
 export default function WithdrawalScreen() {
+  const { pointsAwarded } = useLocalSearchParams();
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [history, setHistory] = useState<WithdrawalItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,7 +150,7 @@ export default function WithdrawalScreen() {
         <View style={styles.container}>
           <View style={styles.card}>
             <Text style={styles.label}>Total Amount</Text>
-            <Text style={styles.total}>RM {totalAmount}</Text>
+            <Text style={styles.total}>RM {pointsAwarded}</Text>
 
             {/* Show current bank info + change button */}
             {hasBankAccount ? (
