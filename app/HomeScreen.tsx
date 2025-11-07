@@ -97,6 +97,12 @@ export default function HomeScreen() {
             setAlertFailedToGenerateVisible(true);
         }
     };
+    const handleRewardPress = () => {
+        router.push({
+            pathname: '/WithdrawalScreen',
+            params: { pointsAwarded }
+        });
+    }
     return (
         <ScrollView
             style={styles.container}
@@ -140,7 +146,7 @@ export default function HomeScreen() {
                     <Text style={styles.actionText}>Scan</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}
-                    onPress={() => setRewardsAlertVisible(true)}>
+                    onPress={() => handleRewardPress()}>
                     <Ionicons name="gift" size={28} color="#fff" />
                     <Text style={styles.actionText}>Rewards</Text>
                 </TouchableOpacity>
