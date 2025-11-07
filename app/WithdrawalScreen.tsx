@@ -1,15 +1,19 @@
 import BankAccountModal from '@/components/molecules/BankAccountModal';
 import { getBankNameByCode } from '@/constants/Banks';
 import { Colors } from '@/constants/Colors';
+import * as SignalR from "@microsoft/signalr";
+import Constants from "expo-constants";
 import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
+import authStorage from "../api/authStorage";
 import { getTotalTransaction } from '../services/transactionService';
 import { useUser } from '../services/userService';
+
 export default function WithdrawalScreen() {
-  // const { pointsAwarded } = useLocalSearchParams();
+  const { signalRUrl } = Constants.expoConfig?.extra ?? {};
   const [pointsAwarded, setPointsAwarded] = React.useState(0);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [history, setHistory] = useState<WithdrawalItem[]>([]);
@@ -89,7 +93,33 @@ export default function WithdrawalScreen() {
     await load();
     setRefreshing(false);
   }, [load]);
+  useEffect(() => {
+    let isMounted = true;
+    const connection = new SignalR.HubConnectionBuilder()
+      .withUrl(`${signalRUrl}/withdrawalHub`, {
+        accessTokenFactory: async () => (await authStorage.getAccessToken()) ?? ""
+      })
+      .withAutomaticReconnect()
+      .build();
 
+    connection.on("WithdrawalChanged", (payload: any) => {
+      load();
+    });
+
+    (async () => {
+      try {
+        await connection.start();
+
+      } catch (e) {
+        console.warn("Hub connect failed", e);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+      connection.stop();
+    };
+  }, [load]);
   useEffect(() => {
     if (!loadingBank && !hasBankAccount) {
       setBankModalVisible(true);
@@ -197,9 +227,10 @@ export default function WithdrawalScreen() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.card}>
+          <View style={[styles.card, { flex: 1 }]}>
             <Text style={styles.historyTitle}>Withdrawal History</Text>
             <FlatList
+              style={{ flex: 1 }}                    // ← give the list height
               data={history}
               keyExtractor={(item) => item.id}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
@@ -213,6 +244,7 @@ export default function WithdrawalScreen() {
                   <Text style={styles.amount}>RM {item.amount}</Text>
                 </View>
               )}
+              showsVerticalScrollIndicator
             />
           </View>
         </View>
