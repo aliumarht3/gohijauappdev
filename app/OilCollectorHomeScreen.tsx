@@ -68,7 +68,7 @@ export default function OilCollectorHomeScreen() {
             <View style={styles.quickActions}>
                 <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => setUCOAlertVisible(true)}
+                    onPress={() => router.push('/CollectorMachinesScreen')}
                 >
                     <Ionicons name="water" size={28} color="#fff" />
                     <Text style={styles.actionText}>Monitor UCO</Text>
