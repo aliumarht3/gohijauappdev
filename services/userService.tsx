@@ -82,7 +82,7 @@ export const UserProvider = ({ children }) => {
   const updateBankAccount = async (bank: BankAccount) => {
     // persist to backend, then update local state
     console.log("Updating bank account:", bank);
-    await api.post("/customer/create-bank-account", bank); // ← create this endpoint
+    await api.post("/customer/create-or-update-bank-account", bank); // ← create this endpoint
     console.log("Bank account updated on server.", bank);
     setBankAccount(bank);
   };
