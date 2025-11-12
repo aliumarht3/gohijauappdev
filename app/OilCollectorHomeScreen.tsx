@@ -22,9 +22,9 @@ export default function OilCollectorHomeScreen() {
     const [transactionsAlertVisible, setTransactionsAlertVisible] = useState(false);
     const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
     const collectorStats = [
-        { label: "UCO Levels", value: "75%", unit: "" },
-        { label: "Collections Today", value: 5, unit: "" },
-        { label: "Transactions", value: 12, unit: "" },
+        { label: "UCO Levels", value: "0%", unit: "" },
+        { label: "Collections Today", value: 0, unit: "" },
+        { label: "Transactions", value: 0, unit: "" },
     ];
     const handleGenerateToken = async () => {
         const token = await generateQrTokenCollector();
