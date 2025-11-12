@@ -22,9 +22,9 @@ export default function OilCollectorHomeScreen() {
     const [transactionsAlertVisible, setTransactionsAlertVisible] = useState(false);
     const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
     const collectorStats = [
-        { label: "UCO Levels", value: "75%", unit: "" },
-        { label: "Collections Today", value: 5, unit: "" },
-        { label: "Transactions", value: 12, unit: "" },
+        { label: "UCO Levels", value: "0%", unit: "" },
+        { label: "Collections Today", value: 0, unit: "" },
+        { label: "Transactions", value: 0, unit: "" },
     ];
     const handleGenerateToken = async () => {
         const token = await generateQrTokenCollector();
@@ -68,7 +68,7 @@ export default function OilCollectorHomeScreen() {
             <View style={styles.quickActions}>
                 <TouchableOpacity
                     style={styles.actionButton}
-                    onPress={() => setUCOAlertVisible(true)}
+                    onPress={() => router.push('/CollectorMachinesScreen')}
                 >
                     <Ionicons name="water" size={28} color="#fff" />
                     <Text style={styles.actionText}>Monitor UCO</Text>

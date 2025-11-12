@@ -62,9 +62,9 @@ export default function HomeScreen() {
     };
 
     const stats = [
-        { label: "Saved CO₂", value: totalCO2Saved, unit: "kg" },
+        { label: "Oil Recycled", value: totalOilPoured, unit: "KG" },
         { label: "Points", value: pointsAwarded, unit: "RM" },
-        { label: "Oil Recycled", value: totalOilPoured, unit: "L" },
+        { label: "Saved CO₂", value: totalCO2Saved, unit: "kg" },
     ];
     const topics: HelpTopic[] = [
         {

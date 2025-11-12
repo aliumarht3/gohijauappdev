@@ -3,6 +3,8 @@ import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
+import { checkAppVersion } from "../utils/checkAppVersion";
+import { UpdateRequiredScreen } from "../utils/UpdateRequiredScreen";
 
 import { LoadingScreen } from '@/components/molecules/loading';
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -16,6 +18,7 @@ export default function RootLayout() {
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
+  const [isUpdateRequired, setIsUpdateRequired] = useState(false);
   const router = useRouter();
   
   const isTokenExpired = (token: string): boolean => {
@@ -29,6 +32,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      const upToDate = await checkAppVersion();
+      if (!upToDate) {
+        setIsUpdateRequired(true);
+        return;
+      }
       const token = await authStorage.getAccessToken();
       console.log('Access Token:', token);
       if (!token || isTokenExpired(token)) {
@@ -37,13 +45,19 @@ export default function RootLayout() {
       } else {
         setIsLoggedIn(true);
       }
-         const seenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
+      
+      const seenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
       console.log('Has seen onboarding:', seenOnboarding);
       setHasSeenOnboarding(seenOnboarding === 'true' ? true : seenOnboarding === 'false' || seenOnboarding === null ? false : null);
       setIsAuthChecked(true);
     };
+
     checkAuth();
   }, []);
+
+  if (isUpdateRequired) {
+    return <UpdateRequiredScreen />;
+  }
 
   // ✅ Optional: Show a temporary loading screen
   if (!isAuthChecked) {
