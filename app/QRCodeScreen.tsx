@@ -78,7 +78,7 @@ export default function QRCodeScreen() {
         newConnection.on("TokenVerified", (data) => {
 
           if (data.token === token) {
-            setExpired(false); // Mark token as expired
+            // setExpired(false); // Mark token as expired
             // setCountdown(0); // Stop countdown
             setAlertVisible(true);
 
@@ -86,8 +86,6 @@ export default function QRCodeScreen() {
         });
         newConnection.on("TokenVerifiedCollector", async (data) => {
           if (data.token === token) {
-            setExpired(false); // Mark token as expired
-            // setCountdown(0); // Stop countdown
             setAlertCollectorVisible(true);
             console.log("Fetching machine ID for collector...", token);
             await getMachineId();
@@ -102,8 +100,6 @@ export default function QRCodeScreen() {
         });
         newConnection.on("PouringComplete", (data) => {
           setAlertFinalizingVisible(false); // Hide overlay
-          setExpired(false); // Mark token as expired
-          setCountdown(0); // Stop countdown
           router.push({
             pathname: '/FinalDataScreen',
             params: { oilPoured: data.oilAmount, pointsEarned: data.points },
