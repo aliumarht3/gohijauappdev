@@ -22,7 +22,7 @@ export default function WithdrawalScreen() {
   const [error, setError] = useState<string | null>(null);
   const [bankModalVisible, setBankModalVisible] = useState(false);
 
-  const { user, loadingBank, bankAccount, hasBankAccount, refreshBank } = useUser();
+  const { user, loadUserProfile, loadingBank, bankAccount, hasBankAccount, refreshBank } = useUser();
 
   // Example: you’ll likely compute this from API instead of hardcoding
   const totalAmount = 200;
@@ -90,6 +90,7 @@ export default function WithdrawalScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    await loadUserProfile();
     await load();
     setRefreshing(false);
   }, [load]);
@@ -127,7 +128,12 @@ export default function WithdrawalScreen() {
   }, [loadingBank, hasBankAccount, bankAccount]);
 
   useEffect(() => {
-    load();
+    const fetchData = async () => {
+      await loadUserProfile();
+      await load();
+    };
+    
+    fetchData();
   }, [load]);
   const handleWithdraw = async () => {
     const amount = parseFloat(withdrawalAmount);
@@ -154,7 +160,7 @@ export default function WithdrawalScreen() {
       setWithdrawalAmount('');
       Alert.alert("Success", "Withdrawal request submitted.");
     } catch (e: any) {
-      Alert.alert("Error", e?.message ?? "Failed to submit withdrawal.");
+      Alert.alert("Error", e?.response?.data?.error ?? "Failed to submit withdrawal.");
     }
   };
 
@@ -186,12 +192,12 @@ export default function WithdrawalScreen() {
               <View style={{ marginTop: 8 }}>
                 <Text style={{ color: "#555" }}>Payout to:</Text>
                 <Text style={{ color: "#2E7D32", fontWeight: "600", marginTop: 2 }}>{bankBadge}</Text>
-                {/* <TouchableOpacity
+                <TouchableOpacity
                   onPress={() => setBankModalVisible(true)}
                   style={{ alignSelf: "flex-start", paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "#2E7D32", borderRadius: 8, marginTop: 8 }}
                 >
                   <Text style={{ color: "#2E7D32", fontWeight: "600" }}>Change bank</Text>
-                </TouchableOpacity> */}
+                </TouchableOpacity>
               </View>
             ) : (
               <TouchableOpacity
