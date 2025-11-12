@@ -3,7 +3,7 @@ import * as SignalR from '@microsoft/signalr';
 import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import api from '../api/apiClient';
 import CustomAlert from '../components/molecules/CustomAlert';
@@ -221,6 +221,10 @@ export default function QRCodeScreen() {
         )}
         buttonText='End Collection'
         onClose={async () => {
+          if (!collectorUCOWeight || collectorUCOWeight.trim() === '') {
+            Alert.alert('Input Required', 'Please enter the UCO weight before proceeding.');
+            return;
+          }
           setAlertCollectorVisible(false);
           await handleEndCollection(collectorUCOWeight);
         }}
