@@ -3,7 +3,7 @@ import * as SignalR from '@microsoft/signalr';
 import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import api from '../api/apiClient';
 import CustomAlert from '../components/molecules/CustomAlert';
@@ -19,6 +19,7 @@ export default function QRCodeScreen() {
   const [countdown, setCountdown] = useState(180); // 3 minutes
   const [expired, setExpired] = useState(false);
   const [machineId, setMachineId] = useState('');
+  const [collectorUCOWeight, setcollectorUCOWeight] = useState('');
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
   const handleBack = () => {
     setExpired(false);
@@ -130,13 +131,20 @@ export default function QRCodeScreen() {
       }
     };
   }, [token]);
-  const handleEndCollection = async () => {
+  const handleEndCollection = async (collectorUCO: string) => {
     try {
       const connectionMachine = new SignalR.HubConnectionBuilder()
         .withUrl(`${signalRUrl}/machineHub`)
         .withAutomaticReconnect()
         .build();
 
+      const formData = new FormData();
+      formData.append('ucoWeight', collectorUCO);
+
+      await api.post('/collector/record-uco-weight', formData, { 
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      
       await connectionMachine.start();
       console.log("✅ SignalR connected.MachineHUb for end Collection");
 
@@ -178,11 +186,43 @@ export default function QRCodeScreen() {
       <CustomAlert
         visible={alertCollectorVisible}
         title="Authorized!"
-        message="You can now start collecting. Select 'End Collection' when done."
+         renderContent={() => (
+          <>
+            <Text style={{ textAlign: 'center', fontSize: 16, marginBottom: 10 }}>
+              You can now start collecting.{'\n'}
+              Enter the UCO weight collected and select `End Collection` when done.
+            </Text>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: '#ccc',
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                marginTop: 5,
+              }}
+            >
+            <TextInput
+              style={{
+                flex: 1,
+                fontSize: 16,
+                paddingVertical: 10,
+              }}
+              placeholder="Enter UCO weight"
+              keyboardType="numeric"
+              value={collectorUCOWeight}
+              onChangeText={setcollectorUCOWeight}
+            />
+            <Text style={{ fontSize: 16, marginLeft: 5 }}>kg</Text>
+            </View>
+          </>
+        )}
         buttonText='End Collection'
         onClose={async () => {
           setAlertCollectorVisible(false);
-          await handleEndCollection();
+          await handleEndCollection(collectorUCOWeight);
         }}
       />
       {expired && (

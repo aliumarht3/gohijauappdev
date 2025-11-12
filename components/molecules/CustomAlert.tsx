@@ -4,12 +4,13 @@ import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 interface CustomAlertProps {
   visible: boolean;
   title: string;
-  message: string;
+  message?: string;
   buttonText?: string;
   onClose: () => void;
+  renderContent?: () => React.ReactNode;
 }
 
-export default function CustomAlert({ visible, title, message, onClose, buttonText = "OK" }: CustomAlertProps) {
+export default function CustomAlert({ visible, title, message, onClose, buttonText = "OK", renderContent  }: CustomAlertProps) {
   return (
     <Modal
       transparent
@@ -20,8 +21,11 @@ export default function CustomAlert({ visible, title, message, onClose, buttonTe
       <View style={styles.overlay}>
         <View style={styles.alertBox}>
           <Text style={styles.title}>{title}</Text>
-          <Text style={styles.message}>{message}</Text>
-
+          {renderContent ? (
+            renderContent()
+          ) : (
+            <Text style={styles.message}>{message}</Text>
+          )}
           <TouchableOpacity style={styles.button} onPress={onClose}>
             <Text style={styles.buttonText}>{buttonText}</Text>
           </TouchableOpacity>
@@ -59,6 +63,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
+    marginTop: 10,
     backgroundColor: '#4CAF50',
     paddingVertical: 10,
     paddingHorizontal: 20,
