@@ -226,10 +226,10 @@ export default function WithdrawalScreen() {
             <TouchableOpacity
               style={[
                 styles.withdrawButton,
-                (!withdrawalAmount || parseFloat(withdrawalAmount) <= 1.0) && { backgroundColor: '#A5D6A7' }
+                (!withdrawalAmount || parseFloat(withdrawalAmount) < 1.0) && { backgroundColor: '#A5D6A7' }
               ]}
               onPress={handleWithdraw}
-              disabled={!withdrawalAmount || parseFloat(withdrawalAmount) <= 1.0}
+              disabled={!withdrawalAmount || parseFloat(withdrawalAmount) < 1.0}
             >
               <Text style={styles.withdrawButtonText}>Withdraw</Text>
             </TouchableOpacity>
