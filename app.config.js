@@ -47,14 +47,15 @@ export default ({ config }) => {
       eas: {
         projectId: "07f255f3-aa75-4a53-99ef-19078c357204"
       },
-      apiBaseUrl: isDev 
-        ? "http://10.0.2.2:7192/api" 
+      apiBaseUrl: isDev
+        ? "http://10.0.2.2:7192/api"
         : "https://services.gohijau.org/api",
-      signalRUrl: isDev 
-        ? "http://10.0.2.2:7192" 
+      signalRUrl: isDev
+        ? "http://10.0.2.2:7192"
         : "https://services.gohijau.org"
     },
     plugins: [
+      "expo-audio",
       "expo-router",
       [
         "expo-splash-screen",

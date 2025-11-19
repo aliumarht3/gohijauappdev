@@ -2,12 +2,20 @@ import { HapticTab } from '@/components/HapticTab';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Ionicons } from '@expo/vector-icons';
+import { setAudioModeAsync } from 'expo-audio';
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 export default function TabLayout() {
+  useEffect(() => {
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      allowsRecording: false,
+    }).catch((err) => {
+      console.warn('Failed to set audio mode', err);
+    });
+  }, []);
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
 
@@ -24,7 +32,7 @@ export default function TabLayout() {
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
           position: 'absolute',
-          height: Platform.OS === 'ios' ? 30 + insets.bottom: 40 + insets.bottom,
+          height: Platform.OS === 'ios' ? 30 + insets.bottom : 40 + insets.bottom,
           paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
           borderTopWidth: 0,
           elevation: 8,
@@ -44,12 +52,12 @@ export default function TabLayout() {
           ),
         }}
       />
-       <Tabs.Screen
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
           tabBarIcon: ({ color }) => (
-              <Ionicons name="person-circle" size={28} color={color} />
+            <Ionicons name="person-circle" size={28} color={color} />
           ),
         }}
       />
