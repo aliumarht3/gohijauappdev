@@ -63,7 +63,7 @@ export default function HomeScreen() {
 
     const stats = [
         { label: "Oil Recycled", value: totalOilPoured, unit: "KG" },
-        { label: "Points", value: pointsAwarded, unit: "RM" },
+        { label: "Rewards", value: pointsAwarded, unit: "RM" },
         { label: "Saved CO₂", value: totalCO2Saved, unit: "kg" },
     ];
     const topics: HelpTopic[] = [

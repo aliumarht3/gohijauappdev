@@ -1,4 +1,5 @@
 import BankAccountModal from '@/components/molecules/BankAccountModal';
+import WithdrawalOverlay from '@/components/molecules/WithdrawalOverlay';
 import { getBankNameByCode } from '@/constants/Banks';
 import { Colors } from '@/constants/Colors';
 import * as SignalR from "@microsoft/signalr";
@@ -21,6 +22,7 @@ export default function WithdrawalScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bankModalVisible, setBankModalVisible] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
 
   const { user, loadUserProfile, loadingBank, bankAccount, hasBankAccount, refreshBank } = useUser();
 
@@ -132,7 +134,7 @@ export default function WithdrawalScreen() {
       await loadUserProfile();
       await load();
     };
-    
+
     fetchData();
   }, [load]);
   const handleWithdraw = async () => {
@@ -153,13 +155,16 @@ export default function WithdrawalScreen() {
     }
 
     try {
+      setWithdrawing(true);
       await api.post('/payout/customer', {
         amount,
       });
       load();
+      setWithdrawing(false);
       setWithdrawalAmount('');
       Alert.alert("Success", "Withdrawal request submitted.");
     } catch (e: any) {
+      setWithdrawing(false);
       Alert.alert("Error", e?.response?.data?.error ?? "Failed to submit withdrawal.");
     }
   };
@@ -221,10 +226,10 @@ export default function WithdrawalScreen() {
             <TouchableOpacity
               style={[
                 styles.withdrawButton,
-                (!withdrawalAmount || parseFloat(withdrawalAmount) <= 1.0) && { backgroundColor: '#A5D6A7' }
+                (!withdrawalAmount || parseFloat(withdrawalAmount) < 1.0) && { backgroundColor: '#A5D6A7' }
               ]}
               onPress={handleWithdraw}
-              disabled={!withdrawalAmount || parseFloat(withdrawalAmount) <= 1.0}
+              disabled={!withdrawalAmount || parseFloat(withdrawalAmount) < 1.0}
             >
               <Text style={styles.withdrawButtonText}>Withdraw</Text>
             </TouchableOpacity>
@@ -252,7 +257,7 @@ export default function WithdrawalScreen() {
           </View>
         </View>
       </SafeAreaView>
-
+      <WithdrawalOverlay visible={withdrawing} text='Processing withdrawal...' subtext='Please wait while we submit your request.' />
       <BankAccountModal
         visible={bankModalVisible}
         onClose={() => setBankModalVisible(false)}
