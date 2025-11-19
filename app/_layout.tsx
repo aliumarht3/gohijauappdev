@@ -9,10 +9,10 @@ import { UpdateRequiredScreen } from "../utils/UpdateRequiredScreen";
 import { LoadingScreen } from '@/components/molecules/loading';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setAudioModeAsync } from 'expo-audio';
 import { jwtDecode } from 'jwt-decode';
 import authStorage from '../api/authStorage';
 import { UserProvider } from '../services/userService';
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [isAuthChecked, setIsAuthChecked] = useState(false);
@@ -20,7 +20,7 @@ export default function RootLayout() {
   const [hasSeenOnboarding, setHasSeenOnboarding] = useState<boolean | null>(null);
   const [isUpdateRequired, setIsUpdateRequired] = useState(false);
   const router = useRouter();
-  
+
   const isTokenExpired = (token: string): boolean => {
     try {
       const { exp } = jwtDecode<{ exp: number }>(token);
@@ -29,7 +29,14 @@ export default function RootLayout() {
       return true;
     }
   };
-
+  useEffect(() => {
+    setAudioModeAsync({
+      playsInSilentMode: true,
+      allowsRecording: false,
+    }).catch((err) => {
+      console.warn('Failed to set audio mode', err);
+    });
+  }, []);
   useEffect(() => {
     const checkAuth = async () => {
       const upToDate = await checkAppVersion();
@@ -45,7 +52,7 @@ export default function RootLayout() {
       } else {
         setIsLoggedIn(true);
       }
-      
+
       const seenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
       console.log('Has seen onboarding:', seenOnboarding);
       setHasSeenOnboarding(seenOnboarding === 'true' ? true : seenOnboarding === 'false' || seenOnboarding === null ? false : null);
@@ -69,7 +76,7 @@ export default function RootLayout() {
     );
   }
 
-   return (
+  return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <UserProvider>
         <Stack screenOptions={{ headerShown: false }}>
