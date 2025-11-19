@@ -101,6 +101,7 @@ export default function QRCodeScreen() {
           }
         });
         newConnection.on("PouringComplete", (data) => {
+          setOverload(false);
           setAlertFinalizingVisible(false); // Hide overlay
           router.push({
             pathname: '/FinalDataScreen',
@@ -184,7 +185,7 @@ export default function QRCodeScreen() {
       <CustomAlert
         visible={alertVisible}
         title="Authorized!"
-        message="You can now lift the lid and start pouring."
+        message={"You can now lift the lid and start pouring.\nMAX LIMIT IS 5KG"}
         onClose={() => { setAlertVisible(false); setPouringVisible(true); }}
       />
       <CustomAlert
@@ -240,7 +241,7 @@ export default function QRCodeScreen() {
         enableSound={true}
         enableVibration={true}
         onClose={() => { setOverload(false); setAlertFinalizingVisible(true); }} />
-      <CustomOverlay visible={pouringVisible} text='In progress...' subtext='Please close the lid once done' />
+      <CustomOverlay visible={pouringVisible} text='In progress...' subtext={"Please close the lid once done.\nMAX LIMIT IS 5KG"} />
       <CustomOverlay visible={alertFinalizingVisible} text='Finalizing. Please wait...' />
     </View>
   );
