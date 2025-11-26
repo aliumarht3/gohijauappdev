@@ -129,7 +129,7 @@ export default function HomeScreen() {
                             style={styles.statValue}
                         // numberOfLines={1}
                         >
-                            {item.label === "Points"
+                            {item.label === "Rewards"
                                 ? `${item.unit} ${item.value}`
                                 : `${item.value} ${item.unit}`}
                         </Text>
