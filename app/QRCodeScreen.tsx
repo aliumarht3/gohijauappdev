@@ -1,4 +1,4 @@
-import TokenExpiredOverlay from '@/components/molecules/TokenExpiredOverlay';
+import WarningAlert from '@/components/molecules/WarningAlert';
 import * as SignalR from '@microsoft/signalr';
 import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -18,6 +18,7 @@ export default function QRCodeScreen() {
   const [pouringVisible, setPouringVisible] = useState(false);
   const [countdown, setCountdown] = useState(180); // 3 minutes
   const [expired, setExpired] = useState(false);
+  const [overload, setOverload] = useState(false);
   const [machineId, setMachineId] = useState('');
   const [collectorUCOWeight, setcollectorUCOWeight] = useState('');
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
@@ -100,6 +101,7 @@ export default function QRCodeScreen() {
           }
         });
         newConnection.on("PouringComplete", (data) => {
+          setOverload(false);
           setAlertFinalizingVisible(false); // Hide overlay
           router.push({
             pathname: '/FinalDataScreen',
@@ -114,8 +116,15 @@ export default function QRCodeScreen() {
           });
         });
         newConnection.on("TokenExpired", (data) => {
-          setExpired(true); // Mark token as expired
+          // setExpired(true); // Mark token as expired
           setCountdown(0);
+        });
+
+        newConnection.on("Overflow", (data) => {
+          if (data.token === token) {
+            setPouringVisible(false);
+            setOverload(true);
+          }
         });
         setConnection(newConnection);
       })
@@ -137,10 +146,10 @@ export default function QRCodeScreen() {
       const formData = new FormData();
       formData.append('ucoWeight', collectorUCO);
 
-      await api.post('/collector/record-uco-weight', formData, { 
+      await api.post('/collector/record-uco-weight', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      
+
       await connectionMachine.start();
       console.log("✅ SignalR connected.MachineHUb for end Collection");
 
@@ -176,13 +185,13 @@ export default function QRCodeScreen() {
       <CustomAlert
         visible={alertVisible}
         title="Authorized!"
-        message="You can now lift the lid and start pouring."
+        message={"You can now lift the lid and start pouring.\nMAX LIMIT IS 5KG"}
         onClose={() => { setAlertVisible(false); setPouringVisible(true); }}
       />
       <CustomAlert
         visible={alertCollectorVisible}
         title="Authorized!"
-         renderContent={() => (
+        renderContent={() => (
           <>
             <Text style={{ textAlign: 'center', fontSize: 16, marginBottom: 10 }}>
               You can now start collecting.{'\n'}
@@ -200,18 +209,18 @@ export default function QRCodeScreen() {
                 marginTop: 5,
               }}
             >
-            <TextInput
-              style={{
-                flex: 1,
-                fontSize: 16,
-                paddingVertical: 10,
-              }}
-              placeholder="Enter UCO weight"
-              keyboardType="numeric"
-              value={collectorUCOWeight}
-              onChangeText={setcollectorUCOWeight}
-            />
-            <Text style={{ fontSize: 16, marginLeft: 5 }}>kg</Text>
+              <TextInput
+                style={{
+                  flex: 1,
+                  fontSize: 16,
+                  paddingVertical: 10,
+                }}
+                placeholder="Enter UCO weight"
+                keyboardType="numeric"
+                value={collectorUCOWeight}
+                onChangeText={setcollectorUCOWeight}
+              />
+              <Text style={{ fontSize: 16, marginLeft: 5 }}>kg</Text>
             </View>
           </>
         )}
@@ -225,13 +234,14 @@ export default function QRCodeScreen() {
           await handleEndCollection(collectorUCOWeight);
         }}
       />
-      {expired && (
-        <TokenExpiredOverlay
-          visible={expired}
-          onRegenerate={() => router.back()}
-        />
-      )}
-      <CustomOverlay visible={pouringVisible} text='In progress...' subtext='Please close the lid once done' />
+      <WarningAlert
+        visible={overload}
+        title='Limit reached!'
+        message='Please close the lid to end pouring.'
+        enableSound={true}
+        enableVibration={true}
+        onClose={() => { setOverload(false); setAlertFinalizingVisible(true); }} />
+      <CustomOverlay visible={pouringVisible} text='In progress...' subtext={"Please close the lid once done.\nMAX LIMIT IS 5KG"} />
       <CustomOverlay visible={alertFinalizingVisible} text='Finalizing. Please wait...' />
     </View>
   );

@@ -74,7 +74,7 @@ export default function CollectorTransactionScreen() {
                                         <Text style={styles.date}>{date}</Text>
                                         <Text style={styles.time}>{time}</Text>
                                     </View>
-                                    <Text>Oil: {item.oilCollected} L</Text>
+                                    <Text>Oil: {item.oilCollected} kg</Text>
                                     <Text>CO₂ Saved: {item.cO2Saved} kg</Text>
                                 </View>
                             );
