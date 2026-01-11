@@ -79,6 +79,28 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      const source = "mobile";
+      const response = await api.post('/auth/forgot-password', { email, source: source });
+      return response.status === 200;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    try {
+      const response = await api.post('/auth/reset-password', {
+        token,
+        password: newPassword,
+      });
+      return response.status === 200;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const updateBankAccount = async (bank: BankAccount) => {
     // persist to backend, then update local state
     console.log("Updating bank account:", bank);
@@ -95,7 +117,7 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, loadUserProfile, loginUser, justLogout, updateBankAccount, hasBankAccount, bankAccount, refreshBank, loadingBank }}>
+    <UserContext.Provider value={{ user, loading, loadUserProfile, loginUser, justLogout, updateBankAccount, hasBankAccount, bankAccount, refreshBank, loadingBank, requestPasswordReset, resetPassword }}>
       {children}
     </UserContext.Provider>
   );
