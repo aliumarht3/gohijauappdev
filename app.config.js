@@ -8,6 +8,20 @@ export default ({ config }) => {
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
+    "linking": {
+      "schemes": ["gohijauapp"],
+      "prefixes": ["gohijauapp://", "https://dashboard.gohijau.org"],
+      "config": {
+        "screens": {
+          "auth": {
+            "screens": {
+              "reset-password": "reset-password?token=:token"
+            }
+          },
+          "*": "*"
+        }
+      }
+    },
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
