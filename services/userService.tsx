@@ -89,11 +89,23 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  const resetPassword = async (token: string, newPassword: string) => {
+  const validateResetToken = async (token: string) => {
+    try {
+      const response = await api.get('/auth/validate-reset-token', {
+        params: { token },
+      });
+      return response.status === 200;
+    } catch (error) {
+      console.error('Token validation failed:', error);
+      return false;
+    }
+  };
+
+  const resetPassword = async (token: string, password: string) => {
     try {
       const response = await api.post('/auth/reset-password', {
         token,
-        password: newPassword,
+        newPassword: password,
       });
       return response.status === 200;
     } catch (error) {
@@ -117,7 +129,7 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, loading, loadUserProfile, loginUser, justLogout, updateBankAccount, hasBankAccount, bankAccount, refreshBank, loadingBank, requestPasswordReset, resetPassword }}>
+    <UserContext.Provider value={{ user, loading, loadUserProfile, loginUser, justLogout, updateBankAccount, hasBankAccount, bankAccount, refreshBank, loadingBank, requestPasswordReset, validateResetToken, resetPassword }}>
       {children}
     </UserContext.Provider>
   );

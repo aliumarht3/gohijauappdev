@@ -1,7 +1,7 @@
 import SubmitButton from '@/components/atoms/SubmitButton';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useUser } from '../../services/userService';
 
@@ -9,12 +9,44 @@ export default function ResetPasswordScreen() {
   const router = useRouter();
   const { token } = useLocalSearchParams<{ token: string }>();
   const [loading, setLoading] = useState(false);
+  const [validatingToken, setValidatingToken] = useState(true);
+  const [tokenValid, setTokenValid] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
-  const { resetPassword } = useUser();
+  const { resetPassword, validateResetToken } = useUser();
+
+  // Validate token when component mounts
+  useEffect(() => {
+    const checkTokenValidity = async () => {
+      if (!token) {
+        Alert.alert('Error', 'No reset token provided');
+        router.replace('/auth/forgot-password');
+        return;
+      }
+
+      setValidatingToken(true);
+      try {
+        const isValid = await validateResetToken(token as string);
+        if (isValid) {
+          setTokenValid(true);
+        } else {
+          Alert.alert('Error', 'Invalid or expired reset token. Please request a new password reset.');
+          router.replace('/auth/forgot-password');
+        }
+      } catch (error) {
+        console.error('Token validation error:', error);
+        Alert.alert('Error', 'Failed to validate token. Please try again.');
+        router.replace('/auth/forgot-password');
+      } finally {
+        setValidatingToken(false);
+      }
+    };
+
+    checkTokenValidity();
+  }, [token]);
 
   const validatePasswords = () => {
     if (!password.trim() || !confirmPassword.trim()) {
@@ -70,7 +102,20 @@ export default function ResetPasswordScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.overlay}>
-            {resetSuccess ? (
+            {validatingToken ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#fff" />
+                <Text style={styles.loadingText}>Validating your reset link...</Text>
+              </View>
+            ) : !tokenValid ? (
+              <View style={styles.errorContainer}>
+                <Ionicons name="alert-circle" size={80} color="#ff6b6b" />
+                <Text style={styles.errorTitle}>Invalid Reset Link</Text>
+                <Text style={styles.errorText}>
+                  The password reset link is invalid or has expired. Please request a new one.
+                </Text>
+              </View>
+            ) : resetSuccess ? (
               <View style={styles.successContainer}>
                 <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
                 <Text style={styles.successTitle}>Password Reset Successfully!</Text>
@@ -161,6 +206,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     backgroundColor: 'rgba(0, 50, 0, 0.3)',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    color: '#fff',
+    fontSize: 16,
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  errorContainer: {
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ff6b6b',
+    marginTop: 20,
+    textAlign: 'center',
+  },
+  errorText: {
+    color: '#fff',
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   title: {
     fontSize: 32,
