@@ -1,6 +1,6 @@
-import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
+import { Audio } from 'expo-av';
 import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, Vibration, View } from 'react-native';
 
 type WarningAlertProps = {
@@ -22,55 +22,74 @@ const WarningAlert: React.FC<WarningAlertProps> = ({
     enableSound = true,
     enableVibration = true,
 }) => {
-    const player = useAudioPlayer(require('../../assets/sounds/Siren.mp3'));
-    const status = useAudioPlayerStatus(player);
+    const soundRef = useRef<Audio.Sound | null>(null);
+
+    useEffect(() => {
+        // Load sound on mount
+        const loadSound = async () => {
+            try {
+                const { sound } = await Audio.Sound.createAsync(
+                    require('../../assets/sounds/Siren.mp3'),
+                    { shouldPlay: false, isLooping: true }
+                );
+                soundRef.current = sound;
+            } catch (error) {
+                console.error('Error loading sound:', error);
+            }
+        };
+
+        loadSound();
+
+        // Cleanup on unmount
+        return () => {
+            if (soundRef.current) {
+                soundRef.current.unloadAsync();
+            }
+        };
+    }, []);
 
     useEffect(() => {
         const pattern = [0, 600, 400]; // vibrate pattern
 
-        if (visible) {
-            if (enableVibration) {
-                Vibration.vibrate(pattern, true); // repeat = true
+        const handleVisibilityChange = async () => {
+            if (visible) {
+                if (enableVibration) {
+                    Vibration.vibrate(pattern, true); // repeat = true
+                }
+                if (enableSound && soundRef.current) {
+                    try {
+                        await soundRef.current.setPositionAsync(0);
+                        await soundRef.current.playAsync();
+                    } catch (error) {
+                        console.error('Error playing sound:', error);
+                    }
+                }
+            } else {
+                // stop everything when modal hides
+                Vibration.cancel();
+                if (soundRef.current) {
+                    try {
+                        await soundRef.current.stopAsync();
+                        await soundRef.current.setPositionAsync(0);
+                    } catch (error) {
+                        console.error('Error stopping sound:', error);
+                    }
+                }
             }
-            if (enableSound) {
-                // start from beginning every time it opens
-                player.seekTo(0);
-                player.play();
-            }
-        } else {
-            // stop everything when modal hides
-            Vibration.cancel();
-            player.pause();
-            player.seekTo(0);
-        }
+        };
 
-        // extra cleanup if component unmounts
+        handleVisibilityChange();
+
+        // cleanup
         return () => {
             Vibration.cancel();
-            player.pause();
-            player.seekTo(0);
         };
-    }, [visible, enableSound, enableVibration, player]);
-
-    useEffect(() => {
-        if (!visible || !enableSound) return;
-        if (!status) return;
-
-        const { playing, currentTime, duration } = status;
-
-        if (
-            duration > 0 &&
-            !playing &&
-            currentTime >= duration - 0.1 // near end
-        ) {
-            player.seekTo(0);
-            player.play();
-        }
-    }, [status, visible, enableSound, player]);
+    }, [visible, enableSound, enableVibration]);
 
     const handleClose = () => {
         onClose?.(); // parent should set visible=false
     };
+
     return (
         <Modal
             visible={visible}
@@ -81,7 +100,7 @@ const WarningAlert: React.FC<WarningAlertProps> = ({
             <View style={styles.backdrop}>
                 <View style={styles.card}>
                     <LottieView
-                        source={require('../../assets/animations/Warning.json')} // put your Lottie JSON here
+                        source={require('../../assets/animations/Warning.json')}
                         autoPlay
                         loop
                         style={styles.lottie}
@@ -138,7 +157,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 10,
         borderRadius: 999,
-        backgroundColor: '#f97316', // orange-ish warning feel
+        backgroundColor: '#f97316',
     },
     buttonText: {
         color: '#fff',
