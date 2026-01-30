@@ -26,12 +26,32 @@ export default function CustomAlert({ visible, title, message, onClose, buttonTe
           ) : (
             <Text style={styles.message}>{message}</Text>
           )}
-          <TouchableOpacity style={styles.button} onPress={onClose}>
-            <Text style={styles.buttonText}>{buttonText}</Text>
-          </TouchableOpacity>
+          {!renderContent && (
+            <TouchableOpacity style={styles.button} onPress={onClose}>
+              <Text style={styles.buttonText}>{buttonText}</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </Modal>
+  );
+}
+
+export function AlertButton({ label, onPress, color }: {
+  label: string;
+  onPress: () => void;
+  color?: string;
+}) {
+  return (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        color && { backgroundColor: color },
+      ]}
+      onPress={onPress}
+    >
+      <Text style={styles.buttonText}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
