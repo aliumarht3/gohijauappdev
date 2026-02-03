@@ -26,3 +26,12 @@ export async function fetchCollectorMachines(): Promise<MachineVolume[]> {
     const mapped = list.map(mapRawToVM);
     return mapped;
 }
+
+export async function getMachines() {
+    try {
+        let res = await api.get('/machine/all');
+        return res.data
+    } catch (error) {
+        console.error('Failed to fetch machine ID:', error);
+    }
+}
