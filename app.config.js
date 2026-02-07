@@ -4,15 +4,29 @@ export default ({ config }) => {
   return {
     name: "GoHijau",
     slug: "GoHijauApp",
-    version: "3.0.8",
+    version: "3.0.10",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: "gohijauapp",
+    "linking": {
+      "schemes": ["gohijauapp"],
+      "prefixes": ["gohijauapp://", "https://dashboard.gohijau.org"],
+      "config": {
+        "screens": {
+          "auth": {
+            "screens": {
+              "reset-password": "reset-password?token=:token"
+            }
+          },
+          "*": "*"
+        }
+      }
+    },
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
       supportsTablet: false,
-      buildNumber: "12",
+      buildNumber: "14",
       config: {
         googleMapsApiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
       },
@@ -31,7 +45,7 @@ export default ({ config }) => {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      versionCode: 22,
+      versionCode: 24,
       config: {
         googleMaps: {
           apiKey: "AIzaSyBqVrQQ_5FJye-7-BVgrtWOHrOulpSxycI"
@@ -47,14 +61,15 @@ export default ({ config }) => {
       eas: {
         projectId: "07f255f3-aa75-4a53-99ef-19078c357204"
       },
-      apiBaseUrl: isDev 
-        ? "http://10.0.2.2:7192/api" 
+      apiBaseUrl: isDev
+        ? "http://10.0.2.2:7192/api"
         : "https://services.gohijau.org/api",
-      signalRUrl: isDev 
-        ? "http://10.0.2.2:7192" 
+      signalRUrl: isDev
+        ? "http://10.0.2.2:7192"
         : "https://services.gohijau.org"
     },
     plugins: [
+      "expo-audio",
       "expo-router",
       [
         "expo-splash-screen",

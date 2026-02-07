@@ -63,7 +63,7 @@ export default function HomeScreen() {
 
     const stats = [
         { label: "Oil Recycled", value: totalOilPoured, unit: "KG" },
-        { label: "Points", value: pointsAwarded, unit: "RM" },
+        { label: "Rewards", value: pointsAwarded, unit: "RM" },
         { label: "Saved CO₂", value: totalCO2Saved, unit: "kg" },
     ];
     const topics: HelpTopic[] = [
@@ -129,7 +129,7 @@ export default function HomeScreen() {
                             style={styles.statValue}
                         // numberOfLines={1}
                         >
-                            {item.label === "Points"
+                            {item.label === "Rewards"
                                 ? `${item.unit} ${item.value}`
                                 : `${item.value} ${item.unit}`}
                         </Text>

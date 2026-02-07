@@ -1,6 +1,6 @@
 import { BANKS } from "@/constants/Banks";
 import React, { useMemo, useState } from "react";
-import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useUser } from '../../services/userService';
 type Props = {
     visible: boolean;
@@ -34,58 +34,63 @@ export default function BankAccountModal({ visible, onClose, onSaved }: Props) {
 
     return (
         <Modal visible={visible} animationType="slide" transparent>
-            <View style={styles.backdrop}>
-                <View style={styles.sheet}>
-                    <Text style={styles.title}>Set up your bank account</Text>
-                    <Text style={styles.subtitle}>Choose your bank and enter your account number to receive payouts.</Text>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                style={{ flex: 1 }}
+            >
+                <View style={styles.backdrop}>
+                    <View style={styles.sheet}>
+                        <Text style={styles.title}>Set up your bank account</Text>
+                        <Text style={styles.subtitle}>Choose your bank and enter your account number to receive payouts.</Text>
 
-                    <TextInput
-                        placeholder="Search bank by name or code"
-                        style={styles.input}
-                        value={search}
-                        onChangeText={setSearch}
-                    />
+                        <TextInput
+                            placeholder="Search bank by name or code"
+                            style={styles.input}
+                            value={search}
+                            onChangeText={setSearch}
+                        />
 
-                    <FlatList
-                        data={filtered}
-                        keyExtractor={(item) => item.code}
-                        style={{ maxHeight: 240, marginTop: 8 }}
-                        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-                        renderItem={({ item }) => (
-                            <TouchableOpacity
-                                onPress={() => setSelectedBank(item)}
-                                style={[
-                                    styles.bankRow,
-                                    selectedBank?.code === item.code && styles.bankRowSelected
-                                ]}
-                            >
-                                <Text style={styles.bankName}>{item.name}</Text>
+                        <FlatList
+                            data={filtered}
+                            keyExtractor={(item) => item.code}
+                            style={{ maxHeight: 240, marginTop: 8 }}
+                            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    onPress={() => setSelectedBank(item)}
+                                    style={[
+                                        styles.bankRow,
+                                        selectedBank?.code === item.code && styles.bankRowSelected
+                                    ]}
+                                >
+                                    <Text style={styles.bankName}>{item.name}</Text>
+                                </TouchableOpacity>
+                            )}
+                        />
+
+                        <TextInput
+                            placeholder="Account number"
+                            keyboardType="number-pad"
+                            value={accountNumber}
+                            onChangeText={(t) => setAccountNumber(t.replace(/[^\d-]/g, ""))} // allow digits (and hyphen if you need)
+                            style={[styles.input, { marginTop: 12 }]}
+                        />
+
+                        <View style={styles.actions}>
+                            <TouchableOpacity onPress={onClose} style={[styles.btn, styles.outline]}>
+                                <Text style={[styles.btnText, { color: "#2E7D32" }]}>Cancel</Text>
                             </TouchableOpacity>
-                        )}
-                    />
-
-                    <TextInput
-                        placeholder="Account number"
-                        keyboardType="number-pad"
-                        value={accountNumber}
-                        onChangeText={(t) => setAccountNumber(t.replace(/[^\d-]/g, ""))} // allow digits (and hyphen if you need)
-                        style={[styles.input, { marginTop: 12 }]}
-                    />
-
-                    <View style={styles.actions}>
-                        <TouchableOpacity onPress={onClose} style={[styles.btn, styles.outline]}>
-                            <Text style={[styles.btnText, { color: "#2E7D32" }]}>Cancel</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={save}
-                            disabled={!canSave}
-                            style={[styles.btn, { backgroundColor: canSave ? "#2E7D32" : "#A5D6A7" }]}
-                        >
-                            <Text style={[styles.btnText, { color: "#fff" }]}>Save</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={save}
+                                disabled={!canSave}
+                                style={[styles.btn, { backgroundColor: canSave ? "#2E7D32" : "#A5D6A7" }]}
+                            >
+                                <Text style={[styles.btnText, { color: "#fff" }]}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 </View>
-            </View>
+            </KeyboardAvoidingView>
         </Modal>
     );
 }

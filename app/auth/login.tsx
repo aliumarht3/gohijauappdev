@@ -112,7 +112,9 @@ export default function LoginScreen() {
             ) : (
               <SubmitButton title="Login" onPress={handleLogin} backgroundColor="#388E3C" />
             )}
-
+            <TouchableOpacity onPress={() => router.push('/auth/forgot-password')}>
+              <Text style={styles.linkText}>Forgot Password?</Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/auth/signup')}>
               <Text style={styles.linkText}>Don’t have an account? Sign up</Text>
             </TouchableOpacity>

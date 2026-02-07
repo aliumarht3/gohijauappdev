@@ -10,7 +10,7 @@ export default function FinalDataScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Great Job! 🎉</Text>
       <View style={styles.card}>
-        <Text style={styles.value}>{oilPoured} L</Text>
+        <Text style={styles.value}>{oilPoured} KG</Text>
         <Text style={styles.label}>Oil Amount</Text>
       </View>
       {pointsEarned != null && pointsEarned !== "" && (
