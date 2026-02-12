@@ -47,7 +47,7 @@ export default function LoginScreen() {
       if (error.name === 'AbortError') {
         Alert.alert('Timeout', 'The request took too long. Please try again.');
       } else {
-        Alert.alert('Login Failed', error || 'Something went wrong');
+        Alert.alert('Login Failed', error?.message || 'Something went wrong');
       }
     } finally {
       setLoading(false);
