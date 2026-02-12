@@ -1,12 +1,14 @@
-import { getMachines } from "@/services/machine";
+import { fetchCollectorMachines, getCollectorMachines, getMachines } from "@/services/machine";
 import { Ionicons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Easing, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import CircleProgressIndicator from "../components/CircleProgressIndicator";
 import CustomAlert, { AlertButton } from '../components/molecules/CustomAlert';
+import { useUser } from "../services/userService";
 export default function MapScreen({ navigation }: any) {
   const [location, setLocation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -17,6 +19,8 @@ export default function MapScreen({ navigation }: any) {
   const [selectedId, setSelectedId] = useState(null);
   const router = useRouter();
   const mapRef = useRef(null);
+  const { user } = useUser();
+  const glowAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     (async () => {
@@ -29,7 +33,33 @@ export default function MapScreen({ navigation }: any) {
 
       const userLocation = await Location.getCurrentPositionAsync({});
       setLocation(userLocation.coords);
-      const data = await getMachines();
+
+      let data;
+      if (user.userRole === "OilCollector") {
+
+        const [volume, machines] = await Promise.all([
+          fetchCollectorMachines(),
+          getCollectorMachines()
+        ]);
+
+        const volumeMap = volume.reduce((acc, item) => {
+          acc[item.machineId] = {
+            bufferVolume: item.bufferVolume,
+            capacityLiters: item.capacityLiters
+          };
+          return acc;
+        }, {});
+
+        data = machines.map(machine => ({
+          ...machine,
+          bufferVolume: volumeMap[machine.machineId]?.bufferVolume ?? 0,
+          capacityLiters: volumeMap[machine.machineId]?.capacityLiters ?? 0
+        }));
+
+      } else {
+        data = await getMachines();
+      }
+
       const normalizedMachines = data.map(m => ({
         ...m,
         uiStatus:
@@ -42,6 +72,22 @@ export default function MapScreen({ navigation }: any) {
       setCollectionPoints(mappedCollectionPoints);
       setLoading(false);
     })();
+    Animated.loop(
+    Animated.sequence([
+      Animated.timing(glowAnim, {
+        toValue: 1,
+        duration: 1200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+      }),
+      Animated.timing(glowAnim, {
+        toValue: 0,
+        duration: 1200,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: false,
+      }),
+    ])
+  ).start();
   }, []);
 
   const mapMachinesToCollectionPoints = (machines) => {
@@ -58,6 +104,10 @@ export default function MapScreen({ navigation }: any) {
           machineId: m.machineId,
           uiStatus: m.uiStatus,
           address: `${m.location?.unitNo ?? ''}, ${m.location?.street ?? ''}, ${m.location?.postcode ?? ''}, ${m.location?.district ?? ''}, ${m.location?.state ?? ''}, ${m.location?.country ?? ''}`,
+          ...(user.userRole === "OilCollector" && {
+            bufferVolume: m.bufferVolume,
+            capacityLiters: m.capacityLiters,
+          })
         };
       })
       .filter(Boolean);
@@ -273,16 +323,25 @@ export default function MapScreen({ navigation }: any) {
                     <Text style={styles.distanceText}>
                       {item.distance.toFixed(2)} km away
                     </Text>
-                    <Text
-                      style={[
-                        styles.statusText,
-                        item.uiStatus === 'Active'
-                          ? styles.activeStatus
-                          : styles.inactiveStatus,
-                      ]}
-                    >
-                      {item.uiStatus}
-                    </Text>
+                    <View style={styles.statusRow}>
+                      {item.bufferVolume != null && (
+                        <CircleProgressIndicator
+                          bufferVolume={item.bufferVolume}
+                          capacityLiters={item.capacityLiters}
+                        />
+                      )}
+                      <Text
+                        style={[
+                          styles.statusText,
+                          item.uiStatus === 'Active'
+                            ? styles.activeStatus
+                            : styles.inactiveStatus,
+                          { marginLeft: 8 },
+                        ]}
+                      >
+                        {item.uiStatus}
+                      </Text>
+                    </View>
                   </View>
 
                   <TouchableOpacity
@@ -405,4 +464,10 @@ inactiveStatus: {
   borderColor: 'red',
   backgroundColor: 'rgba(255, 0, 0, 0.08)',
 },
+statusRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 6,
+}
+
 });

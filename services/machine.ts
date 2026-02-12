@@ -35,3 +35,12 @@ export async function getMachines() {
         console.error('Failed to fetch machine ID:', error);
     }
 }
+
+export async function getCollectorMachines() {
+    try {
+        let res = await api.get('/machine/collector');
+        return res.data
+    } catch (error) {
+        console.error('Failed to fetch machine ID:', error);
+    }
+}
