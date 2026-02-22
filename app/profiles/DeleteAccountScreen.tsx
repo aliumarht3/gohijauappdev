@@ -5,10 +5,12 @@ import React, { useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import api from '../../api/apiClient';
 import CustomAlert from '../../components/molecules/CustomAlert';
+import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
 import theme from "../themes/theme";
 
 export default function DeleteAccountScreen() {
+  const { t } = useLanguage();
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -30,12 +32,12 @@ export default function DeleteAccountScreen() {
       const res = await api.delete('/user/delete-account', {
         data: payload
     });      
-      setAlertTitle("Success!");
-      setAlertMessage(res.data.message || "Account Delete Successfully.");
+      setAlertTitle(t.deleteAccount.successTitle);
+      setAlertMessage(res.data.message || t.deleteAccount.successMessage);
       setAlertVisible(true);
     } catch (err: any) {
-      setAlertTitle("Error!");
-      setAlertMessage(err.response?.data?.message || err.message || "Something went wrong.");
+      setAlertTitle(t.deleteAccount.errorTitle);
+      setAlertMessage(err.response?.data?.message || err.message || t.deleteAccount.somethingWrong);
       setAlertVisible(true);
     } finally {
       setLoading(false);
@@ -44,17 +46,17 @@ export default function DeleteAccountScreen() {
 
     const confirmDelete = () => {
         if (!password.trim()) {
-            setAlertTitle("Error!");
-            setAlertMessage("Password is required to delete your account.");
+            setAlertTitle(t.deleteAccount.errorTitle);
+            setAlertMessage(t.deleteAccount.passwordRequired);
             setAlertVisible(true);
             return;
         }
         Alert.alert(
-            "Are you sure to delete your account? ",
-            "This action cannot be undone.",
+            t.deleteAccount.confirmTitle,
+            t.deleteAccount.confirmMessage,
             [
-            { text: "Cancel", style: "cancel" },
-            { text: "Delete", style: "destructive", onPress: handleDelete }
+            { text: t.deleteAccount.cancelButton, style: "cancel" },
+            { text: t.deleteAccount.deleteConfirm, style: "destructive", onPress: handleDelete }
             ]
         );
     };
@@ -63,8 +65,8 @@ export default function DeleteAccountScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Delete Account',
-          headerBackTitle: "Profile",
+          title: t.deleteAccount.title,
+          headerBackTitle: t.deleteAccount.backTitle,
           headerBackButtonDisplayMode: "minimal",
           headerShown: true,
           headerTitleAlign: 'center',
@@ -81,7 +83,7 @@ export default function DeleteAccountScreen() {
                     title={alertTitle}
                     message={alertMessage}
                     onClose={async () =>{setAlertVisible(false); 
-                      if (alertTitle === "Success!") {
+                      if (alertTitle === t.deleteAccount.successTitle) {
                         // router.back();
                         await justLogout();
                       }
@@ -89,10 +91,10 @@ export default function DeleteAccountScreen() {
                   />
       <View style={styles.container}>
 
-        <Text style={styles.label}>Password</Text>
+        <Text style={styles.label}>{t.deleteAccount.passwordLabel}</Text>
         <View style={styles.passwordContainer}>
           <TextInput
-            placeholder="Password"
+            placeholder={t.deleteAccount.passwordPlaceholder}
             value={password}
             autoCapitalize="none"
             secureTextEntry={!showPassword}
@@ -113,7 +115,7 @@ export default function DeleteAccountScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Delete Account</Text>
+            <Text style={styles.buttonText}>{t.deleteAccount.deleteButton}</Text>
           )}
         </TouchableOpacity>
       </View>

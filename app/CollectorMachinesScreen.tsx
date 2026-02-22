@@ -6,6 +6,7 @@ import { useMachineLiveUpdates } from "@/hooks/useMachineLiveUpdates";
 import { fetchCollectorMachines } from "@/services/machine";
 import { Stack } from 'expo-router';
 import React from "react";
+import { useLanguage } from '../services/languageService';
 import {
     ActivityIndicator,
     FlatList,
@@ -22,6 +23,7 @@ type SortKey = "pct" | "name" | "status";
 const pct = (c: number, cap: number) => (cap <= 0 ? 0 : Math.round((c / cap) * 100));
 
 export default function CollectorMachinesScreen() {
+    const { t } = useLanguage();
     const [search, setSearch] = React.useState("");
     const [sortKey, setSortKey] = React.useState<SortKey>("pct");
     const [loading, setLoading] = React.useState(true);
@@ -37,11 +39,11 @@ export default function CollectorMachinesScreen() {
             console.log("Loaded machines:", data);
             setMachines(data ?? []);
         } catch (e: any) {
-            setError(e?.message ?? "Failed to load machines.");
+            setError(e?.message ?? t.collectorMachines.failedToLoad);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [t]);
 
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
@@ -80,7 +82,7 @@ export default function CollectorMachinesScreen() {
             <SafeAreaView style={styles.container}>
                 <Stack.Screen
                     options={{
-                        title: 'Monitor UCO',
+                        title: t.collectorMachines.title,
                         headerShown: true,
                         headerTitleAlign: 'center',
                         headerStyle: { backgroundColor: Colors.light.background },
@@ -95,13 +97,13 @@ export default function CollectorMachinesScreen() {
                     <TextInput
                         value={search}
                         onChangeText={setSearch}
-                        placeholder="Search by name, location, or ID..."
+                        placeholder={t.collectorMachines.searchPlaceholder}
                         style={styles.search}
                         placeholderTextColor={Colors.textSecondary}
                     />
                     <View style={styles.sortRow}>
-                        <SortButton label="Fullness" active={sortKey === "pct"} onPress={() => setSortKey("pct")} />
-                        <SortButton label="Name" active={sortKey === "name"} onPress={() => setSortKey("name")} />
+                        <SortButton label={t.collectorMachines.fullness} active={sortKey === "pct"} onPress={() => setSortKey("pct")} />
+                        <SortButton label={t.collectorMachines.name} active={sortKey === "name"} onPress={() => setSortKey("name")} />
                         {/* <SortButton label="Status" active={sortKey === "status"} onPress={() => setSortKey("status")} /> */}
                     </View>
                 </View>
@@ -109,18 +111,18 @@ export default function CollectorMachinesScreen() {
                 {loading ? (
                     <View style={styles.center}>
                         <ActivityIndicator color={Colors.primary} />
-                        <Text style={styles.stateText}>Loading machines…</Text>
+                        <Text style={styles.stateText}>{t.collectorMachines.loadingMachines}</Text>
                     </View>
                 ) : error ? (
                     <View style={styles.center}>
                         <Text style={[styles.stateText, { color: Colors.danger }]}>{error}</Text>
                         <TouchableOpacity style={styles.retry} onPress={load}>
-                            <Text style={styles.retryText}>Retry</Text>
+                            <Text style={styles.retryText}>{t.common.retry}</Text>
                         </TouchableOpacity>
                     </View>
                 ) : filtered.length === 0 ? (
                     <View style={styles.center}>
-                        <Text style={styles.stateText}>No machines found.</Text>
+                        <Text style={styles.stateText}>{t.collectorMachines.noMachines}</Text>
                     </View>
                 ) : (
                     <FlatList

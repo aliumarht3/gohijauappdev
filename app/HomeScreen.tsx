@@ -3,9 +3,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { interpolate } from '../constants/languages';
 import CustomAlert from '../components/molecules/CustomAlert';
 import { generateQrTokenCustomer } from '../services/qrService';
 import { getTotalTransaction } from '../services/transactionService';
+import { useLanguage } from '../services/languageService';
 import { useUser } from '../services/userService';
 const { width } = Dimensions.get('window');
 interface HelpStep {
@@ -20,6 +22,7 @@ interface HelpTopic {
     color: string;
 }
 export default function HomeScreen() {
+    const { t } = useLanguage();
     const { user, loadUserProfile } = useUser();
     const [refreshing, setRefreshing] = React.useState(false);
     const [totalOilPoured, setTotalOilPoured] = React.useState(0);
@@ -62,21 +65,21 @@ export default function HomeScreen() {
     };
 
     const stats = [
-        { label: "Oil Recycled", value: totalOilPoured, unit: "KG" },
-        { label: "Rewards", value: pointsAwarded, unit: "RM" },
-        { label: "Saved CO₂", value: totalCO2Saved, unit: "kg" },
+        { label: t.home.oilRecycled, value: totalOilPoured, unit: "KG" },
+        { label: t.home.rewards, value: pointsAwarded, unit: "RM" },
+        { label: t.home.savedCO2, value: totalCO2Saved, unit: "kg" },
     ];
     const topics: HelpTopic[] = [
         {
             router: '/GetStartedScreen',
-            title: "How to Begin",
-            description: "Learn how to start scanning and recycling oil easily.",
+            title: t.home.howToBegin,
+            description: t.home.howToBeginDesc,
             color: "#4CAF50",
         },
         {
             router: '/GetStartedScreen',
-            title: "Withdrawal",
-            description: "Withdraw your earned points for rewards or benefits.",
+            title: t.home.withdrawal,
+            description: t.home.withdrawalDesc,
             color: "#FF9800",
         }
     ];
@@ -112,8 +115,8 @@ export default function HomeScreen() {
         >
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.greeting}>Hello, {user?.name} 👋</Text>
-                    <Text style={styles.subtitle}>Thanks for keeping the planet clean 🌍</Text>
+                    <Text style={styles.greeting}>{interpolate(t.home.greeting, { name: user?.name || '' })}</Text>
+                    <Text style={styles.subtitle}>{t.home.subtitle}</Text>
                 </View>
                 <Image
                     source={require('../assets/images/icon.png')}
@@ -129,7 +132,7 @@ export default function HomeScreen() {
                             style={styles.statValue}
                         // numberOfLines={1}
                         >
-                            {item.label === "Rewards"
+                            {item.label === t.home.rewards
                                 ? `${item.unit} ${item.value}`
                                 : `${item.value} ${item.unit}`}
                         </Text>
@@ -143,41 +146,41 @@ export default function HomeScreen() {
                 <TouchableOpacity style={styles.actionButton}
                     onPress={handleGenerateToken}>
                     <Ionicons name="qr-code" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Scan</Text>
+                    <Text style={styles.actionText}>{t.home.scan}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionButton}
                     onPress={() => handleRewardPress()}>
                     <Ionicons name="gift" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Rewards</Text>
+                    <Text style={styles.actionText}>{t.home.rewards}</Text>
                 </TouchableOpacity>
                 <CustomAlert
                     visible={rewardsAlertVisible}
-                    title="Coming Soon!"
-                    message={"Rewards screen is in development.\nThank you for your patience."}
+                    title={t.common.comingSoon}
+                    message={t.home.rewardsComingSoon}
                     onClose={() => { setRewardsAlertVisible(false); }}
                 />
                 <TouchableOpacity style={styles.actionButton}
                     onPress={() => router.push('/OilHistoryScreen')}>
                     <Ionicons name="time" size={28} color="#fff" />
-                    <Text style={styles.actionText}>History</Text>
+                    <Text style={styles.actionText}>{t.home.history}</Text>
                 </TouchableOpacity>
                 <CustomAlert
                     visible={alertFailedToGenerateVisible}
-                    title="Failed!"
-                    message="Failed to generate QR code. Please try again."
+                    title={t.common.failedTitle}
+                    message={t.common.failedQrGeneration}
                     onClose={() => { setAlertFailedToGenerateVisible(false); }}
                 />
             </View>
 
             {/* ✅ Nearby Collection Points */}
             <View style={styles.mapCard}>
-                <Text style={styles.mapTitle}>Nearby Collection Points</Text>
+                <Text style={styles.mapTitle}>{t.home.nearbyPoints}</Text>
                 <Image
                     source={require('../assets/images/mapbackground.jpg')}
                     style={styles.mapImage}
                 />
                 <TouchableOpacity style={styles.mapButton} onPress={() => router.push('/MapScreen')}>
-                    <Text style={styles.mapButtonText}>View on Map</Text>
+                    <Text style={styles.mapButtonText}>{t.home.viewOnMap}</Text>
                 </TouchableOpacity>
             </View>
             <View >
@@ -238,9 +241,10 @@ const styles = StyleSheet.create({
         flexShrink: 1,
     },
     statLabel: {
-        fontSize: 12,
+        fontSize: 13,
         color: '#666',
         marginTop: 4,
+        textAlign: 'center',
     },
     quickActions: {
         flexDirection: 'row',
@@ -259,6 +263,8 @@ const styles = StyleSheet.create({
         color: '#fff',
         marginTop: 6,
         fontWeight: '600',
+        fontSize: 14,
+        textAlign: 'center',
     },
     mapCard: {
         backgroundColor: '#fff',

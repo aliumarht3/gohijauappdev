@@ -11,9 +11,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
 import authStorage from "../api/authStorage";
 import { getTotalTransaction } from '../services/transactionService';
+import { useLanguage } from '../services/languageService';
 import { useUser } from '../services/userService';
 
 export default function WithdrawalScreen() {
+  const { t } = useLanguage();
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
   const [pointsAwarded, setPointsAwarded] = React.useState(0);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
@@ -26,7 +28,7 @@ export default function WithdrawalScreen() {
 
   const { user, loadUserProfile, loadingBank, bankAccount, hasBankAccount, refreshBank } = useUser();
 
-  // Example: you’ll likely compute this from API instead of hardcoding
+  // Example: you'll likely compute this from API instead of hardcoding
   const totalAmount = 200;
   type ApiWithdrawal = {
     id: string;
@@ -64,6 +66,12 @@ export default function WithdrawalScreen() {
       }))
       // newest first
       .sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()));
+  const statusLabel: Record<WithdrawalItem["status"], string> = {
+    PENDING: t.withdrawal.statusPending,
+    SUCCESS: t.withdrawal.statusSuccess,
+    DECLINED: t.withdrawal.statusDeclined,
+  };
+
   function StatusBadge({ status }: { status: WithdrawalItem["status"] }) {
     const bg =
       status === "SUCCESS" ? "#DCFCE7" : status === "DECLINED" ? "#FEE2E2" : "#F3F4F6";
@@ -71,7 +79,7 @@ export default function WithdrawalScreen() {
       status === "SUCCESS" ? "#166534" : status === "DECLINED" ? "#991B1B" : "#374151";
     return (
       <View style={[styles.badge, { backgroundColor: bg }]}>
-        <Text style={[styles.badgeText, { color }]}>{status}</Text>
+        <Text style={[styles.badgeText, { color }]}>{statusLabel[status]}</Text>
       </View>
     );
   }
@@ -146,11 +154,11 @@ export default function WithdrawalScreen() {
     }
 
     if (isNaN(amount) || amount <= 1.0) {
-      Alert.alert('Invalid Amount', 'Please enter an amount greater than RM 1.00.');
+      Alert.alert(t.withdrawal.invalidAmount, t.withdrawal.invalidAmountMessage);
       return;
     }
     if (amount > totalAmount) {
-      Alert.alert('Insufficient Balance', 'You do not have enough balance to withdraw this amount.');
+      Alert.alert(t.withdrawal.insufficientBalance, t.withdrawal.insufficientBalanceMessage);
       return;
     }
 
@@ -162,10 +170,10 @@ export default function WithdrawalScreen() {
       load();
       setWithdrawing(false);
       setWithdrawalAmount('');
-      Alert.alert("Success", "Withdrawal request submitted.");
+      Alert.alert(t.common.success, t.withdrawal.withdrawalSubmitted);
     } catch (e: any) {
       setWithdrawing(false);
-      Alert.alert("Error", e?.response?.data?.error ?? "Failed to submit withdrawal.");
+      Alert.alert(t.common.error, e?.response?.data?.error ?? t.withdrawal.withdrawalFailed);
     }
   };
 
@@ -178,7 +186,7 @@ export default function WithdrawalScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Withdrawal',
+          title: t.withdrawal.title,
           headerShown: true,
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: Colors.light.background },
@@ -189,19 +197,19 @@ export default function WithdrawalScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
           <View style={styles.card}>
-            <Text style={styles.label}>Total Amount</Text>
+            <Text style={styles.label}>{t.withdrawal.totalAmount}</Text>
             <Text style={styles.total}>RM {pointsAwarded}</Text>
 
             {/* Show current bank info + change button */}
             {hasBankAccount ? (
               <View style={{ marginTop: 8 }}>
-                <Text style={{ color: "#555" }}>Payout to:</Text>
+                <Text style={{ color: "#555" }}>{t.withdrawal.payoutTo}</Text>
                 <Text style={{ color: "#2E7D32", fontWeight: "600", marginTop: 2 }}>{bankBadge}</Text>
                 <TouchableOpacity
                   onPress={() => setBankModalVisible(true)}
                   style={{ alignSelf: "flex-start", paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "#2E7D32", borderRadius: 8, marginTop: 8 }}
                 >
-                  <Text style={{ color: "#2E7D32", fontWeight: "600" }}>Change bank</Text>
+                  <Text style={{ color: "#2E7D32", fontWeight: "600" }}>{t.withdrawal.changeBank}</Text>
                 </TouchableOpacity>
               </View>
             ) : (
@@ -209,17 +217,17 @@ export default function WithdrawalScreen() {
                 onPress={() => setBankModalVisible(true)}
                 style={{ alignSelf: "flex-start", paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "#2E7D32", borderRadius: 8, marginTop: 8 }}
               >
-                <Text style={{ color: "#2E7D32", fontWeight: "600" }}>Add bank account</Text>
+                <Text style={{ color: "#2E7D32", fontWeight: "600" }}>{t.withdrawal.addBankAccount}</Text>
               </TouchableOpacity>
             )}
           </View>
 
           <View className="card" style={styles.card}>
-            <Text style={styles.label}>Withdrawal Amount</Text>
+            <Text style={styles.label}>{t.withdrawal.withdrawalAmount}</Text>
             <TextInput
               style={styles.input}
               keyboardType="numeric"
-              placeholder="Enter amount"
+              placeholder={t.withdrawal.enterAmount}
               value={withdrawalAmount}
               onChangeText={setWithdrawalAmount}
             />
@@ -231,18 +239,18 @@ export default function WithdrawalScreen() {
               onPress={handleWithdraw}
               disabled={!withdrawalAmount || parseFloat(withdrawalAmount) < 1.0}
             >
-              <Text style={styles.withdrawButtonText}>Withdraw</Text>
+              <Text style={styles.withdrawButtonText}>{t.withdrawal.withdrawButton}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={[styles.card, { flex: 1 }]}>
-            <Text style={styles.historyTitle}>Withdrawal History</Text>
+            <Text style={styles.historyTitle}>{t.withdrawal.withdrawalHistory}</Text>
             <FlatList
               style={{ flex: 1 }}                    // ← give the list height
               data={history}
               keyExtractor={(item) => item.id}
               refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-              ListEmptyComponent={<Text style={styles.empty}>No withdrawals yet.</Text>}
+              ListEmptyComponent={<Text style={styles.empty}>{t.withdrawal.noWithdrawals}</Text>}
               renderItem={({ item }) => (
                 <View style={styles.row}>
                   <View style={{ flex: 1 }}>
@@ -257,7 +265,7 @@ export default function WithdrawalScreen() {
           </View>
         </View>
       </SafeAreaView>
-      <WithdrawalOverlay visible={withdrawing} text='Processing withdrawal...' subtext='Please wait while we submit your request.' />
+      <WithdrawalOverlay visible={withdrawing} text={t.withdrawal.processingWithdrawal} subtext={t.withdrawal.processingSubtext} />
       <BankAccountModal
         visible={bankModalVisible}
         onClose={() => setBankModalVisible(false)}

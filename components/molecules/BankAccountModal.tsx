@@ -1,6 +1,7 @@
 import { BANKS } from "@/constants/Banks";
 import React, { useMemo, useState } from "react";
 import { FlatList, KeyboardAvoidingView, Modal, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
 type Props = {
     visible: boolean;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 export default function BankAccountModal({ visible, onClose, onSaved }: Props) {
+    const { t } = useLanguage();
     const { updateBankAccount } = useUser();
     const [search, setSearch] = useState("");
     const [selectedBank, setSelectedBank] = useState<{ name: string; code: string } | null>(null);
@@ -40,11 +42,11 @@ export default function BankAccountModal({ visible, onClose, onSaved }: Props) {
             >
                 <View style={styles.backdrop}>
                     <View style={styles.sheet}>
-                        <Text style={styles.title}>Set up your bank account</Text>
-                        <Text style={styles.subtitle}>Choose your bank and enter your account number to receive payouts.</Text>
+                        <Text style={styles.title}>{t.bankModal.title}</Text>
+                        <Text style={styles.subtitle}>{t.bankModal.subtitle}</Text>
 
                         <TextInput
-                            placeholder="Search bank by name or code"
+                            placeholder={t.bankModal.searchPlaceholder}
                             style={styles.input}
                             value={search}
                             onChangeText={setSearch}
@@ -69,7 +71,7 @@ export default function BankAccountModal({ visible, onClose, onSaved }: Props) {
                         />
 
                         <TextInput
-                            placeholder="Account number"
+                            placeholder={t.bankModal.accountNumberPlaceholder}
                             keyboardType="number-pad"
                             value={accountNumber}
                             onChangeText={(t) => setAccountNumber(t.replace(/[^\d-]/g, ""))} // allow digits (and hyphen if you need)
@@ -78,14 +80,14 @@ export default function BankAccountModal({ visible, onClose, onSaved }: Props) {
 
                         <View style={styles.actions}>
                             <TouchableOpacity onPress={onClose} style={[styles.btn, styles.outline]}>
-                                <Text style={[styles.btnText, { color: "#2E7D32" }]}>Cancel</Text>
+                                <Text style={[styles.btnText, { color: "#2E7D32" }]}>{t.bankModal.cancelButton}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={save}
                                 disabled={!canSave}
                                 style={[styles.btn, { backgroundColor: canSave ? "#2E7D32" : "#A5D6A7" }]}
                             >
-                                <Text style={[styles.btnText, { color: "#fff" }]}>Save</Text>
+                                <Text style={[styles.btnText, { color: "#fff" }]}>{t.bankModal.saveButton}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

@@ -8,8 +8,11 @@ import { ActivityIndicator, Alert, Animated, Easing, FlatList, StyleSheet, Text,
 import MapView, { Marker } from 'react-native-maps';
 import CircleProgressIndicator from "../components/CircleProgressIndicator";
 import CustomAlert, { AlertButton } from '../components/molecules/CustomAlert';
+import { interpolate } from '../constants/languages';
+import { useLanguage } from '../services/languageService';
 import { useUser } from "../services/userService";
 export default function MapScreen({ navigation }: any) {
+  const { t } = useLanguage();
   const [location, setLocation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [pointsWithDistance, setPointsWithDistance] = useState([]);
@@ -26,7 +29,7 @@ export default function MapScreen({ navigation }: any) {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        alert('Permission to access location was denied');
+        alert(t.map.locationDenied);
         setLoading(false);
         return;
       }
@@ -64,8 +67,8 @@ export default function MapScreen({ navigation }: any) {
         ...m,
         uiStatus:
           m.status === 'DEPLOYED' || m.status === 'RUNNING'
-            ? 'Active'
-            : 'Inactive',
+            ? t.map.active
+            : t.map.inactive,
       }));
 
       const mappedCollectionPoints = mapMachinesToCollectionPoints(normalizedMachines);
@@ -188,7 +191,7 @@ export default function MapScreen({ navigation }: any) {
     if (supported) {
       Linking.openURL(url);
     } else {
-      Alert.alert('Waze not installed');
+      Alert.alert(t.map.wazeNotInstalled);
     }
 
     setAlertVisible(false);
@@ -206,7 +209,7 @@ export default function MapScreen({ navigation }: any) {
     return (
       <View style={styles.loader}>
         <ActivityIndicator size="large" color="green" />
-        <Text>Loading map...</Text>
+        <Text>{t.map.loadingMap}</Text>
       </View>
     );
   }
@@ -227,7 +230,7 @@ export default function MapScreen({ navigation }: any) {
             {location && (
               <Marker
                 coordinate={location}
-                title="Your Location"
+                title={t.map.yourLocation}
                 pinColor="blue"
               />
             )}
@@ -240,7 +243,7 @@ export default function MapScreen({ navigation }: any) {
                   longitude: point.longitude,
                 }}
                 title={point.name}
-                description={`${point.distance.toFixed(2)} km away`}
+                description={interpolate(t.map.kmAway, { distance: point.distance.toFixed(2) })}
                 pinColor={selectedId === point.id ? 'blue' : 'red'}
               />
             ))}
@@ -253,24 +256,24 @@ export default function MapScreen({ navigation }: any) {
 
         {/* Header Overlay */}
         <View style={styles.headerOverlay}>
-          <Text style={styles.headerTitle}>Nearby Collection Points</Text>
+          <Text style={styles.headerTitle}>{t.map.title}</Text>
         </View>
-        
+
         <CustomAlert
           visible={alertVisible}
           title={"alertTitle"}
           message={"alertMessage"}
-          onClose={() =>{setAlertVisible(false); 
+          onClose={() =>{setAlertVisible(false);
           }}
         />
         <CustomAlert
           visible={alertVisible}
-          title="Choose Navigation App"
+          title={t.map.chooseNavApp}
           onClose={() => setAlertVisible(false)}
           renderContent={() => (
             <>
               <Text style={styles.message}>
-                Navigate to {selectedPoint?.name}
+                {interpolate(t.map.navigateTo, { name: selectedPoint?.name || '' })}
               </Text>
 
               {selectedPoint?.address && (
@@ -280,19 +283,19 @@ export default function MapScreen({ navigation }: any) {
               )}
 
               <AlertButton
-                label="Waze"
+                label={t.map.waze}
                 color="#4CAF50"
                 onPress={openWaze}
               />
 
               <AlertButton
-                label="Google Maps"
+                label={t.map.googleMaps}
                 color="#4285F4"
                 onPress={openGoogleMaps}
               />
 
               <AlertButton
-                label="Cancel"
+                label={t.common.cancel}
                 color="#9E9E9E"
                 onPress={() => setAlertVisible(false)}
               />
@@ -313,7 +316,7 @@ export default function MapScreen({ navigation }: any) {
               >
                 <View style={styles.listItem}>
                   <View style={styles.textContainer}>
-                    <Text 
+                    <Text
                         style={styles.placeName}
                         numberOfLines={2}
                         ellipsizeMode="tail"
@@ -321,7 +324,7 @@ export default function MapScreen({ navigation }: any) {
                       {item.name}
                     </Text>
                     <Text style={styles.distanceText}>
-                      {item.distance.toFixed(2)} km away
+                      {interpolate(t.map.kmAway, { distance: item.distance.toFixed(2) })}
                     </Text>
                     <View style={styles.statusRow}>
                       {item.bufferVolume != null && (
@@ -333,7 +336,7 @@ export default function MapScreen({ navigation }: any) {
                       <Text
                         style={[
                           styles.statusText,
-                          item.uiStatus === 'Active'
+                          item.uiStatus === t.map.active
                             ? styles.activeStatus
                             : styles.inactiveStatus,
                           { marginLeft: 8 },
@@ -348,7 +351,7 @@ export default function MapScreen({ navigation }: any) {
                     style={styles.goButton}
                     onPress={() => handleNavigation(item)}
                   >
-                    <Text style={styles.goText}>GO</Text>
+                    <Text style={styles.goText}>{t.map.go}</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>

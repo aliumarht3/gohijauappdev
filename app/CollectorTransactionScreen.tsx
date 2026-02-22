@@ -1,8 +1,10 @@
 import { Colors } from '@/constants/Colors';
+import { interpolate } from '../constants/languages';
 import { Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { getTransaction } from '../services/transactionService';
+import { useLanguage } from '../services/languageService';
 type CollectorHistoryItem = {
     id: string;
     createdAt: string;
@@ -10,6 +12,7 @@ type CollectorHistoryItem = {
     cO2Saved: number;
 };
 export default function CollectorTransactionScreen() {
+    const { t } = useLanguage();
     const [history, setHistory] = useState<CollectorHistoryItem[]>([]);
     useEffect(() => {
         const handleGenerateToken = async () => {
@@ -50,7 +53,7 @@ export default function CollectorTransactionScreen() {
         <>
             <Stack.Screen
                 options={{
-                    title: 'Oil Collection History',
+                    title: t.collectorTransaction.title,
                     headerShown: true,
                     headerTitleAlign: 'center',
                     headerStyle: { backgroundColor: Colors.light.background },
@@ -74,8 +77,8 @@ export default function CollectorTransactionScreen() {
                                         <Text style={styles.date}>{date}</Text>
                                         <Text style={styles.time}>{time}</Text>
                                     </View>
-                                    <Text>Oil: {item.oilCollected} kg</Text>
-                                    <Text>CO₂ Saved: {item.cO2Saved} kg</Text>
+                                    <Text>{interpolate(t.collectorTransaction.oil, { amount: item.oilCollected })}</Text>
+                                    <Text>{interpolate(t.collectorTransaction.co2Saved, { amount: item.cO2Saved })}</Text>
                                 </View>
                             );
                         }}
