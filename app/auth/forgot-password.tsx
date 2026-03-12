@@ -3,10 +3,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -14,7 +16,7 @@ export default function ForgotPasswordScreen() {
 
   const handleRequestReset = async () => {
     if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email address');
+      Alert.alert(t.common.error, t.auth.forgotPassword.enterEmail);
       return;
     }
 
@@ -23,12 +25,12 @@ export default function ForgotPasswordScreen() {
       const success = await requestPasswordReset(email);
       if (success) {
         setSubmitted(true);
-        Alert.alert('Success', 'Check your email for password reset instructions');
+        Alert.alert(t.common.success, t.auth.forgotPassword.checkEmail);
       } else {
-        Alert.alert('Error', 'Unable to process request');
+        Alert.alert(t.common.error, t.auth.forgotPassword.unableToProcess);
       }
     } catch (error) {
-      Alert.alert('Error', error?.message || 'Something went wrong. Please try again.');
+      Alert.alert(t.common.error, error?.message || t.auth.forgotPassword.somethingWrong);
     } finally {
       setLoading(false);
     }
@@ -57,18 +59,16 @@ export default function ForgotPasswordScreen() {
               <Ionicons name="chevron-back" size={28} color="#fff" />
             </TouchableOpacity>
 
-            <Text style={styles.title}>Reset Password</Text>
+            <Text style={styles.title}>{t.auth.forgotPassword.title}</Text>
             <Text style={styles.subtitle}>
-              {submitted
-                ? 'Reset link sent to your email'
-                : 'Enter your email to receive a password reset link'}
+              {submitted ? t.auth.forgotPassword.subtitleSubmitted : t.auth.forgotPassword.subtitleDefault}
             </Text>
 
             {!submitted ? (
               <>
                 <TextInput
                   style={styles.input}
-                  placeholder="Email Address"
+                  placeholder={t.auth.forgotPassword.emailPlaceholder}
                   placeholderTextColor="#ccc"
                   autoCapitalize="none"
                   keyboardType="email-address"
@@ -81,7 +81,7 @@ export default function ForgotPasswordScreen() {
                   <ActivityIndicator size="large" color="#0000ff" />
                 ) : (
                   <SubmitButton
-                    title="Send Reset Link"
+                    title={t.auth.forgotPassword.sendResetLink}
                     onPress={handleRequestReset}
                     backgroundColor="#388E3C"
                   />
@@ -91,16 +91,16 @@ export default function ForgotPasswordScreen() {
               <View style={styles.successContainer}>
                 <Ionicons name="checkmark-circle" size={64} color="#4CAF50" />
                 <Text style={styles.successText}>
-                  Please check your email for instructions to reset your password.
+                  {t.auth.forgotPassword.successText}
                 </Text>
                 <Text style={styles.successSubtext}>
-                  If you don't see the email, please check your spam folder.
+                  {t.auth.forgotPassword.spamText}
                 </Text>
               </View>
             )}
 
             <TouchableOpacity onPress={() => router.back()}>
-              <Text style={styles.linkText}>Back to Login</Text>
+              <Text style={styles.linkText}>{t.auth.forgotPassword.backToLogin}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

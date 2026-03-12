@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomAlert from '../../components/molecules/CustomAlert';
+import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
 import theme from "../themes/theme";
 
@@ -12,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, loadUserProfile, justLogout } = useUser();
+  const { t } = useLanguage();
   const [alertVisible, setAlertVisible] = useState(false);
 
   useFocusEffect(
@@ -29,9 +31,10 @@ export default function ProfileScreen() {
     router.replace('/OnboardingScreen');
   };
   const categories = [
-    { name: "Update Profile", icon: "document-text", color: "#4CAF50", route: "/profiles/UpdateProfileScreen" },
-    { name: "Change Password", icon: "cube", color: "#FFB74D", route: "/profiles/ChangePasswordScreen" },
-    { name: "Delete Account", icon: "trash-outline", color: "#FFB74D", route: "/profiles/DeleteAccountScreen" },
+    { name: t.profile.updateProfile, icon: "document-text", color: "#4CAF50", route: "/profiles/UpdateProfileScreen" },
+    { name: t.profile.changePassword, icon: "cube", color: "#FFB74D", route: "/profiles/ChangePasswordScreen" },
+    { name: t.profile.deleteAccount, icon: "trash-outline", color: "#FFB74D", route: "/profiles/DeleteAccountScreen" },
+    { name: t.profile.changeLanguage, icon: "language", color: "#42A5F5", route: "/profiles/ChangeLanguageScreen" },
   ];
   const handleLogout = async () => {
     try {
@@ -47,14 +50,14 @@ export default function ProfileScreen() {
         contentContainerStyle={{ paddingBottom: 30 }}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.title}>My Profile</Text>
+        <Text style={styles.title}>{t.profile.title}</Text>
 
         <View style={styles.card}>
-          <Text style={styles.label}>Name</Text>
+          <Text style={styles.label}>{t.profile.nameLabel}</Text>
           <Text style={styles.value}>{user.name}</Text>
-          <Text style={styles.label}>Email</Text>
+          <Text style={styles.label}>{t.profile.emailLabel}</Text>
           <Text style={styles.value}>{user.email}</Text>
-          <Text style={styles.label}>Phone</Text>
+          <Text style={styles.label}>{t.profile.phoneLabel}</Text>
           <Text style={styles.value}>{user.phone}</Text>
         </View>
 
@@ -88,19 +91,19 @@ export default function ProfileScreen() {
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>{t.profile.logout}</Text>
         </TouchableOpacity>
         {process.env.NODE_ENV === "development" && (
           <View style={{ marginTop: 15 }}>
-            <Button title="Reset Onboarding" onPress={resetOnboarding} />
+            <Button title={t.profile.resetOnboarding} onPress={resetOnboarding} />
           </View>
         )}
       </ScrollView>
 
       <CustomAlert
         visible={alertVisible}
-        title="Logout Failed!"
-        message="Something went wrong during logout."
+        title={t.profile.logoutFailed}
+        message={t.profile.logoutFailedMessage}
         onClose={() => { setAlertVisible(false); }}
       />
     </SafeAreaView>
@@ -160,9 +163,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   categoryCard: {
-    flexBasis: "40%",
-    maxWidth: 160,
-    // width: "45%",
+    width: 140,
     aspectRatio: 1,
     borderRadius: theme.borderRadius.lg,
     justifyContent: "center",
@@ -175,9 +176,8 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     fontWeight: "bold",
     marginTop: theme.spacing.sm,
-    flexWrap: "wrap",          // allow wrapping
-    maxWidth: 100,             // adjust so text breaks nicely
-    lineHeight: 18,            // optional: gives good spacing
+    maxWidth: 120,
+    lineHeight: 18,
   },
 
 });

@@ -5,10 +5,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { interpolate } from '../constants/languages';
 import api from '../api/apiClient';
 import CustomAlert from '../components/molecules/CustomAlert';
 import CustomOverlay from '../components/molecules/StartPouringOverlay';
+import { useLanguage } from '../services/languageService';
 export default function QRCodeScreen() {
+  const { t } = useLanguage();
   const { token } = useLocalSearchParams();
   const router = useRouter();
   const [connection, setConnection] = useState<SignalR.HubConnection | null>(null);
@@ -170,32 +173,31 @@ export default function QRCodeScreen() {
   };
   return (
     <View style={styles.container}>
-      <Text style={styles.instruction}>Show this QR code to the machine</Text>
+      <Text style={styles.instruction}>{t.qrCode.instruction}</Text>
       {!expired && (
         <Text style={styles.countdown}>
-          Expires in: {formatTime(countdown)}
+          {interpolate(t.qrCode.expiresIn, { time: formatTime(countdown) })}
         </Text>
       )}
       <View style={styles.qrContainer}>
         <QRCode value={Array.isArray(token) ? token[0] : token ?? ''} size={200} />
       </View>
       <TouchableOpacity onPress={handleBack} style={styles.cancelButton}>
-        <Text style={styles.cancelText}>Cancel</Text>
+        <Text style={styles.cancelText}>{t.qrCode.cancelButton}</Text>
       </TouchableOpacity>
       <CustomAlert
         visible={alertVisible}
-        title="Authorized!"
-        message={"You can now lift the lid and start pouring.\nMAX LIMIT IS 5KG"}
+        title={t.qrCode.authorized}
+        message={t.qrCode.authorizedPouringMessage}
         onClose={() => { setAlertVisible(false); setPouringVisible(true); }}
       />
       <CustomAlert
         visible={alertCollectorVisible}
-        title="Authorized!"
+        title={t.qrCode.authorized}
         renderContent={() => (
           <>
             <Text style={{ textAlign: 'center', fontSize: 16, marginBottom: 10 }}>
-              You can now start collecting.{'\n'}
-              Enter the UCO weight collected and select `End Collection` when done.
+              {t.qrCode.authorizedCollectorMessage}
             </Text>
 
             <View
@@ -215,19 +217,19 @@ export default function QRCodeScreen() {
                   fontSize: 16,
                   paddingVertical: 10,
                 }}
-                placeholder="Enter UCO weight"
+                placeholder={t.qrCode.enterUCOWeight}
                 keyboardType="numeric"
                 value={collectorUCOWeight}
                 onChangeText={setcollectorUCOWeight}
               />
-              <Text style={{ fontSize: 16, marginLeft: 5 }}>kg</Text>
+              <Text style={{ fontSize: 16, marginLeft: 5 }}>{t.common.kg}</Text>
             </View>
           </>
         )}
-        buttonText='End Collection'
+        buttonText={t.qrCode.endCollection}
         onClose={async () => {
           if (!collectorUCOWeight || collectorUCOWeight.trim() === '') {
-            Alert.alert('Input Required', 'Please enter the UCO weight before proceeding.');
+            Alert.alert(t.qrCode.inputRequired, t.qrCode.inputRequiredMessage);
             return;
           }
           setAlertCollectorVisible(false);
@@ -236,13 +238,13 @@ export default function QRCodeScreen() {
       />
       <WarningAlert
         visible={overload}
-        title='Limit reached!'
-        message='Please close the lid to end pouring.'
+        title={t.qrCode.limitReached}
+        message={t.qrCode.limitReachedMessage}
         enableSound={true}
         enableVibration={true}
         onClose={() => { setOverload(false); setAlertFinalizingVisible(true); }} />
-      <CustomOverlay visible={pouringVisible} text='In progress...' subtext={"Please close the lid once done.\nMAX LIMIT IS 5KG"} />
-      <CustomOverlay visible={alertFinalizingVisible} text='Finalizing. Please wait...' />
+      <CustomOverlay visible={pouringVisible} text={t.qrCode.inProgress} subtext={t.qrCode.closeLidMessage} />
+      <CustomOverlay visible={alertFinalizingVisible} text={t.qrCode.finalizing} />
     </View>
   );
 }

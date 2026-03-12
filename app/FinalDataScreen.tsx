@@ -1,29 +1,31 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../services/languageService';
 
 export default function FinalDataScreen() {
+  const { t } = useLanguage();
   const router = useRouter();
   const { oilPoured, pointsEarned } = useLocalSearchParams();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Great Job! 🎉</Text>
+      <Text style={styles.title}>{t.finalData.title}</Text>
       <View style={styles.card}>
         <Text style={styles.value}>{oilPoured} KG</Text>
-        <Text style={styles.label}>Oil Amount</Text>
+        <Text style={styles.label}>{t.finalData.oilAmount}</Text>
       </View>
       {pointsEarned != null && pointsEarned !== "" && (
         <View style={styles.card}>
           <Text style={styles.value}>+{pointsEarned}</Text>
-          <Text style={styles.label}>Points Earned</Text>
+          <Text style={styles.label}>{t.finalData.pointsEarned}</Text>
         </View>
       )}
       <TouchableOpacity
         style={styles.button}
         onPress={() => router.replace('/')} // Clears stack and goes home
       >
-        <Text style={styles.buttonText}>Back to Home</Text>
+        <Text style={styles.buttonText}>{t.finalData.backToHome}</Text>
       </TouchableOpacity>
     </View>
   );

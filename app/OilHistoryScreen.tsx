@@ -1,8 +1,10 @@
 import { Colors } from '@/constants/Colors';
+import { interpolate } from '../constants/languages';
 import { Stack } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { getTransaction } from '../services/transactionService';
+import { useLanguage } from '../services/languageService';
 type HistoryItem = {
   id: string;
   createdAt: string;
@@ -12,6 +14,7 @@ type HistoryItem = {
 };
 
 export default function OilHistoryScreen() {
+  const { t } = useLanguage();
   const [history, setHistory] = useState<HistoryItem[]>([]);
   useEffect(() => {
     const handleGenerateToken = async () => {
@@ -52,7 +55,7 @@ export default function OilHistoryScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Oil Deposition History',
+          title: t.oilHistory.title,
           headerShown: true,
           headerTitleAlign: 'center',
           headerStyle: { backgroundColor: Colors.light.background },
@@ -76,9 +79,9 @@ export default function OilHistoryScreen() {
                     <Text style={styles.date}>{date}</Text>
                     <Text style={styles.time}>{time}</Text>
                   </View>
-                  <Text>Oil: {item.oilPoured} kg</Text>
-                  <Text>CO₂ Saved: {item.cO2Saved} kg</Text>
-                  <Text>Points: {item.pointsAwarded}</Text>
+                  <Text>{interpolate(t.oilHistory.oil, { amount: item.oilPoured })}</Text>
+                  <Text>{interpolate(t.oilHistory.co2Saved, { amount: item.cO2Saved })}</Text>
+                  <Text>{interpolate(t.oilHistory.points, { amount: item.pointsAwarded })}</Text>
                 </View>
               );
             }}
