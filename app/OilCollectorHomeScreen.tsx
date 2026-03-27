@@ -3,6 +3,7 @@ import { generateQrTokenCollector } from "@/services/qrService";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
+import { useLanguage } from '../services/languageService';
 import {
     Dimensions,
     Image,
@@ -16,15 +17,16 @@ import {
 const { width } = Dimensions.get("window");
 
 export default function OilCollectorHomeScreen() {
+    const { t } = useLanguage();
     const router = useRouter();
     const [UCOAlertVisible, setUCOAlertVisible] = useState(false);
     const [paymentsAlertVisible, setPaymentsAlertVisible] = useState(false);
     const [transactionsAlertVisible, setTransactionsAlertVisible] = useState(false);
     const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
     const collectorStats = [
-        { label: "UCO Levels", value: "0%", unit: "" },
-        { label: "Collections Today", value: 0, unit: "" },
-        { label: "Transactions", value: 0, unit: "" },
+        { label: t.collectorHome.ucoLevels, value: "0%", unit: "" },
+        { label: t.collectorHome.collectionsToday, value: 0, unit: "" },
+        { label: t.collectorHome.transactions, value: 0, unit: "" },
     ];
     const handleGenerateToken = async () => {
         const token = await generateQrTokenCollector();
@@ -45,8 +47,8 @@ export default function OilCollectorHomeScreen() {
             {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.greeting}>Hello Collector 🚛</Text>
-                    <Text style={styles.subtitle}>Manage UCO collections efficiently</Text>
+                    <Text style={styles.greeting}>{t.collectorHome.greeting}</Text>
+                    <Text style={styles.subtitle}>{t.collectorHome.subtitle}</Text>
                 </View>
                 <Image
                     source={require("../assets/images/icon.png")}
@@ -71,51 +73,51 @@ export default function OilCollectorHomeScreen() {
                     onPress={() => router.push('/CollectorMachinesScreen')}
                 >
                     <Ionicons name="water" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Monitor UCO</Text>
+                    <Text style={styles.actionText}>{t.collectorHome.monitorUCO}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionButton}
                     onPress={handleGenerateToken}
                 >
                     <Ionicons name="trash" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Scan to collect</Text>
+                    <Text style={styles.actionText}>{t.collectorHome.scanToCollect}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.actionButton}
                     onPress={() => router.push('/CollectorTransactionScreen')}
                 >
                     <Ionicons name="time" size={28} color="#fff" />
-                    <Text style={styles.actionText}>Transactions</Text>
+                    <Text style={styles.actionText}>{t.collectorHome.transactions}</Text>
                 </TouchableOpacity>
                 <CustomAlert
                     visible={alertFailedToGenerateVisible}
-                    title="Failed!"
-                    message="Failed to generate QR code. Please try again."
+                    title={t.common.failedTitle}
+                    message={t.common.failedQrGeneration}
                     onClose={() => { setAlertFailedToGenerateVisible(false); }}
                 />
                 <CustomAlert
                     visible={UCOAlertVisible}
-                    title="Coming Soon!"
-                    message={"UCO monitor screen is in development.\nThank you for your patience."}
+                    title={t.common.comingSoon}
+                    message={t.collectorHome.comingSoonUCO}
                     onClose={() => { setUCOAlertVisible(false); }}
                 />
                 <CustomAlert
                     visible={paymentsAlertVisible}
-                    title="Coming Soon!"
-                    message={"Payment screen is in development.\nThank you for your patience."}
+                    title={t.common.comingSoon}
+                    message={t.collectorHome.comingSoonPayment}
                     onClose={() => { setPaymentsAlertVisible(false); }}
                 />
                 <CustomAlert
                     visible={transactionsAlertVisible}
-                    title="Coming Soon!"
-                    message={"Transaction screen is in development.\nThank you for your patience."}
+                    title={t.common.comingSoon}
+                    message={t.collectorHome.comingSoonTransaction}
                     onClose={() => { setTransactionsAlertVisible(false); }}
                 />
             </View>
 
             {/* Collection Map */}
             <View style={styles.mapCard}>
-                <Text style={styles.mapTitle}>Machines Requiring Collection</Text>
+                <Text style={styles.mapTitle}>{t.collectorHome.machinesRequiringCollection}</Text>
                 <Image
                     source={require("../assets/images/mapbackground.jpg")}
                     style={styles.mapImage}
@@ -124,7 +126,7 @@ export default function OilCollectorHomeScreen() {
                     style={styles.mapButton}
                 // onPress={() => router.push("/CollectorMapScreen")}
                 >
-                    <Text style={styles.mapButtonText}>View on Map</Text>
+                    <Text style={styles.mapButtonText}>{t.collectorHome.viewOnMap}</Text>
                 </TouchableOpacity>
             </View>
         </ScrollView>
@@ -140,10 +142,10 @@ const styles = StyleSheet.create({
     statsContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 25 },
     statCard: { flex: 1, backgroundColor: "#fff", padding: 15, marginHorizontal: 5, borderRadius: 12, alignItems: "center", elevation: 3 },
     statValue: { fontSize: 18, fontWeight: "bold", color: "#388E3C", textAlign: "center" },
-    statLabel: { fontSize: 12, color: "#666", marginTop: 4 },
+    statLabel: { fontSize: 13, color: "#666", marginTop: 4, textAlign: "center" },
     quickActions: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", marginBottom: 25 },
     actionButton: { width: "47%", backgroundColor: "#4CAF50", padding: 15, borderRadius: 12, alignItems: "center", marginBottom: 15 },
-    actionText: { color: "#fff", marginTop: 6, fontWeight: "600" },
+    actionText: { color: "#fff", marginTop: 6, fontWeight: "600", fontSize: 14, textAlign: "center" },
     mapCard: { backgroundColor: "#fff", borderRadius: 12, padding: 15, marginBottom: 25, elevation: 3 },
     mapTitle: { fontSize: 16, fontWeight: "bold", color: "#2E7D32", marginBottom: 10 },
     mapImage: { width: "100%", height: 120, borderRadius: 10, marginBottom: 10 },

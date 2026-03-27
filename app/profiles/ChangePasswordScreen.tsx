@@ -5,9 +5,11 @@ import React, { useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import api from '../../api/apiClient';
 import CustomAlert from '../../components/molecules/CustomAlert';
+import { useLanguage } from '../../services/languageService';
 import theme from "../themes/theme";
 
 export default function ChangePasswordScreen() {
+  const { t } = useLanguage();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -23,8 +25,8 @@ export default function ChangePasswordScreen() {
 
   const handleSave = async () => {
     if (newPassword !== confirmPassword) {
-      setAlertTitle("Error!");
-      setAlertMessage("New password and confirm password do not match.");
+      setAlertTitle(t.changePassword.errorTitle);
+      setAlertMessage(t.changePassword.passwordMismatch);
       setAlertVisible(true);
       return;
     }
@@ -37,12 +39,12 @@ export default function ChangePasswordScreen() {
     
     try {
       const res = await api.patch('/user/change-password', payload);
-      setAlertTitle("Success!");
-      setAlertMessage(res.data.message || "Password changed successfully.");
+      setAlertTitle(t.changePassword.successTitle);
+      setAlertMessage(res.data.message || t.changePassword.successMessage);
       setAlertVisible(true);
     } catch (err: any) {
-      setAlertTitle("Error!");
-      setAlertMessage(err.response?.data?.message || err.message || "Something went wrong.");
+      setAlertTitle(t.changePassword.errorTitle);
+      setAlertMessage(err.response?.data?.message || err.message || t.changePassword.somethingWrong);
       setAlertVisible(true);
     } finally {
       setLoading(false);
@@ -53,8 +55,8 @@ export default function ChangePasswordScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Change Password',
-          headerBackTitle: "Profile",
+          title: t.changePassword.title,
+          headerBackTitle: t.changePassword.backTitle,
           headerBackButtonDisplayMode: "minimal",
           headerShown: true,
           headerTitleAlign: 'center',
@@ -71,17 +73,17 @@ export default function ChangePasswordScreen() {
                     title={alertTitle}
                     message={alertMessage}
                     onClose={() =>{setAlertVisible(false); 
-                      if (alertTitle === "Success!") {
+                      if (alertTitle === t.changePassword.successTitle) {
                         router.back();
                       }
                     }}
                   />
       <View style={styles.container}>
 
-        <Text style={styles.label}>Current Password</Text>
+        <Text style={styles.label}>{t.changePassword.currentPasswordLabel}</Text>
         <View style={styles.passwordContainer}>
           <TextInput
-            placeholder="Current Password"
+            placeholder={t.changePassword.currentPasswordPlaceholder}
             value={currentPassword}
             autoCapitalize="none"
             secureTextEntry={!showCurrentPassword}
@@ -98,10 +100,10 @@ export default function ChangePasswordScreen() {
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.label}>New Password</Text>
+        <Text style={styles.label}>{t.changePassword.newPasswordLabel}</Text>
         <View style={styles.passwordContainer}>
         <TextInput
-          placeholder="New Password"
+          placeholder={t.changePassword.newPasswordPlaceholder}
           value={newPassword}
           autoCapitalize="none"
           secureTextEntry={!showNewPassword}
@@ -117,10 +119,10 @@ export default function ChangePasswordScreen() {
             />
           </TouchableOpacity>
         </View>
-        <Text style={styles.label}>Confirm Password</Text>
+        <Text style={styles.label}>{t.changePassword.confirmPasswordLabel}</Text>
         <View style={styles.passwordContainer}>
         <TextInput
-          placeholder="Confirm Password"
+          placeholder={t.changePassword.confirmPasswordPlaceholder}
           value={confirmPassword}
           autoCapitalize="none"
           secureTextEntry={!showConfirmPassword}
@@ -141,7 +143,7 @@ export default function ChangePasswordScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Change Password</Text>
+            <Text style={styles.buttonText}>{t.changePassword.changeButton}</Text>
           )}
         </TouchableOpacity>
       </View>

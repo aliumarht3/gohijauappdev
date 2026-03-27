@@ -7,7 +7,10 @@ import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLanguage } from '../../services/languageService';
+
 export default function TabLayout() {
+  const { t } = useLanguage();
   useEffect(() => {
     setAudioModeAsync({
       playsInSilentMode: true,
@@ -46,7 +49,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: t.tabs.home,
           tabBarIcon: ({ color }) => (
             <Ionicons name="home" size={28} color={color} />
           ),
@@ -55,7 +58,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: t.tabs.profile,
           tabBarIcon: ({ color }) => (
             <Ionicons name="person-circle" size={28} color={color} />
           ),

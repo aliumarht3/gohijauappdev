@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Linking, Platform, Text, TouchableOpacity, View } from 'react-native';
 import api from '../api/apiClient';
+import { useLanguage } from '../services/languageService';
 
 async function getLatestAppInfo(): Promise<string | null> {
   try {
@@ -19,6 +20,7 @@ async function getLatestAppInfo(): Promise<string | null> {
 }
 
 export function UpdateRequiredScreen() {
+  const { t } = useLanguage();
   const [storeUrl, setStoreUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +53,7 @@ export function UpdateRequiredScreen() {
         }}
       >
         <ActivityIndicator size="large" color="#007bff" />
-        <Text style={{ marginTop: 10 }}>Checking for updates...</Text>
+        <Text style={{ marginTop: 10 }}>{t.updateRequired.checking}</Text>
       </View>
     );
   }
@@ -67,7 +69,7 @@ export function UpdateRequiredScreen() {
       }}
     >
       <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 10 }}>
-        Update Required
+        {t.updateRequired.title}
       </Text>
       <Text
         style={{
@@ -77,15 +79,14 @@ export function UpdateRequiredScreen() {
           color: '#555',
         }}
       >
-        A new version of this app is available. Please update to continue using
-        it.
+        {t.updateRequired.message}
       </Text>
       <TouchableOpacity
         onPress={() =>{
           if (storeUrl) {
             Linking.openURL(storeUrl);
           } else {
-            alert('Store link unavailable.');
+            alert(t.updateRequired.storeLinkUnavailable);
           }
         }}
         style={{
@@ -95,7 +96,7 @@ export function UpdateRequiredScreen() {
           borderRadius: 8,
         }}
       >
-        <Text style={{ color: '#fff', fontSize: 16 }}>Update Now</Text>
+        <Text style={{ color: '#fff', fontSize: 16 }}>{t.updateRequired.updateButton}</Text>
       </TouchableOpacity>
     </View>
   );
