@@ -18,8 +18,8 @@ export default function ChangeLanguageScreen() {
   const { language, setLanguage, t } = useLanguage();
   const router = useRouter();
 
-  const handleSelect = async (code: Language) => {
-    await setLanguage(code);
+  const handleSelect = (code: Language) => {
+    setLanguage(code).catch((err) => console.error('Failed to save language', err));
     router.back();
   };
 
