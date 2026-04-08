@@ -1,11 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import { useLanguage } from '../services/languageService';
 import { Image, StyleSheet } from 'react-native';
 import Onboarding from 'react-native-onboarding-swiper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OnboardingScreen() {
+  const { t } = useLanguage();
   const router = useRouter();
 
   const completeOnboarding = async () => {
@@ -22,20 +24,20 @@ export default function OnboardingScreen() {
           {
             backgroundColor: '#4CAF50',
             image: <Image source={require('../assets/help/qr.png')} style={styles.image} />,
-            title: 'Scan Used Oil',
-            subtitle: 'Quickly scan and recycle used oil at collection points.',
+            title: t.onboarding.scanTitle,
+            subtitle: t.onboarding.scanSubtitle,
           },
           {
             backgroundColor: '#FF9800',
             image: <Image source={require('../assets/help/withdrawal.png')} style={styles.image} />,
-            title: 'Track Rewards',
-            subtitle: 'Earn points and redeem them for benefits.',
+            title: t.onboarding.trackRewardsTitle,
+            subtitle: t.onboarding.trackRewardsSubtitle,
           },
           {
             backgroundColor: '#2196F3',
             image: <Image source={require('../assets/help/map.png')} style={styles.image} />,
-            title: 'Find Collection Points',
-            subtitle: 'Locate nearby oil recycling points with ease.',
+            title: t.onboarding.findPointsTitle,
+            subtitle: t.onboarding.findPointsSubtitle,
           },
         ]}
       />

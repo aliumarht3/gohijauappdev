@@ -1,5 +1,5 @@
-import { Language, languageNames } from '@/constants/languages';
 import { Colors } from '@/constants/Colors';
+import { Language, languageNames } from '@/constants/languages';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React from 'react';
@@ -18,8 +18,8 @@ export default function ChangeLanguageScreen() {
   const { language, setLanguage, t } = useLanguage();
   const router = useRouter();
 
-  const handleSelect = (code: Language) => {
-    setLanguage(code).catch((err) => console.error('Failed to save language', err));
+  const handleSelect = async (code: Language) => {
+    await setLanguage(code);
     router.back();
   };
 

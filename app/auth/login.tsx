@@ -1,28 +1,9 @@
-// import AsyncStorage from '@react-native-async-storage/async-storage';
-// import { useRouter } from 'expo-router';
-// import { Button, Text, View } from 'react-native';
-
-// export default function LoginScreen() {
-//   const router = useRouter();
-
-//   const handleLogin = async () => {
-//     // Normally you'd call an API here and get a token
-//     await AsyncStorage.setItem('auth_token', 'dummy-token');
-//     router.replace('/'); // Redirect to main app
-//   };
-
-//   return (
-//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//       <Text>Login Screen</Text>
-//       <Button title="Log In" onPress={handleLogin} />
-//     </View>
-//   );
-// }
 import SubmitButton from '@/components/atoms/SubmitButton';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
 
 export default function LoginScreen() {
@@ -32,6 +13,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const { loadUserProfile, loginUser } = useUser();
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useLanguage();
 
   const handleLogin = async () => {
     setLoading(true);
@@ -41,13 +23,13 @@ export default function LoginScreen() {
       if (success) {
         router.replace('/');
       } else {
-        Alert.alert('Login Failed', 'Invalid credentials.');
+        Alert.alert(t.auth.login.loginFailed, t.auth.login.invalidCredentials);
       }
     } catch (error) {
       if (error.name === 'AbortError') {
-        Alert.alert('Timeout', 'The request took too long. Please try again.');
+        Alert.alert(t.auth.login.timeout, t.auth.login.timeoutMessage);
       } else {
-        Alert.alert('Login Failed', error?.message || 'Something went wrong');
+        Alert.alert(t.auth.login.loginFailed, error?.message || t.auth.login.somethingWrong);
       }
     } finally {
       setLoading(false);
@@ -61,13 +43,13 @@ export default function LoginScreen() {
       resizeMode="cover"
     >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} // iOS = smooth padding, Android = height
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0} // adjust if header exists
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 50 : 0}
       >
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled" // allow taps while keyboard open
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.overlay}>
 
@@ -77,12 +59,12 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
 
-            <Text style={styles.title}>Recycle Used Oil</Text>
-            <Text style={styles.subtitle}>Turn waste into a cleaner planet</Text>
+            <Text style={styles.title}>{t.auth.login.title}</Text>
+            <Text style={styles.subtitle}>{t.auth.login.subtitle}</Text>
 
             <TextInput
               style={styles.input}
-              placeholder="Email"
+              placeholder={t.auth.login.emailPlaceholder}
               placeholderTextColor="#ccc"
               autoCapitalize="none"
               keyboardType="email-address"
@@ -92,7 +74,7 @@ export default function LoginScreen() {
             <View style={styles.passwordContainer}>
               <TextInput
                 style={styles.passwordInput}
-                placeholder="Password"
+                placeholder={t.auth.login.passwordPlaceholder}
                 autoCapitalize="none"
                 secureTextEntry={!showPassword}
                 placeholderTextColor="#ccc"
@@ -110,13 +92,13 @@ export default function LoginScreen() {
             {loading ? (
               <ActivityIndicator size="large" color="#0000ff" />
             ) : (
-              <SubmitButton title="Login" onPress={handleLogin} backgroundColor="#388E3C" />
+              <SubmitButton title={t.auth.login.loginButton} onPress={handleLogin} backgroundColor="#388E3C" />
             )}
             <TouchableOpacity onPress={() => router.push('/auth/forgot-password')}>
-              <Text style={styles.linkText}>Forgot Password?</Text>
+              <Text style={styles.linkText}>{t.auth.login.forgotPassword}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/auth/signup')}>
-              <Text style={styles.linkText}>Don’t have an account? Sign up</Text>
+              <Text style={styles.linkText}>{t.auth.login.noAccount}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -134,7 +116,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
-    backgroundColor: 'rgba(0, 50, 0, 0.3)', // eco-friendly green overlay
+    backgroundColor: 'rgba(0, 50, 0, 0.3)',
     marginTop: -130,
   },
   title: {

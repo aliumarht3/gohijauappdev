@@ -4,10 +4,12 @@ import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import api from '../../api/apiClient';
 import CustomAlert from '../../components/molecules/CustomAlert';
+import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
 import theme from "../themes/theme";
 
 export default function UpdateProfileScreen() {
+  const { t } = useLanguage();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -41,7 +43,7 @@ export default function UpdateProfileScreen() {
       
       setAlertVisible(true);
     } catch (err: any) {
-      Alert.alert("Error", err.message);
+      Alert.alert(t.common.error, err.message);
     } finally {
       setLoading(false);
     }
@@ -51,8 +53,8 @@ export default function UpdateProfileScreen() {
     <>
       <Stack.Screen
         options={{
-          title: 'Update Profile',
-          headerBackTitle: "Profile",
+          title: t.updateProfile.title,
+          headerBackTitle: t.updateProfile.backTitle,
           headerBackButtonDisplayMode: "minimal",
           headerShown: true,
           headerTitleAlign: 'center',
@@ -66,31 +68,31 @@ export default function UpdateProfileScreen() {
       />
       <CustomAlert
                     visible={alertVisible}
-                    title="Success!"
-                    message="Profile updated successfully."
+                    title={t.updateProfile.successTitle}
+                    message={t.updateProfile.successMessage}
                     onClose={() =>{setAlertVisible(false); router.back(); }}
                   />
       <View style={styles.container}>
 
-        <Text style={styles.label}>Name</Text>
+        <Text style={styles.label}>{t.updateProfile.nameLabel}</Text>
         <TextInput
-          placeholder="Name"
+          placeholder={t.updateProfile.namePlaceholder}
           value={name}
           onChangeText={setName}
           style={styles.input}
           placeholderTextColor="#888"
         />
-        <Text style={styles.label}>Phone</Text>
+        <Text style={styles.label}>{t.updateProfile.phoneLabel}</Text>
         <TextInput
-          placeholder="Phone"
+          placeholder={t.updateProfile.phonePlaceholder}
           value={phone}
           onChangeText={setPhone}
           style={styles.input}
           placeholderTextColor="#888"
         />
-        <Text style={styles.label}>Email</Text>
+        <Text style={styles.label}>{t.updateProfile.emailLabel}</Text>
         <TextInput
-          placeholder="Email"
+          placeholder={t.updateProfile.emailPlaceholder}
           value={email}
           onChangeText={setEmail}
           style={styles.input}
@@ -102,7 +104,7 @@ export default function UpdateProfileScreen() {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Save Changes</Text>
+            <Text style={styles.buttonText}>{t.updateProfile.saveChanges}</Text>
           )}
         </TouchableOpacity>
       </View>

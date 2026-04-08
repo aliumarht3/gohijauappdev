@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setAudioModeAsync } from 'expo-audio';
 import { jwtDecode } from 'jwt-decode';
 import authStorage from '../api/authStorage';
+import { LanguageProvider } from '../services/languageService';
 import { UserProvider } from '../services/userService';
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -82,20 +83,22 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <UserProvider>
-        <Stack screenOptions={{ headerShown: false }}>
-          {isLoggedIn ? (
-            !hasSeenOnboarding ? (
-              <Stack.Screen name="OnboardingScreen" />
+      <LanguageProvider>
+        <UserProvider>
+          <Stack screenOptions={{ headerShown: false }}>
+            {isLoggedIn ? (
+              !hasSeenOnboarding ? (
+                <Stack.Screen name="OnboardingScreen" />
+              ) : (
+                <Stack.Screen name="(tabs)" />
+              )
             ) : (
-              <Stack.Screen name="(tabs)" />
-            )
-          ) : (
-            <Stack.Screen name="auth" />
-          )}
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      </UserProvider>
+              <Stack.Screen name="auth" />
+            )}
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </UserProvider>
+      </LanguageProvider>
       <StatusBar style="dark" />
     </ThemeProvider>
   );

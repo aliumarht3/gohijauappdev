@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
 
 export default function ResetPasswordScreen() {
@@ -17,12 +18,13 @@ export default function ResetPasswordScreen() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [resetSuccess, setResetSuccess] = useState(false);
   const { resetPassword, validateResetToken } = useUser();
+  const { t } = useLanguage();
 
   // Validate token when component mounts
   useEffect(() => {
     const checkTokenValidity = async () => {
       if (!token) {
-        Alert.alert('Error', 'No reset token provided');
+        Alert.alert(t.common.error, t.auth.resetPassword.noToken);
         router.replace('/auth/forgot-password');
         return;
       }
@@ -33,12 +35,12 @@ export default function ResetPasswordScreen() {
         if (isValid) {
           setTokenValid(true);
         } else {
-          Alert.alert('Error', 'Invalid or expired reset token. Please request a new password reset.');
+          Alert.alert(t.common.error, t.auth.resetPassword.invalidToken);
           router.replace('/auth/forgot-password');
         }
       } catch (error) {
         console.error('Token validation error:', error);
-        Alert.alert('Error', 'Failed to validate token. Please try again.');
+        Alert.alert(t.common.error, t.auth.resetPassword.tokenValidationFailed);
         router.replace('/auth/forgot-password');
       } finally {
         setValidatingToken(false);
@@ -50,15 +52,15 @@ export default function ResetPasswordScreen() {
 
   const validatePasswords = () => {
     if (!password.trim() || !confirmPassword.trim()) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert(t.common.error, t.auth.resetPassword.fillAllFields);
       return false;
     }
     if (password.length < 8) {
-      Alert.alert('Error', 'Password must be at least 8 characters long');
+      Alert.alert(t.common.error, t.auth.resetPassword.passwordMinLength);
       return false;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      Alert.alert(t.common.error, t.auth.resetPassword.passwordsDoNotMatch);
       return false;
     }
     return true;
@@ -72,15 +74,15 @@ export default function ResetPasswordScreen() {
       const success = await resetPassword(token as string, password);
       if (success) {
         setResetSuccess(true);
-        Alert.alert('Success', 'Your password has been reset successfully');
+        Alert.alert(t.common.success, t.auth.resetPassword.resetSuccess);
         setTimeout(() => {
           router.replace('/auth/login');
         }, 2000);
       } else {
-        Alert.alert('Error', 'Failed to reset password. Please try again or request a new reset link.');
+        Alert.alert(t.common.error, t.auth.resetPassword.resetFailed);
       }
     } catch (error) {
-      Alert.alert('Error', error?.message || 'Something went wrong. Please try again.');
+      Alert.alert(t.common.error, error?.message || t.auth.resetPassword.somethingWrong);
     } finally {
       setLoading(false);
     }
@@ -105,35 +107,35 @@ export default function ResetPasswordScreen() {
             {validatingToken ? (
               <View style={styles.loadingContainer}>
                 <ActivityIndicator size="large" color="#fff" />
-                <Text style={styles.loadingText}>Validating your reset link...</Text>
+                <Text style={styles.loadingText}>{t.auth.resetPassword.validatingToken}</Text>
               </View>
             ) : !tokenValid ? (
               <View style={styles.errorContainer}>
                 <Ionicons name="alert-circle" size={80} color="#ff6b6b" />
-                <Text style={styles.errorTitle}>Invalid Reset Link</Text>
+                <Text style={styles.errorTitle}>{t.auth.resetPassword.invalidResetLink}</Text>
                 <Text style={styles.errorText}>
-                  The password reset link is invalid or has expired. Please request a new one.
+                  {t.auth.resetPassword.invalidResetLinkMessage}
                 </Text>
               </View>
             ) : resetSuccess ? (
               <View style={styles.successContainer}>
                 <Ionicons name="checkmark-circle" size={80} color="#4CAF50" />
-                <Text style={styles.successTitle}>Password Reset Successfully!</Text>
+                <Text style={styles.successTitle}>{t.auth.resetPassword.passwordResetSuccess}</Text>
                 <Text style={styles.successText}>
-                  You can now log in with your new password
+                  {t.auth.resetPassword.canLoginNow}
                 </Text>
               </View>
             ) : (
               <>
-                <Text style={styles.title}>Create New Password</Text>
+                <Text style={styles.title}>{t.auth.resetPassword.title}</Text>
                 <Text style={styles.subtitle}>
-                  Enter a new password for your account
+                  {t.auth.resetPassword.subtitle}
                 </Text>
 
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    placeholder="New Password"
+                    placeholder={t.auth.resetPassword.newPasswordPlaceholder}
                     autoCapitalize="none"
                     secureTextEntry={!showPassword}
                     placeholderTextColor="#ccc"
@@ -153,7 +155,7 @@ export default function ResetPasswordScreen() {
                 <View style={styles.passwordContainer}>
                   <TextInput
                     style={styles.passwordInput}
-                    placeholder="Confirm Password"
+                    placeholder={t.auth.resetPassword.confirmPasswordPlaceholder}
                     autoCapitalize="none"
                     secureTextEntry={!showConfirmPassword}
                     placeholderTextColor="#ccc"
@@ -171,14 +173,14 @@ export default function ResetPasswordScreen() {
                 </View>
 
                 <Text style={styles.hint}>
-                  Password must be at least 8 characters long
+                  {t.auth.resetPassword.passwordMinLength}
                 </Text>
 
                 {loading ? (
                   <ActivityIndicator size="large" color="#0000ff" />
                 ) : (
                   <SubmitButton
-                    title="Reset Password"
+                    title={t.auth.resetPassword.resetButton}
                     onPress={handleResetPassword}
                     backgroundColor="#388E3C"
                   />
@@ -187,7 +189,7 @@ export default function ResetPasswordScreen() {
             )}
 
             <TouchableOpacity onPress={() => router.replace('/auth/login')}>
-              <Text style={styles.linkText}>Back to Login</Text>
+              <Text style={styles.linkText}>{t.auth.resetPassword.backToLogin}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

@@ -1,21 +1,3 @@
-// import { useRouter } from 'expo-router';
-// import { Button, Text, View } from 'react-native';
-
-// export default function SignupScreen() {
-//   const router = useRouter();
-
-//   const handleSignup = () => {
-//     // Handle signup (API call, save token)
-//     router.replace('/auth/login'); // After signup, go to login
-//   };
-
-//   return (
-//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//       <Text>Signup Screen</Text>
-//       <Button title="Sign Up" onPress={handleSignup} />
-//     </View>
-//   );
-// }
 import SubmitButton from '@/components/atoms/SubmitButton';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from "expo-constants";
@@ -23,10 +5,12 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import api from '../../api/apiClient';
+import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
 
 export default function SignupScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,12 +23,12 @@ export default function SignupScreen() {
 
   const handleSignup = async () => {
     if (!name || !email || !password || !passwordConfirm || !phone) {
-      Alert.alert('Missing fields', 'Please fill in all the fields.');
+      Alert.alert(t.auth.signup.missingFields, t.auth.signup.missingFieldsMessage);
       return;
     }
 
     if (password !== passwordConfirm) {
-      Alert.alert('Password mismatch', 'Passwords do not match.');
+      Alert.alert(t.auth.signup.passwordMismatch, t.auth.signup.passwordMismatchMessage);
       return;
     }
 
@@ -62,21 +46,22 @@ export default function SignupScreen() {
 
       clearTimeout(timeoutId);  
 
-      Alert.alert('Success', 'Account created. Please login.');
+      Alert.alert(t.common.success, t.auth.signup.accountCreated);
       await justLogout();
 
-    } catch (error) {
+    } catch (err) {
       clearTimeout(timeoutId);
+      const error = err instanceof Error ? err : new Error(String(err));
 
       if (error.name === 'AbortError') {
-        Alert.alert('Timeout', 'Request took too long. Please try again.');
+        Alert.alert(t.auth.signup.timeout, t.auth.signup.timeoutMessage);
       } else if (
         error.message === 'Network request failed' ||
         error.message.includes('Network')
       ) {
-        Alert.alert('Network Error', 'Could not connect to the server. Please check your connection or server status.');
+        Alert.alert(t.auth.signup.networkError, t.auth.signup.networkErrorMessage);
       } else {
-        Alert.alert('Signup Failed', error.message || 'An unexpected error occurred.');
+        Alert.alert(t.auth.signup.signupFailed, error.message || t.auth.signup.unexpectedError);
       }
 
       console.error('Signup error:', error);
@@ -95,19 +80,19 @@ export default function SignupScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.overlay}>
-        <Text style={styles.title}>Join the Green Movement</Text>
-        <Text style={styles.subtitle}>Recycle used oil & make a difference</Text>
+        <Text style={styles.title}>{t.auth.signup.title}</Text>
+        <Text style={styles.subtitle}>{t.auth.signup.subtitle}</Text>
 
         <TextInput 
           style={styles.input} 
-          placeholder="Name"
+          placeholder={t.auth.signup.namePlaceholder}
           placeholderTextColor="#ddd"
           value={name} 
           onChangeText={setName} 
         />
         <TextInput 
           style={styles.input} 
-          placeholder="Email"
+          placeholder={t.auth.signup.emailPlaceholder}
           placeholderTextColor="#ddd"
           autoCapitalize="none"
           keyboardType="email-address"
@@ -117,7 +102,7 @@ export default function SignupScreen() {
         <View style={styles.passwordContainer}>
           <TextInput 
             style={styles.passwordInput} 
-            placeholder="Password"
+            placeholder={t.auth.signup.passwordPlaceholder}
             autoCapitalize="none"
             placeholderTextColor="#ddd"
             secureTextEntry={!showPassword}
@@ -135,7 +120,7 @@ export default function SignupScreen() {
         <View style={styles.passwordContainer}>
           <TextInput 
             style={styles.passwordInput} 
-            placeholder="Retype Password"
+            placeholder={t.auth.signup.retypePasswordPlaceholder}
             autoCapitalize="none"
             placeholderTextColor="#ddd"
             secureTextEntry={!showRetypePassword}
@@ -152,17 +137,17 @@ export default function SignupScreen() {
         </View>
          <TextInput 
           style={styles.input} 
-          placeholder="Phone Number"
+          placeholder={t.auth.signup.phonePlaceholder}
           placeholderTextColor="#ddd"
           value={phone} 
           onChangeText={setPhone}
           keyboardType="numeric"
           maxLength={15}
         />
-        <SubmitButton title="Sign Up" onPress={handleSignup} backgroundColor="#66BB6A" />
+        <SubmitButton title={t.auth.signup.signupButton} onPress={handleSignup} backgroundColor="#66BB6A" />
 
         <TouchableOpacity onPress={()=> { router.dismissAll(); router.replace('/auth/login')}}>
-          <Text style={styles.linkText}>Already have an account? Login</Text>
+          <Text style={styles.linkText}>{t.auth.signup.hasAccount}</Text>
         </TouchableOpacity>
       </View>
       </ScrollView>
