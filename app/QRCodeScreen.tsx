@@ -5,10 +5,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
-import { interpolate } from '../constants/languages';
 import api from '../api/apiClient';
-import CustomAlert from '../components/molecules/CustomAlert';
+import CustomAlert, { AlertButton } from '../components/molecules/CustomAlert';
 import CustomOverlay from '../components/molecules/StartPouringOverlay';
+import { interpolate } from '../constants/languages';
 import { useLanguage } from '../services/languageService';
 export default function QRCodeScreen() {
   const { t } = useLanguage();
@@ -171,6 +171,14 @@ export default function QRCodeScreen() {
     const s = seconds % 60;
     return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
+  const handleSubmitEndCollection = async () => {
+    if (!collectorUCOWeight || collectorUCOWeight.trim() === '') {
+      Alert.alert(t.qrCode.inputRequired, t.qrCode.inputRequiredMessage);
+      return;
+    }
+    setAlertCollectorVisible(false);
+    await handleEndCollection(collectorUCOWeight);
+  }
   return (
     <View style={styles.container}>
       <Text style={styles.instruction}>{t.qrCode.instruction}</Text>
@@ -223,18 +231,15 @@ export default function QRCodeScreen() {
                 onChangeText={setcollectorUCOWeight}
               />
               <Text style={{ fontSize: 16, marginLeft: 5 }}>{t.common.kg}</Text>
+
             </View>
+            <AlertButton
+              label={t.qrCode.endCollection}
+              color="#4CAF50"
+              onPress={handleSubmitEndCollection}
+            />
           </>
         )}
-        buttonText={t.qrCode.endCollection}
-        onClose={async () => {
-          if (!collectorUCOWeight || collectorUCOWeight.trim() === '') {
-            Alert.alert(t.qrCode.inputRequired, t.qrCode.inputRequiredMessage);
-            return;
-          }
-          setAlertCollectorVisible(false);
-          await handleEndCollection(collectorUCOWeight);
-        }}
       />
       <WarningAlert
         visible={overload}
