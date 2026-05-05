@@ -2,8 +2,8 @@ import WarningAlert from '@/components/molecules/WarningAlert';
 import * as SignalR from '@microsoft/signalr';
 import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, AppState, AppStateStatus, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import api from '../api/apiClient';
 import CustomAlert, { AlertButton } from '../components/molecules/CustomAlert';
@@ -25,6 +25,27 @@ export default function QRCodeScreen() {
   const [machineId, setMachineId] = useState('');
   const [collectorUCOWeight, setcollectorUCOWeight] = useState('');
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
+  const connectionRef = useRef<SignalR.HubConnection | null>(null);
+  const appStatePrev = useRef<AppStateStatus>(AppState.currentState);
+  const checkTransactionStatus = async () => {
+    try {
+      const res = await api.get(`/qr/status?token=${Array.isArray(token) ? token[0] : token}`);
+      const { phase, oilAmount, points } = res.data;
+      if (phase === 'PouringComplete') {
+        setAlertFinalizingVisible(false);
+        setPouringVisible(false);
+        router.push({ pathname: '/FinalDataScreen', params: { oilPoured: oilAmount, pointsEarned: points } });
+      } else if (phase === 'CollectionComplete') {
+        setAlertFinalizingVisible(false);
+        setPouringVisible(false);
+        router.push({ pathname: '/FinalDataScreen', params: { oilPoured: oilAmount } });
+      }
+      // 'InProgress' → leave current overlay; next SignalR event will advance the flow
+    } catch (e) {
+      console.warn('Transaction status check failed', e);
+    }
+  };
+
   const handleBack = () => {
     setExpired(false);
     setCountdown(0);
@@ -67,6 +88,19 @@ export default function QRCodeScreen() {
     };
   }, [token]);
   useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState: AppStateStatus) => {
+      if (appStatePrev.current !== 'active' && nextState === 'active') {
+        checkTransactionStatus();
+        if (connectionRef.current?.state === SignalR.HubConnectionState.Connected) {
+          connectionRef.current.invoke('JoinTokenGroup', Array.isArray(token) ? token[0] : token).catch(() => {});
+        }
+      }
+      appStatePrev.current = nextState;
+    });
+    return () => subscription.remove();
+  }, [token]);
+
+  useEffect(() => {
     if (!token) return;
 
     const newConnection = new SignalR.HubConnectionBuilder()
@@ -79,6 +113,12 @@ export default function QRCodeScreen() {
       .then(() => {
         console.log("SignalR connected.");
         newConnection.invoke("JoinTokenGroup", token); // Join group for this token
+        connectionRef.current = newConnection;
+
+        newConnection.onreconnected(() => {
+          newConnection.invoke("JoinTokenGroup", token).catch(() => {});
+          checkTransactionStatus();
+        });
 
         newConnection.on("TokenVerified", (data) => {
 
@@ -134,8 +174,9 @@ export default function QRCodeScreen() {
       .catch(err => console.error("SignalR Connection Error: ", err));
 
     return () => {
-      if (connection) {
-        connection.stop();
+      if (connectionRef.current) {
+        connectionRef.current.stop();
+        connectionRef.current = null;
       }
     };
   }, [token]);
