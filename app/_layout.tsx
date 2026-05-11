@@ -64,7 +64,11 @@ export default function RootLayout() {
   }, []);
 
   if (isUpdateRequired) {
-    return <UpdateRequiredScreen />;
+    return (
+      <LanguageProvider>
+        <UpdateRequiredScreen />
+      </LanguageProvider>
+    );
   }
 
   // ✅ Optional: Show a temporary loading screen
