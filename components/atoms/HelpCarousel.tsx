@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useRef } from 'react';
+import { useLanguage } from '@/services/languageService';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 
@@ -20,6 +21,7 @@ interface HelpCarouselProps {
 
 export default function HelpCarousel({ topics }: HelpCarouselProps) {
   const router = useRouter();
+  const { t } = useLanguage();
   const carouselRef = useRef<ICarouselInstance>(null);
 
   if (topics.length === 0) {
@@ -63,7 +65,7 @@ export default function HelpCarousel({ topics }: HelpCarouselProps) {
             style={[styles.navButton, styles.navButtonLeft]}
             onPress={() => carouselRef.current?.prev()}
             accessibilityRole="button"
-            accessibilityLabel="Previous"
+            accessibilityLabel={t.common.previous}
           >
             <Ionicons name="chevron-back" size={22} color="#333" />
           </TouchableOpacity>
@@ -71,7 +73,7 @@ export default function HelpCarousel({ topics }: HelpCarouselProps) {
             style={[styles.navButton, styles.navButtonRight]}
             onPress={() => carouselRef.current?.next()}
             accessibilityRole="button"
-            accessibilityLabel="Next"
+            accessibilityLabel={t.common.next}
           >
             <Ionicons name="chevron-forward" size={22} color="#333" />
           </TouchableOpacity>

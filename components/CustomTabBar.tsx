@@ -1,4 +1,5 @@
 import CustomAlert from '@/components/molecules/CustomAlert';
+import { DashboardTheme } from '@/constants/dashboardTheme';
 import { useQrScan } from '@/hooks/useQrScan';
 import { useLanguage } from '@/services/languageService';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -8,9 +9,6 @@ import * as Haptics from 'expo-haptics';
 import React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-const TAB_GREEN = '#4CAF50';
-const FAB_GREEN = '#2E7D32';
 
 export const TAB_BAR_ROW_HEIGHT = 56;
 export const TAB_BAR_FAB_OVERFLOW = 28;
@@ -29,7 +27,7 @@ function getTabIcon(routeName: string, focused: boolean): keyof typeof Ionicons.
   return focused ? 'home' : 'home-outline';
 }
 
-export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const { handleScan, scanFailedVisible, setScanFailedVisible } = useQrScan();
@@ -111,7 +109,7 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
 
 const styles = StyleSheet.create({
   wrapper: {
-    backgroundColor: TAB_GREEN,
+    backgroundColor: DashboardTheme.tabBarGreen,
     borderTopWidth: 0,
     ...Platform.select({
       ios: {
@@ -149,11 +147,11 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: FAB_GREEN,
+    backgroundColor: DashboardTheme.tabBarFabGreen,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
-    borderColor: TAB_GREEN,
+    borderColor: DashboardTheme.tabBarGreen,
     ...Platform.select({
       ios: {
         shadowColor: '#000',

@@ -17,6 +17,8 @@ export const zh: Translations = {
     failedQrGeneration: '生成二维码失败。请重试。',
     somethingWentWrong: '出了点问题。',
     warning: '警告',
+    previous: '上一项',
+    next: '下一项',
   },
   tabs: {
     home: '首页',
@@ -100,6 +102,7 @@ export const zh: Translations = {
     greeting: '你好，{name}，',
     subtitle: '感谢您为保持地球清洁所做的贡献。',
     walletTitle: 'GoHijau 钱包',
+    walletBalance: 'RM{amount}',
     withdraw: '提款',
     ucoRecycled: '已回收 {amount}kg 废油',
     co2Saved: '节省 {amount}kg CO2',

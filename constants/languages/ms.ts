@@ -17,6 +17,8 @@ export const ms: Translations = {
     failedQrGeneration: 'Gagal menjana kod QR. Sila cuba lagi.',
     somethingWentWrong: 'Sesuatu telah berlaku.',
     warning: 'Amaran',
+    previous: 'Sebelumnya',
+    next: 'Seterusnya',
   },
   tabs: {
     home: 'Utama',
@@ -100,6 +102,7 @@ export const ms: Translations = {
     greeting: 'Helo, {name},',
     subtitle: 'Terima kasih kerana menjaga planet ini.',
     walletTitle: 'Dompet GoHijau',
+    walletBalance: 'RM{amount}',
     withdraw: 'Keluarkan',
     ucoRecycled: '{amount}kg UCO Dikitar Semula',
     co2Saved: '{amount}kg CO2 Dijimat',

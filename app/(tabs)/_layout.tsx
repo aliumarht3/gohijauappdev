@@ -1,4 +1,5 @@
 import CustomTabBar, { TAB_BAR_FAB_OVERFLOW, TAB_BAR_ROW_HEIGHT } from '@/components/CustomTabBar';
+import { DashboardTheme } from '@/constants/dashboardTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { setAudioModeAsync } from 'expo-audio';
 import { Tabs } from 'expo-router';
@@ -26,6 +27,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        sceneStyle: { backgroundColor: DashboardTheme.screenBg },
         tabBarActiveTintColor: '#fff',
         tabBarInactiveTintColor: 'rgba(255,255,255,0.75)',
         tabBarStyle: {

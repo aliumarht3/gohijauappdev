@@ -17,6 +17,8 @@ export const en: Translations = {
     failedQrGeneration: 'Failed to generate QR code. Please try again.',
     somethingWentWrong: 'Something went wrong.',
     warning: 'Warning',
+    previous: 'Previous',
+    next: 'Next',
   },
   tabs: {
     home: 'Home',
@@ -100,6 +102,7 @@ export const en: Translations = {
     greeting: 'Hello, {name},',
     subtitle: 'Thank you for keeping the planet clean.',
     walletTitle: 'GoHijau Wallet',
+    walletBalance: 'RM{amount}',
     withdraw: 'Withdraw',
     ucoRecycled: '{amount}kg UCO Recycled',
     co2Saved: '{amount}kg CO2 Saved',

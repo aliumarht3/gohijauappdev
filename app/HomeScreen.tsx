@@ -1,49 +1,60 @@
 import HelpCarousel, { HelpTopic } from '@/components/atoms/HelpCarousel';
 import { useBottomTabOverflow } from '@/components/CustomTabBar';
+import { DashboardTheme } from '@/constants/dashboardTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+    Image,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { interpolate } from '../constants/languages';
 import { getTotalTransaction } from '../services/transactionService';
 import { useLanguage } from '../services/languageService';
 import { useUser } from '../services/userService';
+
 export default function HomeScreen() {
     const { t } = useLanguage();
     const { user, loadUserProfile } = useUser();
-    const [refreshing, setRefreshing] = React.useState(false);
-    const [totalOilPoured, setTotalOilPoured] = React.useState(0);
-    const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
-    const [pointsAwarded, setPointsAwarded] = React.useState(0);
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setRefreshing(true);
-                const result = await getTotalTransaction();
-                if (result) {
-                    setTotalOilPoured(result.totalOilPoured);
-                    setTotalCO2Saved(result.totalCO2Saved);
-                    setPointsAwarded(result.pointsAwarded);
-                }
-                await loadUserProfile();
-            } finally {
-                setRefreshing(false);
-            }
-        };
+    const [refreshing, setRefreshing] = useState(false);
+    const [totalOilPoured, setTotalOilPoured] = useState(0);
+    const [totalCO2Saved, setTotalCO2Saved] = useState(0);
+    const [pointsAwarded, setPointsAwarded] = useState(0);
+    const router = useRouter();
+    const tabBarPadding = useBottomTabOverflow();
 
-        fetchData();
+    const applyTransactionTotals = (result: Awaited<ReturnType<typeof getTotalTransaction>>) => {
+        if (result) {
+            setTotalOilPoured(result.totalOilPoured);
+            setTotalCO2Saved(result.totalCO2Saved);
+            setPointsAwarded(result.pointsAwarded);
+        }
+    };
+
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            const result = await getTotalTransaction();
+            if (!cancelled) {
+                applyTransactionTotals(result);
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     const onRefresh = async () => {
         try {
             setRefreshing(true);
             const result = await getTotalTransaction();
-            if (result) {
-                setTotalOilPoured(result.totalOilPoured);
-                setTotalCO2Saved(result.totalCO2Saved);
-                setPointsAwarded(result.pointsAwarded);
-            }
+            applyTransactionTotals(result);
             await loadUserProfile();
         } finally {
             setRefreshing(false);
@@ -53,36 +64,45 @@ export default function HomeScreen() {
     const formatAmount = (value: number) =>
         Number.isInteger(value) ? String(value) : value.toFixed(1);
 
-    const walletBalance = `RM${Number(pointsAwarded).toFixed(2)}`;
+    const walletBalance = interpolate(t.home.walletBalance, {
+        amount: Number(pointsAwarded).toFixed(2),
+    });
 
     const topics: HelpTopic[] = [
         {
             router: '/GetStartedScreen',
             title: t.home.howToBegin,
             description: t.home.howToBeginDesc,
-            color: "#4CAF50",
+            color: DashboardTheme.carouselPrimary,
         },
         {
             router: '/GetStartedScreen',
             title: t.home.withdrawal,
             description: t.home.withdrawalDesc,
-            color: "#FF9800",
-        }
+            color: DashboardTheme.carouselSecondary,
+        },
     ];
-    const router = useRouter();
-    const tabBarPadding = useBottomTabOverflow();
+
     const handleRewardPress = () => {
         router.push({
             pathname: '/WithdrawalScreen',
-            params: { pointsAwarded }
+            params: { pointsAwarded: String(pointsAwarded) },
         });
-    }
+    };
+
     return (
         <ScrollView
             style={styles.container}
-            contentContainerStyle={{ paddingBottom: tabBarPadding }}
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarPadding }]}
+            showsVerticalScrollIndicator={false}
             refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={DashboardTheme.headerGreen}
+                    colors={[DashboardTheme.headerGreen]}
+                    progressBackgroundColor={DashboardTheme.screenBg}
+                />
             }
         >
             <View style={styles.heroSection}>
@@ -111,6 +131,8 @@ export default function HomeScreen() {
                     <TouchableOpacity
                         style={styles.withdrawButton}
                         onPress={handleRewardPress}
+                        accessibilityRole="button"
+                        accessibilityLabel={t.home.withdraw}
                     >
                         <Text style={styles.withdrawButtonText}>{t.home.withdraw}</Text>
                     </TouchableOpacity>
@@ -127,51 +149,56 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.bodyContent}>
-            <View style={styles.quickActionRow}>
-                <TouchableOpacity
-                    style={styles.historyCard}
-                    onPress={() => router.push('/OilHistoryScreen')}
-                    accessibilityRole="button"
-                >
-                    <Ionicons name="time-outline" size={36} color={GREEN_WALLET} />
-                    <Text style={styles.historyCardText}>{t.home.transactionHistory}</Text>
-                </TouchableOpacity>
+                <View style={styles.quickActionRow}>
+                    <TouchableOpacity
+                        style={styles.historyCard}
+                        onPress={() => router.push('/OilHistoryScreen')}
+                        accessibilityRole="button"
+                        accessibilityLabel={t.home.transactionHistory}
+                    >
+                        <Ionicons
+                            name="time-outline"
+                            size={36}
+                            color={DashboardTheme.walletGreen}
+                        />
+                        <Text style={styles.historyCardText}>{t.home.transactionHistory}</Text>
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                    style={styles.nearbyCard}
-                    onPress={() => router.push('/MapScreen')}
-                    accessibilityRole="button"
-                >
-                    <Image
-                        source={require('../assets/images/mapbackground.jpg')}
-                        style={styles.nearbyMapPreview}
-                    />
-                    <Text style={styles.nearbyCardText}>{t.home.nearby}</Text>
-                </TouchableOpacity>
-            </View>
+                    <TouchableOpacity
+                        style={styles.nearbyCard}
+                        onPress={() => router.push('/MapScreen')}
+                        accessibilityRole="button"
+                        accessibilityLabel={t.home.nearby}
+                    >
+                        <Image
+                            source={require('../assets/images/mapbackground.jpg')}
+                            style={styles.nearbyMapPreview}
+                        />
+                        <Text style={styles.nearbyCardText}>{t.home.nearby}</Text>
+                    </TouchableOpacity>
+                </View>
 
-            <View style={styles.carouselSection}>
-                <HelpCarousel topics={topics} />
-            </View>
+                <View style={styles.carouselSection}>
+                    <HelpCarousel topics={topics} />
+                </View>
             </View>
         </ScrollView>
     );
 }
 
-const GREEN_HEADER = '#4CAF50';
-const GREEN_WALLET = '#2E7D32';
-const GREEN_IMPACT = '#388E3C';
-
 const styles = StyleSheet.create({
     container: {
-        flex: 0,
-        backgroundColor: '#f2f8f3',
+        flex: 1,
+        backgroundColor: DashboardTheme.screenBg,
+    },
+    scrollContent: {
+        flexGrow: 1,
     },
     heroSection: {
-        backgroundColor: GREEN_HEADER,
+        backgroundColor: DashboardTheme.headerGreen,
     },
     headerSafeArea: {
-        backgroundColor: GREEN_HEADER,
+        backgroundColor: DashboardTheme.headerGreen,
     },
     header: {
         flexDirection: 'row',
@@ -188,11 +215,11 @@ const styles = StyleSheet.create({
     greeting: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#fff',
+        color: DashboardTheme.textOnGreen,
     },
     subtitle: {
         fontSize: 14,
-        color: 'rgba(255,255,255,0.9)',
+        color: DashboardTheme.textOnGreenMuted,
         marginTop: 6,
     },
     profileButton: {
@@ -204,20 +231,20 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     walletSection: {
-        backgroundColor: GREEN_WALLET,
+        backgroundColor: DashboardTheme.walletGreen,
         alignItems: 'center',
         paddingVertical: 24,
         paddingHorizontal: 20,
     },
     walletTitle: {
         fontSize: 14,
-        color: 'rgba(255,255,255,0.9)',
+        color: DashboardTheme.textOnGreenMuted,
         marginBottom: 8,
     },
     walletBalance: {
         fontSize: 36,
         fontWeight: 'bold',
-        color: '#fff',
+        color: DashboardTheme.textOnGreen,
         marginBottom: 16,
     },
     withdrawButton: {
@@ -229,12 +256,12 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     withdrawButtonText: {
-        color: GREEN_WALLET,
+        color: DashboardTheme.walletGreen,
         fontSize: 16,
         fontWeight: '600',
     },
     impactSection: {
-        backgroundColor: GREEN_IMPACT,
+        backgroundColor: DashboardTheme.impactGreen,
         alignItems: 'center',
         paddingVertical: 20,
         paddingHorizontal: 20,
@@ -243,7 +270,7 @@ const styles = StyleSheet.create({
     impactText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#fff',
+        color: DashboardTheme.textOnGreen,
         textAlign: 'center',
     },
     bodyContent: {
@@ -282,7 +309,7 @@ const styles = StyleSheet.create({
     },
     nearbyCard: {
         flex: 1,
-        backgroundColor: GREEN_HEADER,
+        backgroundColor: DashboardTheme.headerGreen,
         borderRadius: 12,
         overflow: 'hidden',
         minHeight: 110,
@@ -296,7 +323,7 @@ const styles = StyleSheet.create({
     nearbyCardText: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#fff',
+        color: DashboardTheme.textOnGreen,
         textAlign: 'center',
         paddingVertical: 10,
         paddingHorizontal: 8,

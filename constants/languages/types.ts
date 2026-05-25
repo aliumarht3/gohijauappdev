@@ -17,6 +17,8 @@ export interface Translations {
     failedQrGeneration: string;
     somethingWentWrong: string;
     warning: string;
+    previous: string;
+    next: string;
   };
   tabs: {
     home: string;
@@ -100,6 +102,7 @@ export interface Translations {
     greeting: string;
     subtitle: string;
     walletTitle: string;
+    walletBalance: string;
     withdraw: string;
     ucoRecycled: string;
     co2Saved: string;

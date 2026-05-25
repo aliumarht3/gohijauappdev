@@ -19,7 +19,13 @@ const { apiBaseUrl} = Constants.expoConfig?.extra ?? {};
     return null;
   }
 }
-export async function getTotalTransaction(): Promise<string | null> {
+export type TotalTransactionResult = {
+  totalOilPoured: number;
+  totalCO2Saved: number;
+  pointsAwarded: number;
+};
+
+export async function getTotalTransaction(): Promise<TotalTransactionResult | null> {
   try {
     const result = await api.get('/user/total-transaction');
     if (result.status) {

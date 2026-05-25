@@ -17,6 +17,8 @@ export const ta: Translations = {
     failedQrGeneration: 'QR குறியீடு உருவாக்கம் தோல்வியடைந்தது. மீண்டும் முயற்சிக்கவும்.',
     somethingWentWrong: 'ஏதோ தவறு நடந்தது.',
     warning: 'எச்சரிக்கை',
+    previous: 'முந்தைய',
+    next: 'அடுத்த',
   },
   tabs: {
     home: 'முகப்பு',
@@ -100,6 +102,7 @@ export const ta: Translations = {
     greeting: 'வணக்கம், {name},',
     subtitle: 'கிரகத்தை சுத்தமாக வைத்திருப்பதற்கு நன்றி.',
     walletTitle: 'GoHijau பணப்பை',
+    walletBalance: 'RM{amount}',
     withdraw: 'எடு',
     ucoRecycled: '{amount}kg UCO மறுசுழற்சி',
     co2Saved: '{amount}kg CO2 சேமிப்பு',
