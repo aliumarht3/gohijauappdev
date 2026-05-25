@@ -1,3 +1,4 @@
+import { useBottomTabOverflow } from '@/components/CustomTabBar';
 import CustomAlert from "@/components/molecules/CustomAlert";
 import { generateQrTokenCollector } from "@/services/qrService";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +20,7 @@ const { width } = Dimensions.get("window");
 export default function OilCollectorHomeScreen() {
     const { t } = useLanguage();
     const router = useRouter();
+    const tabBarPadding = useBottomTabOverflow();
     const [UCOAlertVisible, setUCOAlertVisible] = useState(false);
     const [paymentsAlertVisible, setPaymentsAlertVisible] = useState(false);
     const [transactionsAlertVisible, setTransactionsAlertVisible] = useState(false);
@@ -43,7 +45,10 @@ export default function OilCollectorHomeScreen() {
         }
     };
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView
+            style={styles.container}
+            contentContainerStyle={{ paddingBottom: tabBarPadding }}
+        >
             {/* Header */}
             <View style={styles.header}>
                 <View>

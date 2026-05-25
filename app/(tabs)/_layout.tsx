@@ -1,16 +1,16 @@
-import { HapticTab } from '@/components/HapticTab';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import CustomTabBar, { TAB_BAR_FAB_OVERFLOW, TAB_BAR_ROW_HEIGHT } from '@/components/CustomTabBar';
 import { Ionicons } from '@expo/vector-icons';
 import { setAudioModeAsync } from 'expo-audio';
 import { Tabs } from 'expo-router';
 import React, { useEffect } from 'react';
-import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLanguage } from '../../services/languageService';
 
 export default function TabLayout() {
   const { t } = useLanguage();
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = TAB_BAR_ROW_HEIGHT + TAB_BAR_FAB_OVERFLOW + insets.bottom;
+
   useEffect(() => {
     setAudioModeAsync({
       playsInSilentMode: true,
@@ -19,30 +19,21 @@ export default function TabLayout() {
       console.warn('Failed to set audio mode', err);
     });
   }, []);
-  const colorScheme = useColorScheme();
-  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
-        tabBarActiveTintColor: '#2E7D32', // ✅ Green active icon
-        tabBarInactiveTintColor: '#A0A0A0', // ✅ Gray inactive icon
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: '#fff',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.75)',
         tabBarStyle: {
-          backgroundColor: '#F2F8F3', // ✅ Matches app theme
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
           position: 'absolute',
-          height: Platform.OS === 'ios' ? 30 + insets.bottom : 40 + insets.bottom,
-          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+          height: tabBarHeight,
+          backgroundColor: 'transparent',
           borderTopWidth: 0,
-          elevation: 8,
-          shadowColor: '#000',
-          shadowOpacity: 0.1,
-          shadowOffset: { width: 0, height: -2 },
-          shadowRadius: 8,
+          elevation: 0,
         },
       }}
     >
@@ -51,7 +42,7 @@ export default function TabLayout() {
         options={{
           title: t.tabs.home,
           tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={28} color={color} />
+            <Ionicons name="home-outline" size={28} color={color} />
           ),
         }}
       />
@@ -60,11 +51,10 @@ export default function TabLayout() {
         options={{
           title: t.tabs.profile,
           tabBarIcon: ({ color }) => (
-            <Ionicons name="person-circle" size={28} color={color} />
+            <Ionicons name="person-outline" size={28} color={color} />
           ),
         }}
       />
     </Tabs>
   );
 }
-

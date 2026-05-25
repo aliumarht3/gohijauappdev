@@ -14,6 +14,4 @@ export default function BlurTabBarBackground() {
   );
 }
 
-export function useBottomTabOverflow() {
-  return useBottomTabBarHeight();
-}
+export { useBottomTabOverflow } from '../CustomTabBar';

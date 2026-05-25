@@ -1,4 +1,5 @@
 import HelpCarousel, { HelpTopic } from '@/components/atoms/HelpCarousel';
+import { useBottomTabOverflow } from '@/components/CustomTabBar';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -69,6 +70,7 @@ export default function HomeScreen() {
         }
     ];
     const router = useRouter();
+    const tabBarPadding = useBottomTabOverflow();
     const handleRewardPress = () => {
         router.push({
             pathname: '/WithdrawalScreen',
@@ -78,6 +80,7 @@ export default function HomeScreen() {
     return (
         <ScrollView
             style={styles.container}
+            contentContainerStyle={{ paddingBottom: tabBarPadding }}
             refreshControl={
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
@@ -245,7 +248,6 @@ const styles = StyleSheet.create({
     },
     bodyContent: {
         paddingTop: 20,
-        paddingBottom: 24,
     },
     carouselSection: {
         marginHorizontal: -20,

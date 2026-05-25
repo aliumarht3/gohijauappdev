@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Button, Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBottomTabOverflow } from '@/components/CustomTabBar';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { useLanguage } from '../../services/languageService';
 import { useUser } from '../../services/userService';
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
   const { user, loadUserProfile, justLogout } = useUser();
   const { t } = useLanguage();
   const [alertVisible, setAlertVisible] = useState(false);
+  const tabBarPadding = useBottomTabOverflow();
 
   useFocusEffect(
     useCallback(() => {
@@ -47,7 +49,7 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 30 }}
+        contentContainerStyle={{ paddingBottom: tabBarPadding }}
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.title}>{t.profile.title}</Text>

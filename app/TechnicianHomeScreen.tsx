@@ -1,3 +1,4 @@
+import { useBottomTabOverflow } from '@/components/CustomTabBar';
 import CustomAlert from "@/components/molecules/CustomAlert";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -21,6 +22,7 @@ export default function TechnicianHomeScreen() {
     const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
     const [errorLogAlertVisible, setErrorLogAlertVisible] = useState(false);
     const router = useRouter();
+    const tabBarPadding = useBottomTabOverflow();
     const handleGenerateToken = async () => {
         const token = await generateQrTokenTechnician();
         console.log('Generated Token:', token);
@@ -42,7 +44,10 @@ export default function TechnicianHomeScreen() {
     ];
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView
+            style={styles.container}
+            contentContainerStyle={{ paddingBottom: tabBarPadding }}
+        >
             {/* Header */}
             <View style={styles.header}>
                 <View>
