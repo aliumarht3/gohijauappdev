@@ -108,6 +108,8 @@ export const en: Translations = {
     savedCO2: 'Saved CO₂',
     scan: 'Scan',
     history: 'History',
+    transactionHistory: 'Transaction History',
+    nearby: 'Nearby',
     nearbyPoints: 'Nearby Collection Points',
     viewOnMap: 'View on Map',
     howToBegin: 'How to Begin',

@@ -108,6 +108,8 @@ export const ms: Translations = {
     savedCO2: 'CO₂ Dijimat',
     scan: 'Imbas',
     history: 'Sejarah',
+    transactionHistory: 'Sejarah Transaksi',
+    nearby: 'Berdekatan',
     nearbyPoints: 'Titik Pengumpulan Berdekatan',
     viewOnMap: 'Lihat di Peta',
     howToBegin: 'Cara Bermula',

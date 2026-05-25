@@ -108,6 +108,8 @@ export const ta: Translations = {
     savedCO2: 'சேமித்த CO₂',
     scan: 'ஸ்கேன்',
     history: 'வரலாறு',
+    transactionHistory: 'பரிவர்த்தனை வரலாறு',
+    nearby: 'அருகில்',
     nearbyPoints: 'அருகிலுள்ள சேகரிப்பு புள்ளிகள்',
     viewOnMap: 'வரைபடத்தில் காண்க',
     howToBegin: 'எப்படி தொடங்குவது',

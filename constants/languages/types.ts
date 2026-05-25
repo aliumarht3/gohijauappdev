@@ -108,6 +108,8 @@ export interface Translations {
     savedCO2: string;
     scan: string;
     history: string;
+    transactionHistory: string;
+    nearby: string;
     nearbyPoints: string;
     viewOnMap: string;
     howToBegin: string;

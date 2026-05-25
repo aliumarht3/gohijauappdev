@@ -5,8 +5,6 @@ import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { interpolate } from '../constants/languages';
-import CustomAlert from '../components/molecules/CustomAlert';
-import { generateQrTokenCustomer } from '../services/qrService';
 import { getTotalTransaction } from '../services/transactionService';
 import { useLanguage } from '../services/languageService';
 import { useUser } from '../services/userService';
@@ -29,8 +27,6 @@ export default function HomeScreen() {
     const [totalOilPoured, setTotalOilPoured] = React.useState(0);
     const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
     const [pointsAwarded, setPointsAwarded] = React.useState(0);
-    const [rewardsAlertVisible, setRewardsAlertVisible] = useState(false);
-
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -84,23 +80,7 @@ export default function HomeScreen() {
             color: "#FF9800",
         }
     ];
-    const [selectedTopic, setSelectedTopic] = useState<HelpTopic | null>(null);
     const router = useRouter();
-    const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
-    const handleGenerateToken = async () => {
-        const token = await generateQrTokenCustomer();
-        console.log('Generated Token:', token);
-        if (token) {
-            router.push({
-                pathname: '/QRCodeScreen',
-                params: {
-                    token
-                }
-            });
-        } else {
-            setAlertFailedToGenerateVisible(true);
-        }
-    };
     const handleRewardPress = () => {
         router.push({
             pathname: '/WithdrawalScreen',
@@ -156,52 +136,30 @@ export default function HomeScreen() {
             </View>
 
             <View style={styles.bodyContent}>
-            {/* ✅ Quick Actions */}
-            <View style={styles.quickActions}>
-                <TouchableOpacity style={styles.actionButton}
-                    onPress={handleGenerateToken}>
-                    <Ionicons name="qr-code" size={28} color="#fff" />
-                    <Text style={styles.actionText}>{t.home.scan}</Text>
+            <View style={styles.quickActionRow}>
+                <TouchableOpacity
+                    style={styles.historyCard}
+                    onPress={() => router.push('/OilHistoryScreen')}
+                    accessibilityRole="button"
+                >
+                    <Ionicons name="time-outline" size={36} color={GREEN_WALLET} />
+                    <Text style={styles.historyCardText}>{t.home.transactionHistory}</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}
-                    onPress={() => handleRewardPress()}>
-                    <Ionicons name="gift" size={28} color="#fff" />
-                    <Text style={styles.actionText}>{t.home.rewards}</Text>
+
+                <TouchableOpacity
+                    style={styles.nearbyCard}
+                    onPress={() => router.push('/MapScreen')}
+                    accessibilityRole="button"
+                >
+                    <Image
+                        source={require('../assets/images/mapbackground.jpg')}
+                        style={styles.nearbyMapPreview}
+                    />
+                    <Text style={styles.nearbyCardText}>{t.home.nearby}</Text>
                 </TouchableOpacity>
-                <CustomAlert
-                    visible={rewardsAlertVisible}
-                    title={t.common.comingSoon}
-                    message={t.home.rewardsComingSoon}
-                    onClose={() => { setRewardsAlertVisible(false); }}
-                />
-                <TouchableOpacity style={styles.actionButton}
-                    onPress={() => router.push('/OilHistoryScreen')}>
-                    <Ionicons name="time" size={28} color="#fff" />
-                    <Text style={styles.actionText}>{t.home.history}</Text>
-                </TouchableOpacity>
-                <CustomAlert
-                    visible={alertFailedToGenerateVisible}
-                    title={t.common.failedTitle}
-                    message={t.common.failedQrGeneration}
-                    onClose={() => { setAlertFailedToGenerateVisible(false); }}
-                />
             </View>
 
-            {/* ✅ Nearby Collection Points */}
-            <View style={styles.mapCard}>
-                <Text style={styles.mapTitle}>{t.home.nearbyPoints}</Text>
-                <Image
-                    source={require('../assets/images/mapbackground.jpg')}
-                    style={styles.mapImage}
-                />
-                <TouchableOpacity style={styles.mapButton} onPress={() => router.push('/MapScreen')}>
-                    <Text style={styles.mapButtonText}>{t.home.viewOnMap}</Text>
-                </TouchableOpacity>
-            </View>
-            <View >
-
-            </View>
-            <HelpCarousel topics={topics} onSelectTopic={setSelectedTopic} />
+            <HelpCarousel topics={topics} />
             </View>
         </ScrollView>
     );
@@ -298,55 +256,54 @@ const styles = StyleSheet.create({
     bodyContent: {
         paddingHorizontal: 20,
         paddingTop: 20,
+        paddingBottom: 24,
     },
-    quickActions: {
+    quickActionRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 25,
+        gap: 12,
+        marginBottom: 24,
     },
-    actionButton: {
-        flex: 1,
-        backgroundColor: '#4CAF50',
-        padding: 15,
-        borderRadius: 12,
+    historyCard: {
+        flex: 2,
+        flexDirection: 'row',
         alignItems: 'center',
-        marginHorizontal: 5,
-    },
-    actionText: {
-        color: '#fff',
-        marginTop: 6,
-        fontWeight: '600',
-        fontSize: 14,
-        textAlign: 'center',
-    },
-    mapCard: {
         backgroundColor: '#fff',
         borderRadius: 12,
-        padding: 15,
-        marginBottom: 25,
+        padding: 16,
+        minHeight: 110,
         elevation: 3,
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        gap: 12,
     },
-    mapTitle: {
+    historyCardText: {
+        flex: 1,
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#2E7D32',
-        marginBottom: 10,
+        color: '#1a1a1a',
     },
-    mapImage: {
+    nearbyCard: {
+        flex: 1,
+        backgroundColor: GREEN_HEADER,
+        borderRadius: 12,
+        overflow: 'hidden',
+        minHeight: 110,
+        elevation: 3,
+    },
+    nearbyMapPreview: {
         width: '100%',
-        height: 120,
-        borderRadius: 10,
-        marginBottom: 10,
+        height: 70,
+        resizeMode: 'cover',
     },
-    mapButton: {
-        backgroundColor: '#388E3C',
-        padding: 10,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    mapButtonText: {
-        color: '#fff',
+    nearbyCardText: {
+        fontSize: 16,
         fontWeight: 'bold',
+        color: '#fff',
+        textAlign: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 8,
     },
     sectionTitle: {
         fontSize: 18,

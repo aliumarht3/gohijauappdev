@@ -108,6 +108,8 @@ export const zh: Translations = {
     savedCO2: '节省 CO₂',
     scan: '扫描',
     history: '历史',
+    transactionHistory: '交易历史',
+    nearby: '附近',
     nearbyPoints: '附近收集点',
     viewOnMap: '在地图上查看',
     howToBegin: '如何开始',
