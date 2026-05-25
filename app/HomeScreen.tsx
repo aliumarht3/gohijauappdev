@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { interpolate } from '../constants/languages';
 import CustomAlert from '../components/molecules/CustomAlert';
 import { generateQrTokenCustomer } from '../services/qrService';
@@ -64,11 +65,11 @@ export default function HomeScreen() {
         }
     };
 
-    const stats = [
-        { label: t.home.oilRecycled, value: totalOilPoured, unit: "KG" },
-        { label: t.home.rewards, value: pointsAwarded, unit: "RM" },
-        { label: t.home.savedCO2, value: totalCO2Saved, unit: "kg" },
-    ];
+    const formatAmount = (value: number) =>
+        Number.isInteger(value) ? String(value) : value.toFixed(1);
+
+    const walletBalance = `RM${Number(pointsAwarded).toFixed(2)}`;
+
     const topics: HelpTopic[] = [
         {
             router: '/GetStartedScreen',
@@ -113,34 +114,48 @@ export default function HomeScreen() {
                 <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
         >
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.greeting}>{interpolate(t.home.greeting, { name: user?.name || '' })}</Text>
-                    <Text style={styles.subtitle}>{t.home.subtitle}</Text>
-                </View>
-                <Image
-                    source={require('../assets/images/icon.png')}
-                    style={styles.profileImage}
-                />
-            </View>
-
-            {/* ✅ Eco Stats */}
-            <View style={styles.statsContainer}>
-                {stats.map((item, index) => (
-                    <View key={index} style={styles.statCard}>
-                        <Text
-                            style={styles.statValue}
-                        // numberOfLines={1}
+            <View style={styles.heroSection}>
+                <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
+                    <View style={styles.header}>
+                        <View style={styles.headerText}>
+                            <Text style={styles.greeting}>
+                                {interpolate(t.home.greeting, { name: user?.name || '' })}
+                            </Text>
+                            <Text style={styles.subtitle}>{t.home.subtitle}</Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.profileButton}
+                            onPress={() => router.push('/(tabs)/profile')}
+                            accessibilityRole="button"
+                            accessibilityLabel={t.tabs.profile}
                         >
-                            {item.label === t.home.rewards
-                                ? `${item.unit} ${item.value}`
-                                : `${item.value} ${item.unit}`}
-                        </Text>
-                        <Text style={styles.statLabel}>{item.label}</Text>
+                            <Ionicons name="person" size={22} color="#333" />
+                        </TouchableOpacity>
                     </View>
-                ))}
+                </SafeAreaView>
+
+                <View style={styles.walletSection}>
+                    <Text style={styles.walletTitle}>{t.home.walletTitle}</Text>
+                    <Text style={styles.walletBalance}>{walletBalance}</Text>
+                    <TouchableOpacity
+                        style={styles.withdrawButton}
+                        onPress={handleRewardPress}
+                    >
+                        <Text style={styles.withdrawButtonText}>{t.home.withdraw}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.impactSection}>
+                    <Text style={styles.impactText}>
+                        {interpolate(t.home.ucoRecycled, { amount: formatAmount(totalOilPoured) })}
+                    </Text>
+                    <Text style={styles.impactText}>
+                        {interpolate(t.home.co2Saved, { amount: formatAmount(totalCO2Saved) })}
+                    </Text>
+                </View>
             </View>
 
+            <View style={styles.bodyContent}>
             {/* ✅ Quick Actions */}
             <View style={styles.quickActions}>
                 <TouchableOpacity style={styles.actionButton}
@@ -187,64 +202,102 @@ export default function HomeScreen() {
 
             </View>
             <HelpCarousel topics={topics} onSelectTopic={setSelectedTopic} />
+            </View>
         </ScrollView>
     );
 }
 
+const GREEN_HEADER = '#4CAF50';
+const GREEN_WALLET = '#2E7D32';
+const GREEN_IMPACT = '#388E3C';
+
 const styles = StyleSheet.create({
     container: {
         flex: 0,
-        backgroundColor: '#f2f8f3', // soft eco-friendly green background
-        paddingHorizontal: 20,
-        paddingTop: 50,
+        backgroundColor: '#f2f8f3',
+    },
+    heroSection: {
+        backgroundColor: GREEN_HEADER,
+    },
+    headerSafeArea: {
+        backgroundColor: GREEN_HEADER,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 25,
+        alignItems: 'flex-start',
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        paddingBottom: 20,
+    },
+    headerText: {
+        flex: 1,
+        paddingRight: 12,
     },
     greeting: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: '#2E7D32',
+        color: '#fff',
     },
     subtitle: {
         fontSize: 14,
-        color: '#666',
-        marginTop: 4,
+        color: 'rgba(255,255,255,0.9)',
+        marginTop: 6,
     },
-    profileImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-    },
-    statsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 25,
-    },
-    statCard: {
-        flex: 1,
+    profileButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         backgroundColor: '#fff',
-        padding: 15,
-        marginHorizontal: 5,
-        borderRadius: 12,
         alignItems: 'center',
-        elevation: 3,
+        justifyContent: 'center',
     },
-    statValue: {
-        fontSize: 18,
+    walletSection: {
+        backgroundColor: GREEN_WALLET,
+        alignItems: 'center',
+        paddingVertical: 24,
+        paddingHorizontal: 20,
+    },
+    walletTitle: {
+        fontSize: 14,
+        color: 'rgba(255,255,255,0.9)',
+        marginBottom: 8,
+    },
+    walletBalance: {
+        fontSize: 36,
         fontWeight: 'bold',
-        color: '#388E3C',
-        textAlign: 'center',
-        flexShrink: 1,
+        color: '#fff',
+        marginBottom: 16,
     },
-    statLabel: {
-        fontSize: 13,
-        color: '#666',
-        marginTop: 4,
+    withdrawButton: {
+        backgroundColor: '#fff',
+        paddingVertical: 10,
+        paddingHorizontal: 40,
+        borderRadius: 24,
+        minWidth: 160,
+        alignItems: 'center',
+    },
+    withdrawButtonText: {
+        color: GREEN_WALLET,
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    impactSection: {
+        backgroundColor: GREEN_IMPACT,
+        alignItems: 'center',
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        gap: 6,
+    },
+    impactText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#fff',
         textAlign: 'center',
+    },
+    bodyContent: {
+        paddingHorizontal: 20,
+        paddingTop: 20,
     },
     quickActions: {
         flexDirection: 'row',

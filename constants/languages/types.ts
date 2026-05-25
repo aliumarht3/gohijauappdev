@@ -99,6 +99,10 @@ export interface Translations {
   home: {
     greeting: string;
     subtitle: string;
+    walletTitle: string;
+    withdraw: string;
+    ucoRecycled: string;
+    co2Saved: string;
     oilRecycled: string;
     rewards: string;
     savedCO2: string;
