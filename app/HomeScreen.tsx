@@ -292,6 +292,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 12,
+        borderWidth: 2,
+        borderColor: DashboardTheme.borderLight,
         padding: 16,
         minHeight: 110,
         elevation: 3,

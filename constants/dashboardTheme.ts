@@ -10,4 +10,5 @@ export const DashboardTheme = {
   carouselSecondary: '#FF9800',
   textOnGreen: '#ffffff',
   textOnGreenMuted: 'rgba(255,255,255,0.9)',
+  borderLight: '#81C784',
 } as const;

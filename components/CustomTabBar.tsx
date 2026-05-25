@@ -11,7 +11,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const TAB_BAR_ROW_HEIGHT = 56;
-export const TAB_BAR_FAB_OVERFLOW = 28;
+export const TAB_BAR_FAB_OVERFLOW = 32;
 
 export function useBottomTabOverflow() {
   const insets = useSafeAreaInsets();
@@ -94,7 +94,7 @@ export default function CustomTabBar({ state, navigation }: BottomTabBarProps) {
         accessibilityRole="button"
         accessibilityLabel={t.home.scan}
       >
-        <Ionicons name="scan-outline" size={30} color="#fff" />
+        <Ionicons name="scan-outline" size={34} color="#fff" />
       </PlatformPressable>
 
       <CustomAlert
@@ -138,15 +138,15 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   fabSpacer: {
-    width: 80,
+    width: 88,
   },
   fab: {
     position: 'absolute',
     top: -TAB_BAR_FAB_OVERFLOW,
     alignSelf: 'center',
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 72,
+    height: 72,
+    borderRadius: 36,
     backgroundColor: DashboardTheme.tabBarFabGreen,
     alignItems: 'center',
     justifyContent: 'center',
