@@ -1,25 +1,13 @@
-import HelpCarousel from '@/components/atoms/HelpCarousel';
+import HelpCarousel, { HelpTopic } from '@/components/atoms/HelpCarousel';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { interpolate } from '../constants/languages';
 import { getTotalTransaction } from '../services/transactionService';
 import { useLanguage } from '../services/languageService';
 import { useUser } from '../services/userService';
-const { width } = Dimensions.get('window');
-interface HelpStep {
-    image: any;
-    text: string;
-}
-
-interface HelpTopic {
-    router: string;
-    title: string;
-    description: string;
-    color: string;
-}
 export default function HomeScreen() {
     const { t } = useLanguage();
     const { user, loadUserProfile } = useUser();
@@ -159,7 +147,9 @@ export default function HomeScreen() {
                 </TouchableOpacity>
             </View>
 
-            <HelpCarousel topics={topics} />
+            <View style={styles.carouselSection}>
+                <HelpCarousel topics={topics} />
+            </View>
             </View>
         </ScrollView>
     );
@@ -254,14 +244,18 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     bodyContent: {
-        paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 24,
+    },
+    carouselSection: {
+        marginHorizontal: -20,
+        marginTop: 4,
     },
     quickActionRow: {
         flexDirection: 'row',
         gap: 12,
         marginBottom: 24,
+        paddingHorizontal: 20,
     },
     historyCard: {
         flex: 2,
@@ -304,74 +298,5 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         paddingVertical: 10,
         paddingHorizontal: 8,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#2E7D32',
-        marginBottom: 15,
-    },
-    categoryCard: {
-        width: 100,
-        height: 100,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 15,
-    },
-    categoryText: {
-        color: '#fff',
-        marginTop: 8,
-        fontWeight: 'bold',
-    },
-    //modal styles
-    modalCard: {
-        width: '85%',
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 20,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        elevation: 10,
-    },
-    modalText: {
-        fontSize: 18,
-        marginBottom: 15,
-    },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#333',
-        textAlign: 'center',
-    },
-    stepContainer: {
-        width: width - 60,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 20,
-    },
-    stepImage: {
-        width: 200,
-        height: 200,
-    },
-    stepText: {
-        textAlign: 'center',
-        marginTop: 10,
-        fontSize: 16,
-        color: '#444',
-    },
-    closeButton: {
-        marginTop: 20,
-        backgroundColor: '#4CAF50',
-        borderRadius: 10,
-        alignSelf: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-    },
-    closeButtonText: {
-        color: '#fff',
-        fontWeight: '600',
     },
 });
