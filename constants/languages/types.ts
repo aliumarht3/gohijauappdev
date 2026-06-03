@@ -157,10 +157,12 @@ export interface Translations {
     title: string;
     totalAmount: string;
     payoutTo: string;
+    default: string;
     changeBank: string;
     addBankAccount: string;
     withdrawalAmount: string;
     enterAmount: string;
+    withdrawUpTo: string;
     withdrawButton: string;
     withdrawalHistory: string;
     noWithdrawals: string;
@@ -178,9 +180,10 @@ export interface Translations {
   };
   oilHistory: {
     title: string;
-    oil: string;
+    ucoRecycled: string;
     co2Saved: string;
     points: string;
+    empty: string;
   };
   collectorTransaction: {
     title: string;
@@ -207,6 +210,9 @@ export interface Translations {
     nameLabel: string;
     emailLabel: string;
     phoneLabel: string;
+    defaultAccount: string;
+    changeDefault: string;
+    languageButton: string;
     updateProfile: string;
     changePassword: string;
     deleteAccount: string;
@@ -219,6 +225,7 @@ export interface Translations {
   updateProfile: {
     title: string;
     backTitle: string;
+    usernameLabel: string;
     nameLabel: string;
     namePlaceholder: string;
     phoneLabel: string;
@@ -232,6 +239,7 @@ export interface Translations {
   changePassword: {
     title: string;
     backTitle: string;
+    oldPasswordLabel: string;
     currentPasswordLabel: string;
     currentPasswordPlaceholder: string;
     newPasswordLabel: string;
@@ -247,6 +255,7 @@ export interface Translations {
   };
   deleteAccount: {
     title: string;
+    confirmTitle: string;
     backTitle: string;
     passwordLabel: string;
     passwordPlaceholder: string;

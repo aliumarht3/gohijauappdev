@@ -20,6 +20,14 @@ export const languageNames: Record<Language, string> = {
   ta: 'தமிழ்',
 };
 
+/** Display names shown on the profile language button */
+export const profileLanguageDisplay: Record<Language, string> = {
+  en: 'English (UK)',
+  ms: 'Bahasa Melayu',
+  zh: '中文',
+  ta: 'தமிழ்',
+};
+
 export function interpolate(
   template: string,
   values: Record<string, string | number>,

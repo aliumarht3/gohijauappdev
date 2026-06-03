@@ -1,98 +1,105 @@
 import BankAccountModal from '@/components/molecules/BankAccountModal';
 import WithdrawalOverlay from '@/components/molecules/WithdrawalOverlay';
+import { DashboardTheme } from '@/constants/dashboardTheme';
 import { getBankNameByCode } from '@/constants/Banks';
-import { Colors } from '@/constants/Colors';
-import * as SignalR from "@microsoft/signalr";
-import Constants from "expo-constants";
-import { Stack } from 'expo-router';
+import { interpolate } from '@/constants/languages';
+import { Ionicons } from '@expo/vector-icons';
+import * as SignalR from '@microsoft/signalr';
+import Constants from 'expo-constants';
+import { Stack, useRouter } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, FlatList, RefreshControl, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../api/apiClient';
-import authStorage from "../api/authStorage";
+import authStorage from '../api/authStorage';
 import { getTotalTransaction } from '../services/transactionService';
 import { useLanguage } from '../services/languageService';
 import { useUser } from '../services/userService';
 
+type ApiWithdrawal = {
+  id: string;
+  amount: number | string;
+  status: string;
+  createdAt: string;
+};
+
+type WithdrawalItem = {
+  id: string;
+  date: string;
+  amount: string;
+  status: 'PENDING' | 'SUCCESS' | 'DECLINED';
+};
+
+const cardStyle = {
+  backgroundColor: '#fff',
+  borderRadius: 12,
+  borderWidth: 2,
+  borderColor: DashboardTheme.borderLight,
+  padding: 16,
+};
+
 export default function WithdrawalScreen() {
   const { t } = useLanguage();
+  const router = useRouter();
   const { signalRUrl } = Constants.expoConfig?.extra ?? {};
-  const [pointsAwarded, setPointsAwarded] = React.useState(0);
+  const [pointsAwarded, setPointsAwarded] = useState(0);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [history, setHistory] = useState<WithdrawalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [bankModalVisible, setBankModalVisible] = useState(false);
   const [withdrawing, setWithdrawing] = useState(false);
 
-  const { user, loadUserProfile, loadingBank, bankAccount, hasBankAccount, refreshBank } = useUser();
+  const { loadUserProfile, loadingBank, bankAccount, hasBankAccount, refreshBank } = useUser();
 
-  // Example: you'll likely compute this from API instead of hardcoding
-  const totalAmount = 200;
-  type ApiWithdrawal = {
-    id: string;
-    amount: number | string;
-    status: string;
-    createdAt: string;
-  };
-
-  type WithdrawalItem = {
-    id: string;
-    date: string;
-    amount: string;
-    status: "PENDING" | "SUCCESS" | "DECLINED";
-  };
-  const normalizeStatus = (s: string): WithdrawalItem["status"] => {
-    const val = (s || "").trim().toUpperCase();
-    if (["IN PROGRESS", "PENDING"].includes(val)) return "PENDING";
-    if (["COMPLETE", "COMPLETED", "SUCCESS"].includes(val)) return "SUCCESS";
-    if (["DECLINED", "REJECTED", "FAILED"].includes(val)) return "DECLINED";
-    return "PENDING";
+  const normalizeStatus = (s: string): WithdrawalItem['status'] => {
+    const val = (s || '').trim().toUpperCase();
+    if (['IN PROGRESS', 'PENDING'].includes(val)) return 'PENDING';
+    if (['COMPLETE', 'COMPLETED', 'SUCCESS'].includes(val)) return 'SUCCESS';
+    if (['DECLINED', 'REJECTED', 'FAILED'].includes(val)) return 'DECLINED';
+    return 'PENDING';
   };
 
   const formatDate = (iso: string) => {
     const d = new Date(iso);
-    return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
+    return isNaN(d.getTime()) ? '-' : d.toLocaleDateString('en-MY');
   };
 
   const mapApiToUi = (rows: ApiWithdrawal[]): WithdrawalItem[] =>
     (rows || [])
-      .map(r => ({
+      .map((r) => ({
         id: r.id,
         date: formatDate(r.createdAt),
         amount: Number(r.amount ?? 0).toFixed(2),
         status: normalizeStatus(r.status),
       }))
-      // newest first
-      .sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()));
-  const statusLabel: Record<WithdrawalItem["status"], string> = {
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const statusLabel: Record<WithdrawalItem['status'], string> = {
     PENDING: t.withdrawal.statusPending,
     SUCCESS: t.withdrawal.statusSuccess,
     DECLINED: t.withdrawal.statusDeclined,
   };
 
-  function StatusBadge({ status }: { status: WithdrawalItem["status"] }) {
-    const bg =
-      status === "SUCCESS" ? "#DCFCE7" : status === "DECLINED" ? "#FEE2E2" : "#F3F4F6";
-    const color =
-      status === "SUCCESS" ? "#166534" : status === "DECLINED" ? "#991B1B" : "#374151";
-    return (
-      <View style={[styles.badge, { backgroundColor: bg }]}>
-        <Text style={[styles.badgeText, { color }]}>{statusLabel[status]}</Text>
-      </View>
-    );
-  }
   const load = useCallback(async () => {
     try {
-      setError(null);
-      const res = await api.get<ApiWithdrawal[]>("/customer/get-withdrawal-history");
+      const res = await api.get<ApiWithdrawal[]>('/customer/get-withdrawal-history');
       const result = await getTotalTransaction();
-      if (result == null) { setPointsAwarded(0); } else { setPointsAwarded(result.pointsAwarded); }
-
+      setPointsAwarded(result?.pointsAwarded ?? 0);
       setHistory(mapApiToUi(res.data));
-    } catch (e: any) {
-      setError(e?.message || "Failed to load withdrawal history.");
+    } catch {
+      setHistory([]);
     } finally {
       setLoading(false);
     }
@@ -103,169 +110,222 @@ export default function WithdrawalScreen() {
     await loadUserProfile();
     await load();
     setRefreshing(false);
-  }, [load]);
+  }, [load, loadUserProfile]);
+
   useEffect(() => {
-    let isMounted = true;
     const connection = new SignalR.HubConnectionBuilder()
       .withUrl(`${signalRUrl}/withdrawalHub`, {
-        accessTokenFactory: async () => (await authStorage.getAccessToken()) ?? ""
+        accessTokenFactory: async () => (await authStorage.getAccessToken()) ?? '',
       })
       .withAutomaticReconnect()
       .build();
 
-    connection.on("WithdrawalChanged", (payload: any) => {
+    connection.on('WithdrawalChanged', () => {
       load();
     });
 
     (async () => {
       try {
         await connection.start();
-
       } catch (e) {
-        console.warn("Hub connect failed", e);
+        console.warn('Hub connect failed', e);
       }
     })();
 
     return () => {
-      isMounted = false;
       connection.stop();
     };
-  }, [load]);
+  }, [load, signalRUrl]);
+
   useEffect(() => {
     if (!loadingBank && !hasBankAccount) {
       setBankModalVisible(true);
     }
-  }, [loadingBank, hasBankAccount, bankAccount]);
+  }, [loadingBank, hasBankAccount]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       await loadUserProfile();
       await load();
-    };
+    })();
+  }, [load, loadUserProfile]);
 
-    fetchData();
-  }, [load]);
+  const bankBadge = useMemo(() => {
+    if (!hasBankAccount || !bankAccount) return null;
+    return `(${getBankNameByCode(bankAccount.bankCode) ?? bankAccount.bankCode}) • ${bankAccount.accountNumber}`;
+  }, [bankAccount, hasBankAccount]);
+
+  const maxWithdraw = Number(pointsAwarded).toFixed(2);
+  const parsedAmount = parseFloat(withdrawalAmount);
+  const canWithdraw =
+    hasBankAccount && !isNaN(parsedAmount) && parsedAmount >= 1.0 && parsedAmount <= pointsAwarded;
+
   const handleWithdraw = async () => {
-    const amount = parseFloat(withdrawalAmount);
-
     if (!hasBankAccount) {
       setBankModalVisible(true);
       return;
     }
 
-    if (isNaN(amount) || amount <= 1.0) {
+    if (isNaN(parsedAmount) || parsedAmount < 1.0) {
       Alert.alert(t.withdrawal.invalidAmount, t.withdrawal.invalidAmountMessage);
       return;
     }
-    if (amount > totalAmount) {
+    if (parsedAmount > pointsAwarded) {
       Alert.alert(t.withdrawal.insufficientBalance, t.withdrawal.insufficientBalanceMessage);
       return;
     }
 
     try {
       setWithdrawing(true);
-      await api.post('/payout/customer', {
-        amount,
-      });
-      load();
-      setWithdrawing(false);
+      await api.post('/payout/customer', { amount: parsedAmount });
+      await load();
       setWithdrawalAmount('');
       Alert.alert(t.common.success, t.withdrawal.withdrawalSubmitted);
     } catch (e: any) {
-      setWithdrawing(false);
       Alert.alert(t.common.error, e?.response?.data?.error ?? t.withdrawal.withdrawalFailed);
+    } finally {
+      setWithdrawing(false);
     }
   };
 
-  const bankBadge = useMemo(() => {
-    if (!hasBankAccount) return null;
-    return `(${getBankNameByCode(bankAccount.bankCode) ?? bankAccount.bankCode}) • ${bankAccount.accountNumber}`;
-  }, [bankAccount, hasBankAccount]);
+  const handleAmountChange = (text: string) => {
+    const cleaned = text.replace(/[^\d.]/g, '');
+    const parts = cleaned.split('.');
+    if (parts.length > 2) return;
+    if (parts[1]?.length > 2) return;
+    setWithdrawalAmount(cleaned);
+  };
+
+  function StatusBadge({ status }: { status: WithdrawalItem['status'] }) {
+    const bg =
+      status === 'SUCCESS' ? '#DCFCE7' : status === 'DECLINED' ? '#FEE2E2' : '#F3F4F6';
+    const color =
+      status === 'SUCCESS' ? '#166534' : status === 'DECLINED' ? '#991B1B' : '#374151';
+    return (
+      <View style={[styles.badge, { backgroundColor: bg }]}>
+        <Text style={[styles.badgeText, { color }]}>{statusLabel[status]}</Text>
+      </View>
+    );
+  }
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: t.withdrawal.title,
-          headerShown: true,
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: Colors.light.background },
-          headerTintColor: '#2E7D32',
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
 
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <View style={styles.card}>
-            <Text style={styles.label}>{t.withdrawal.totalAmount}</Text>
-            <Text style={styles.total}>RM {pointsAwarded}</Text>
-
-            {/* Show current bank info + change button */}
-            {hasBankAccount ? (
-              <View style={{ marginTop: 8 }}>
-                <Text style={{ color: "#555" }}>{t.withdrawal.payoutTo}</Text>
-                <Text style={{ color: "#2E7D32", fontWeight: "600", marginTop: 2 }}>{bankBadge}</Text>
-                <TouchableOpacity
-                  onPress={() => setBankModalVisible(true)}
-                  style={{ alignSelf: "flex-start", paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "#2E7D32", borderRadius: 8, marginTop: 8 }}
-                >
-                  <Text style={{ color: "#2E7D32", fontWeight: "600" }}>{t.withdrawal.changeBank}</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              <TouchableOpacity
-                onPress={() => setBankModalVisible(true)}
-                style={{ alignSelf: "flex-start", paddingVertical: 6, paddingHorizontal: 10, borderWidth: 1, borderColor: "#2E7D32", borderRadius: 8, marginTop: 8 }}
-              >
-                <Text style={{ color: "#2E7D32", fontWeight: "600" }}>{t.withdrawal.addBankAccount}</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          <View className="card" style={styles.card}>
-            <Text style={styles.label}>{t.withdrawal.withdrawalAmount}</Text>
-            <TextInput
-              style={styles.input}
-              keyboardType="numeric"
-              placeholder={t.withdrawal.enterAmount}
-              value={withdrawalAmount}
-              onChangeText={setWithdrawalAmount}
-            />
+      <View style={styles.screen}>
+        <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
+          <View style={styles.header}>
             <TouchableOpacity
-              style={[
-                styles.withdrawButton,
-                (!withdrawalAmount || parseFloat(withdrawalAmount) < 1.0) && { backgroundColor: '#A5D6A7' }
-              ]}
-              onPress={handleWithdraw}
-              disabled={!withdrawalAmount || parseFloat(withdrawalAmount) < 1.0}
+              style={styles.backButton}
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel={t.common.back}
             >
-              <Text style={styles.withdrawButtonText}>{t.withdrawal.withdrawButton}</Text>
+              <Ionicons name="arrow-back" size={22} color="#333" />
             </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t.withdrawal.title}</Text>
+            <View style={styles.headerSpacer} />
           </View>
+        </SafeAreaView>
 
-          <View style={[styles.card, { flex: 1 }]}>
-            <Text style={styles.historyTitle}>{t.withdrawal.withdrawalHistory}</Text>
-            <FlatList
-              style={{ flex: 1 }}                    // ← give the list height
-              data={history}
-              keyExtractor={(item) => item.id}
-              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-              ListEmptyComponent={<Text style={styles.empty}>{t.withdrawal.noWithdrawals}</Text>}
-              renderItem={({ item }) => (
-                <View style={styles.row}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.date}>{item.date}</Text>
-                    <StatusBadge status={item.status} />
-                  </View>
-                  <Text style={styles.amount}>RM {item.amount}</Text>
-                </View>
-              )}
-              showsVerticalScrollIndicator
-            />
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={DashboardTheme.walletGreen} />
           </View>
-        </View>
-      </SafeAreaView>
-      <WithdrawalOverlay visible={withdrawing} text={t.withdrawal.processingWithdrawal} subtext={t.withdrawal.processingSubtext} />
+        ) : (
+          <ScrollView
+            style={styles.scroll}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={DashboardTheme.headerGreen}
+                colors={[DashboardTheme.headerGreen]}
+              />
+            }
+          >
+            {/* Payout card */}
+            <View style={styles.card}>
+              <Text style={styles.cardLabel}>{t.withdrawal.payoutTo}</Text>
+              {hasBankAccount && bankBadge ? (
+                <View style={styles.payoutRow}>
+                  <Text style={styles.bankText}>{bankBadge}</Text>
+                  <Text style={styles.defaultTag}>{t.withdrawal.default}</Text>
+                </View>
+              ) : (
+                <Text style={styles.bankTextMuted}>{t.withdrawal.addBankAccount}</Text>
+              )}
+              <TouchableOpacity
+                style={styles.changeBankButton}
+                onPress={() => setBankModalVisible(true)}
+              >
+                <Text style={styles.changeBankText}>
+                  {hasBankAccount ? t.withdrawal.changeBank : t.withdrawal.addBankAccount}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Amount card */}
+            <View style={styles.card}>
+              <Text style={styles.cardLabel}>{t.withdrawal.withdrawalAmount}</Text>
+              <View style={styles.amountRow}>
+                <Text style={styles.amountPrefix}>RM</Text>
+                <TextInput
+                  style={styles.amountInput}
+                  value={withdrawalAmount}
+                  onChangeText={handleAmountChange}
+                  keyboardType="decimal-pad"
+                  placeholder="00.00"
+                  placeholderTextColor="rgba(46, 125, 50, 0.4)"
+                />
+              </View>
+              <View style={styles.amountDivider} />
+              <Text style={styles.withdrawHint}>
+                {interpolate(t.withdrawal.withdrawUpTo, { amount: maxWithdraw })}
+              </Text>
+              <TouchableOpacity
+                style={[styles.withdrawButton, !canWithdraw && styles.withdrawButtonDisabled]}
+                onPress={handleWithdraw}
+                disabled={!canWithdraw}
+              >
+                <Text style={styles.withdrawButtonText}>{t.withdrawal.withdrawButton}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* History card */}
+            <View style={[styles.card, styles.historyCard]}>
+              <Text style={styles.historyTitle}>{t.withdrawal.withdrawalHistory}</Text>
+              {history.length === 0 ? (
+                <Text style={styles.emptyHistory}>{t.withdrawal.noWithdrawals}</Text>
+              ) : (
+                <FlatList
+                  data={history}
+                  keyExtractor={(item) => item.id}
+                  scrollEnabled={false}
+                  ItemSeparatorComponent={() => <View style={styles.historySeparator} />}
+                  renderItem={({ item }) => (
+                    <View style={styles.historyRow}>
+                      <View style={styles.historyRowLeft}>
+                        <Text style={styles.historyDate}>{item.date}</Text>
+                        <StatusBadge status={item.status} />
+                      </View>
+                      <Text style={styles.historyAmount}>RM {item.amount}</Text>
+                    </View>
+                  )}
+                />
+              )}
+            </View>
+          </ScrollView>
+        )}
+      </View>
+
+      <WithdrawalOverlay
+        visible={withdrawing}
+        text={t.withdrawal.processingWithdrawal}
+        subtext={t.withdrawal.processingSubtext}
+      />
       <BankAccountModal
         visible={bankModalVisible}
         onClose={() => setBankModalVisible(false)}
@@ -276,27 +336,187 @@ export default function WithdrawalScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#F4F9F4' },
-  container: { flex: 1, padding: 16 },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16, elevation: 2 },
-  label: { fontSize: 16, fontWeight: '600', color: '#2E7D32' },
-  total: { fontSize: 24, fontWeight: '700', color: '#2E7D32', marginTop: 8 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginTop: 8 },
-  withdrawButton: { backgroundColor: '#2E7D32', borderRadius: 8, marginTop: 12, padding: 12, alignItems: 'center' },
-  withdrawButtonText: { color: '#fff', fontWeight: '600' },
-  historyTitle: { fontSize: 16, fontWeight: '600', color: '#2E7D32', marginBottom: 8 },
-  historyItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#eee' },
-  historyAmount: { color: '#2E7D32', fontWeight: '600' },
-  badge: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999, marginTop: 4 },
-  badgeText: { fontSize: 12, fontWeight: "600" },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#e5e7eb",
+  screen: {
+    flex: 1,
+    backgroundColor: DashboardTheme.screenBg,
   },
-  date: { fontSize: 14, color: "#374151" },
-  amount: { fontWeight: "700", fontSize: 16 },
-  empty: { textAlign: "center", color: "#6b7280", marginTop: 24 },
+  headerSafeArea: {
+    backgroundColor: DashboardTheme.headerGreen,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: DashboardTheme.headerGreen,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: DashboardTheme.textOnGreen,
+    textAlign: 'center',
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
+    gap: 16,
+  },
+  card: {
+    ...cardStyle,
+  },
+  cardLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    marginBottom: 8,
+  },
+  payoutRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
+  bankText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: DashboardTheme.walletGreen,
+    flexShrink: 1,
+  },
+  bankTextMuted: {
+    fontSize: 15,
+    color: '#6B7280',
+    marginBottom: 12,
+  },
+  defaultTag: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  changeBankButton: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#E8F5E9',
+    borderWidth: 1,
+    borderColor: DashboardTheme.walletGreen,
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+  },
+  changeBankText: {
+    color: DashboardTheme.walletGreen,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  amountRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  amountPrefix: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: DashboardTheme.walletGreen,
+    marginRight: 2,
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: DashboardTheme.walletGreen,
+    padding: 0,
+    minHeight: 44,
+  },
+  amountDivider: {
+    height: 1,
+    backgroundColor: '#D1D5DB',
+    marginTop: 8,
+    marginBottom: 10,
+  },
+  withdrawHint: {
+    fontSize: 13,
+    color: '#5B6B73',
+    marginBottom: 16,
+  },
+  withdrawButton: {
+    backgroundColor: DashboardTheme.walletGreen,
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  withdrawButtonDisabled: {
+    backgroundColor: '#A5D6A7',
+  },
+  withdrawButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  historyCard: {
+    minHeight: 160,
+  },
+  historyTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: DashboardTheme.walletGreen,
+    marginBottom: 12,
+  },
+  emptyHistory: {
+    textAlign: 'center',
+    color: '#9CA3AF',
+    fontSize: 14,
+    marginTop: 24,
+  },
+  historySeparator: {
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  historyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  historyRowLeft: {
+    flex: 1,
+  },
+  historyDate: {
+    fontSize: 14,
+    color: '#374151',
+  },
+  historyAmount: {
+    fontWeight: '700',
+    fontSize: 16,
+    color: DashboardTheme.walletGreen,
+  },
+  badge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+    marginTop: 4,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
 });

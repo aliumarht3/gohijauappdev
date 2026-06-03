@@ -1,27 +1,34 @@
-import { Colors } from '@/constants/Colors';
+import GreenScreenHeader from '@/components/GreenScreenHeader';
+import { DashboardTheme } from '@/constants/dashboardTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import React, { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import api from '../../api/apiClient';
 import CustomAlert from '../../components/molecules/CustomAlert';
 import { useLanguage } from '../../services/languageService';
-import theme from "../themes/theme";
 
 export default function ChangePasswordScreen() {
   const { t } = useLanguage();
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState("");
-  const [alertMessage, setAlertMessage] = useState("");
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleSave = async () => {
     if (newPassword !== confirmPassword) {
@@ -32,162 +39,184 @@ export default function ChangePasswordScreen() {
     }
 
     setLoading(true);
-    const payload = {
-      currentPassword,
-      newPassword
-    };
-    
     try {
-      const res = await api.patch('/user/change-password', payload);
+      const res = await api.patch('/user/change-password', {
+        currentPassword,
+        newPassword,
+      });
       setAlertTitle(t.changePassword.successTitle);
       setAlertMessage(res.data.message || t.changePassword.successMessage);
       setAlertVisible(true);
     } catch (err: any) {
       setAlertTitle(t.changePassword.errorTitle);
-      setAlertMessage(err.response?.data?.message || err.message || t.changePassword.somethingWrong);
+      setAlertMessage(
+        err.response?.data?.message || err.message || t.changePassword.somethingWrong,
+      );
       setAlertVisible(true);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <>
-      <Stack.Screen
-        options={{
-          title: t.changePassword.title,
-          headerBackTitle: t.changePassword.backTitle,
-          headerBackButtonDisplayMode: "minimal",
-          headerShown: true,
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: Colors.light.background },
-          headerTintColor: '#2E7D32',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            fontSize: 20,
-          },
-        }}
-      />
-      <CustomAlert
-                    visible={alertVisible}
-                    title={alertTitle}
-                    message={alertMessage}
-                    onClose={() =>{setAlertVisible(false); 
-                      if (alertTitle === t.changePassword.successTitle) {
-                        router.back();
-                      }
-                    }}
-                  />
-      <View style={styles.container}>
-
-        <Text style={styles.label}>{t.changePassword.currentPasswordLabel}</Text>
-        <View style={styles.passwordContainer}>
-          <TextInput
-            placeholder={t.changePassword.currentPasswordPlaceholder}
-            value={currentPassword}
-            autoCapitalize="none"
-            secureTextEntry={!showCurrentPassword}
-            onChangeText={setCurrentPassword}
-            style={styles.input}
-            placeholderTextColor="#888"
-          />
-          <TouchableOpacity onPress={() => setShowCurrentPassword(!showCurrentPassword)}>
-            <Ionicons 
-              name={showCurrentPassword ? 'eye' : 'eye-off'} 
-              size={20} 
-              color="#666" 
-            />
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.label}>{t.changePassword.newPasswordLabel}</Text>
-        <View style={styles.passwordContainer}>
+  const renderPasswordField = (
+    label: string,
+    value: string,
+    onChange: (v: string) => void,
+    placeholder: string,
+    show: boolean,
+    toggleShow: () => void,
+  ) => (
+    <View style={styles.fieldGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.passwordRow}>
         <TextInput
-          placeholder={t.changePassword.newPasswordPlaceholder}
-          value={newPassword}
-          autoCapitalize="none"
-          secureTextEntry={!showNewPassword}
-          onChangeText={setNewPassword}
           style={styles.input}
-          placeholderTextColor="#888"
-        />
-          <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
-            <Ionicons 
-              name={showNewPassword ? 'eye' : 'eye-off'} 
-              size={20} 
-              color="#666" 
-            />
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.label}>{t.changePassword.confirmPasswordLabel}</Text>
-        <View style={styles.passwordContainer}>
-        <TextInput
-          placeholder={t.changePassword.confirmPasswordPlaceholder}
-          value={confirmPassword}
+          value={value}
+          onChangeText={onChange}
+          placeholder={placeholder}
+          placeholderTextColor="#9CA3AF"
+          secureTextEntry={!show}
           autoCapitalize="none"
-          secureTextEntry={!showConfirmPassword}
-          onChangeText={setConfirmPassword}
-          style={styles.input}
-          placeholderTextColor="#888"
         />
-          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
-            <Ionicons 
-              name={showConfirmPassword ? 'eye' : 'eye-off'} 
-              size={20} 
-              color="#666" 
-            />
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={styles.button} onPress={handleSave}>
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.buttonText}>{t.changePassword.changeButton}</Text>
-          )}
+        <TouchableOpacity onPress={toggleShow} style={styles.eyeButton}>
+          <Ionicons name={show ? 'eye' : 'eye-off'} size={20} color="#6B7280" />
         </TouchableOpacity>
       </View>
+    </View>
+  );
+
+  return (
+    <>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.screen}>
+        <GreenScreenHeader title={t.changePassword.title} />
+
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.card}>
+            {renderPasswordField(
+              t.changePassword.oldPasswordLabel,
+              currentPassword,
+              setCurrentPassword,
+              t.changePassword.currentPasswordPlaceholder,
+              showOld,
+              () => setShowOld((v) => !v),
+            )}
+            {renderPasswordField(
+              t.changePassword.newPasswordLabel,
+              newPassword,
+              setNewPassword,
+              t.changePassword.newPasswordPlaceholder,
+              showNew,
+              () => setShowNew((v) => !v),
+            )}
+            {renderPasswordField(
+              t.changePassword.confirmPasswordLabel,
+              confirmPassword,
+              setConfirmPassword,
+              t.changePassword.confirmPasswordPlaceholder,
+              showConfirm,
+              () => setShowConfirm((v) => !v),
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleSave}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#F59E0B" />
+            ) : (
+              <>
+                <Ionicons name="lock-closed-outline" size={20} color="#F59E0B" />
+                <Text style={styles.actionButtonText}>{t.changePassword.changeButton}</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => {
+          setAlertVisible(false);
+          if (alertTitle === t.changePassword.successTitle) {
+            router.back();
+          }
+        }}
+      />
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: theme.colors.background,
-    padding: theme.spacing.lg,
+    backgroundColor: DashboardTheme.screenBg,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
+    gap: 12,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: DashboardTheme.borderLight,
+    padding: 16,
+  },
+  fieldGroup: {
+    marginBottom: 4,
   },
   label: {
-    fontSize: theme.fontSize.md,
-    fontWeight: "bold",
-    marginBottom: theme.spacing.xs,
-    color: theme.colors.text,
+    fontSize: 13,
+    color: '#6B7280',
+    marginBottom: 6,
+    marginTop: 8,
   },
-  passwordContainer: {
-  height: 50,
-  flexDirection: 'row',
-  alignItems: 'center',
-  backgroundColor: theme.colors.inputBackground,
-  borderRadius: theme.borderRadius.md,
-  borderWidth: 1,
-  borderColor: theme.colors.border,
-  paddingHorizontal: 10,
-  marginBottom: theme.spacing.md,
-},
-input: {
-  flex: 1,
-  fontSize: theme.fontSize.md,
-  color: theme.colors.text,
-},
-  button: {
-    backgroundColor: theme.colors.primary,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    alignItems: "center",
+  passwordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 10,
+    paddingRight: 8,
+    backgroundColor: '#fff',
   },
-  buttonText: {
-    color: theme.colors.buttonText,
-    fontSize: theme.fontSize.md,
-    fontWeight: "bold",
+  input: {
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1a1a1a',
+  },
+  eyeButton: {
+    padding: 8,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#FCD34D',
+    paddingVertical: 16,
+  },
+  actionButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#F59E0B',
   },
 });
