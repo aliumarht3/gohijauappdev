@@ -276,21 +276,29 @@ export interface Translations {
   };
   technicianHome: {
     greeting: string;
+    defaultName: string;
     subtitle: string;
-    hardwareStatus: string;
-    softwareStatus: string;
-    errorsDetected: string;
-    scan: string;
+    totalMachines: string;
+    machinesCount: string;
+    locationUnavailable: string;
     errorLogs: string;
     comingSoonErrorLog: string;
-    machinesOverview: string;
-    viewMachines: string;
+    maintenanceSchedule: string;
+    comingSoonMaintenance: string;
+    notifications: string;
+    machinesNeedAttention: string;
+    noMachinesNeedAttention: string;
+    nearby: string;
   };
   collectorHome: {
     greeting: string;
     subtitle: string;
-    ucoLevels: string;
     collectionsToday: string;
+    collectedThisWeek: string;
+    machineList: string;
+    nearby: string;
+    adSpace: string;
+    ucoLevels: string;
     transactions: string;
     monitorUCO: string;
     scanToCollect: string;
