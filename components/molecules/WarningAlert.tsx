@@ -1,6 +1,6 @@
-import { Audio } from 'expo-av';
+import { useAudioPlayer } from 'expo-audio';
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { Modal, StyleSheet, Text, TouchableOpacity, Vibration, View } from 'react-native';
 
 type WarningAlertProps = {
@@ -22,31 +22,11 @@ const WarningAlert: React.FC<WarningAlertProps> = ({
     enableSound = true,
     enableVibration = true,
 }) => {
-    const soundRef = useRef<Audio.Sound | null>(null);
+    const player = useAudioPlayer(require('../../assets/sounds/Siren.mp3'));
 
     useEffect(() => {
-        // Load sound on mount
-        const loadSound = async () => {
-            try {
-                const { sound } = await Audio.Sound.createAsync(
-                    require('../../assets/sounds/Siren.mp3'),
-                    { shouldPlay: false, isLooping: true }
-                );
-                soundRef.current = sound;
-            } catch (error) {
-                console.error('Error loading sound:', error);
-            }
-        };
-
-        loadSound();
-
-        // Cleanup on unmount
-        return () => {
-            if (soundRef.current) {
-                soundRef.current.unloadAsync();
-            }
-        };
-    }, []);
+        player.loop = true;
+    }, [player]);
 
     useEffect(() => {
         const pattern = [0, 600, 400]; // vibrate pattern
@@ -56,10 +36,10 @@ const WarningAlert: React.FC<WarningAlertProps> = ({
                 if (enableVibration) {
                     Vibration.vibrate(pattern, true); // repeat = true
                 }
-                if (enableSound && soundRef.current) {
+                if (enableSound) {
                     try {
-                        await soundRef.current.setPositionAsync(0);
-                        await soundRef.current.playAsync();
+                        await player.seekTo(0);
+                        player.play();
                     } catch (error) {
                         console.error('Error playing sound:', error);
                     }
@@ -67,24 +47,22 @@ const WarningAlert: React.FC<WarningAlertProps> = ({
             } else {
                 // stop everything when modal hides
                 Vibration.cancel();
-                if (soundRef.current) {
-                    try {
-                        await soundRef.current.stopAsync();
-                        await soundRef.current.setPositionAsync(0);
-                    } catch (error) {
-                        console.error('Error stopping sound:', error);
-                    }
+                try {
+                    player.pause();
+                    await player.seekTo(0);
+                } catch (error) {
+                    console.error('Error stopping sound:', error);
                 }
             }
         };
 
-        handleVisibilityChange();
+        void handleVisibilityChange();
 
         // cleanup
         return () => {
             Vibration.cancel();
         };
-    }, [visible, enableSound, enableVibration]);
+    }, [visible, enableSound, enableVibration, player]);
 
     const handleClose = () => {
         onClose?.(); // parent should set visible=false
