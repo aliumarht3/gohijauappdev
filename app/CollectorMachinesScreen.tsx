@@ -1,6 +1,7 @@
 import MachineCard from "@/components/atoms/MachineCard";
 import SortButton from "@/components/atoms/SortButton";
-import { Colors } from "@/constants/Colors";
+import GreenScreenHeader from "@/components/GreenScreenHeader";
+import { DashboardTheme } from "@/constants/dashboardTheme";
 import { MachineVolume } from "@/constants/Machine";
 import { useMachineLiveUpdates } from "@/hooks/useMachineLiveUpdates";
 import { fetchCollectorMachines } from "@/services/machine";
@@ -11,7 +12,6 @@ import {
     ActivityIndicator,
     FlatList,
     RefreshControl,
-    SafeAreaView,
     StyleSheet,
     Text,
     TextInput,
@@ -36,7 +36,6 @@ export default function CollectorMachinesScreen() {
         setLoading(true);
         try {
             const data = await fetchCollectorMachines();
-            console.log("Loaded machines:", data);
             setMachines(data ?? []);
         } catch (e: any) {
             setError(e?.message ?? t.collectorMachines.failedToLoad);
@@ -50,8 +49,7 @@ export default function CollectorMachinesScreen() {
         try { await load(); } finally { setRefreshing(false); }
     }, [load]);
 
-    // live updates (keep true if your hub is live)
-    useMachineLiveUpdates(true, (payload) => { // turn to true when backend ready
+    useMachineLiveUpdates(true, (payload) => {
         if (!payload.machineId) return;
         setMachines((prev) =>
             prev.map((x) => (x.machineId === payload.machineId ? { ...x, ...payload, bufferVolume: payload.bufferVolume ?? x.bufferVolume } : x))
@@ -65,13 +63,11 @@ export default function CollectorMachinesScreen() {
         let data = machines.filter((m) =>
             !q ||
             m.machineLocationName.toLowerCase().includes(q) ||
-            // (m.location ?? "").toLowerCase().includes(q) ||
             m.machineId.toLowerCase().includes(q)
         );
 
         switch (sortKey) {
             case "name": data = data.sort((a, b) => a.machineLocationName.localeCompare(b.machineLocationName)); break;
-            // case "status": data = data.sort((a, b) => (a.status ?? "").localeCompare(b.status ?? "")); break;
             default: data = data.sort((a, b) => pct(b.bufferVolume, b.capacityLiters) - pct(a.bufferVolume, a.capacityLiters));
         }
         return data;
@@ -79,43 +75,32 @@ export default function CollectorMachinesScreen() {
 
     return (
         <>
-            <SafeAreaView style={styles.container}>
-                <Stack.Screen
-                    options={{
-                        title: t.collectorMachines.title,
-                        headerShown: true,
-                        headerTitleAlign: 'center',
-                        headerStyle: { backgroundColor: Colors.light.background },
-                        headerTintColor: '#2E7D32',
-                        headerTitleStyle: {
-                            fontWeight: 'bold',
-                            fontSize: 20,
-                        },
-                    }}
-                />
+            <Stack.Screen options={{ headerShown: false }} />
+            <View style={styles.screen}>
+                <GreenScreenHeader title={t.collectorMachines.title} />
+
                 <View style={styles.toolbar}>
                     <TextInput
                         value={search}
                         onChangeText={setSearch}
                         placeholder={t.collectorMachines.searchPlaceholder}
                         style={styles.search}
-                        placeholderTextColor={Colors.textSecondary}
+                        placeholderTextColor="#9CA3AF"
                     />
                     <View style={styles.sortRow}>
                         <SortButton label={t.collectorMachines.fullness} active={sortKey === "pct"} onPress={() => setSortKey("pct")} />
                         <SortButton label={t.collectorMachines.name} active={sortKey === "name"} onPress={() => setSortKey("name")} />
-                        {/* <SortButton label="Status" active={sortKey === "status"} onPress={() => setSortKey("status")} /> */}
                     </View>
                 </View>
 
                 {loading ? (
                     <View style={styles.center}>
-                        <ActivityIndicator color={Colors.primary} />
+                        <ActivityIndicator color={DashboardTheme.walletGreen} size="large" />
                         <Text style={styles.stateText}>{t.collectorMachines.loadingMachines}</Text>
                     </View>
                 ) : error ? (
                     <View style={styles.center}>
-                        <Text style={[styles.stateText, { color: Colors.danger }]}>{error}</Text>
+                        <Text style={styles.errorText}>{error}</Text>
                         <TouchableOpacity style={styles.retry} onPress={load}>
                             <Text style={styles.retryText}>{t.common.retry}</Text>
                         </TouchableOpacity>
@@ -128,46 +113,86 @@ export default function CollectorMachinesScreen() {
                     <FlatList
                         data={filtered}
                         keyExtractor={(item) => item.machineId}
-                        contentContainerStyle={{ paddingBottom: 24 }}
-                        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.primary} />}
+                        contentContainerStyle={styles.listContent}
+                        refreshControl={
+                            <RefreshControl
+                                refreshing={refreshing}
+                                onRefresh={onRefresh}
+                                tintColor={DashboardTheme.walletGreen}
+                            />
+                        }
                         renderItem={({ item }) => <MachineCard m={item} />}
+                        ItemSeparatorComponent={() => <View style={styles.listSeparator} />}
                         initialNumToRender={6}
                         windowSize={10}
                         removeClippedSubviews
+                        showsVerticalScrollIndicator={false}
                     />
                 )}
-            </SafeAreaView>
+            </View>
         </>
-
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: Colors.bg, paddingHorizontal: 16 },
-    screenTitle: { color: Colors.textPrimary, fontSize: 22, fontWeight: "700", marginTop: 8 },
-    subtitle: { color: Colors.textSecondary, marginBottom: 8 },
-
-    toolbar: { gap: 10, marginTop: 8, marginBottom: 10 },
-    search: {
-        backgroundColor: Colors.surface,
-        borderColor: Colors.border,
-        borderWidth: 1,
-        borderRadius: 12,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        color: Colors.textPrimary,
+    screen: {
+        flex: 1,
+        backgroundColor: DashboardTheme.screenBg,
     },
-    sortRow: { flexDirection: "row", alignItems: "center" },
-
-    center: { flex: 1, alignItems: "center", justifyContent: "center" },
-    stateText: { marginTop: 10, color: Colors.textSecondary },
-
+    toolbar: {
+        gap: 10,
+        paddingHorizontal: 16,
+        paddingTop: 16,
+        paddingBottom: 8,
+    },
+    search: {
+        backgroundColor: '#fff',
+        borderColor: DashboardTheme.borderLight,
+        borderWidth: 2,
+        borderRadius: 12,
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        fontSize: 15,
+        color: '#1a1a1a',
+    },
+    sortRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    listContent: {
+        paddingHorizontal: 16,
+        paddingBottom: 32,
+    },
+    listSeparator: {
+        height: 4,
+    },
+    center: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+    },
+    stateText: {
+        marginTop: 12,
+        fontSize: 15,
+        color: '#5B6B73',
+        textAlign: 'center',
+    },
+    errorText: {
+        fontSize: 15,
+        color: '#C62828',
+        textAlign: 'center',
+    },
     retry: {
-        marginTop: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        backgroundColor: Colors.primary,
+        marginTop: 16,
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        backgroundColor: DashboardTheme.walletGreen,
         borderRadius: 8,
     },
-    retryText: { color: "white", fontWeight: "600" },
+    retryText: {
+        color: DashboardTheme.textOnGreen,
+        fontWeight: '600',
+        fontSize: 15,
+    },
 });

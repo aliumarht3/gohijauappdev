@@ -1,134 +1,238 @@
-import { Colors } from '@/constants/Colors';
-import { interpolate } from '../constants/languages';
-import { Stack } from 'expo-router';
+import { DashboardTheme } from '@/constants/dashboardTheme';
+import { Ionicons } from '@expo/vector-icons';
+import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { getTransaction } from '../services/transactionService';
 import { useLanguage } from '../services/languageService';
+
 type HistoryItem = {
   id: string;
   createdAt: string;
   oilPoured: number;
   cO2Saved: number;
   pointsAwarded: number;
+  points?: number;
+};
+
+const formatKg = (value: number) =>
+  Number.isInteger(value) ? `${value}kg` : `${value.toFixed(1)}kg`;
+
+const formatReward = (value: number) => `+RM${Number(value).toFixed(2)}`;
+
+const formatDateTime = (dateString: string) => {
+  const date = new Date(dateString);
+  const formatter = new Intl.DateTimeFormat('en-MY', {
+    timeZone: 'Asia/Kuala_Lumpur',
+    hour12: true,
+    hour: 'numeric',
+    minute: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  const parts = formatter.formatToParts(date);
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? '';
+
+  const hour = get('hour');
+  const minute = get('minute');
+  const dayPeriod = get('dayPeriod');
+  const day = get('day');
+  const month = get('month');
+  const year = get('year');
+
+  return `${hour}:${minute} ${dayPeriod}, ${day}/${month}/${year}`;
 };
 
 export default function OilHistoryScreen() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const handleGenerateToken = async () => {
-      const result = await getTransaction();
-      if (Array.isArray(result)) {
-        setHistory(result);
-      } else {
-        setHistory([]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await getTransaction();
+        if (!cancelled) {
+          setHistory(Array.isArray(result) ? result : []);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
+    })();
+    return () => {
+      cancelled = true;
     };
-    handleGenerateToken();
   }, []);
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-
-    // Convert to Malaysia timezone (Asia/Kuala_Lumpur)
-    const options: Intl.DateTimeFormatOptions = {
-      timeZone: 'Asia/Kuala_Lumpur',
-      hour12: true,
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    };
-
-    const formatted = new Intl.DateTimeFormat('en-MY', options).format(date);
-    const [datePart, timePart] = formatted.split(',').map(s => s.trim());
-
-    return {
-      date: datePart, // e.g. "25/10/2025"
-      time: timePart, // e.g. "08:30 PM"
-    };
-  };
+  const renderItem = ({ item }: { item: HistoryItem }) => (
+    <View style={styles.transactionCard}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.rewardAmount}>{formatReward(item.pointsAwarded)}</Text>
+        <Text style={styles.dateTime}>{formatDateTime(item.createdAt)}</Text>
+      </View>
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>{t.oilHistory.ucoRecycled}</Text>
+        <Text style={styles.detailValue}>{formatKg(item.oilPoured)}</Text>
+      </View>
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>{t.oilHistory.co2Saved}</Text>
+        <Text style={styles.detailValue}>{formatKg(item.cO2Saved)}</Text>
+      </View>
+      <View style={styles.detailRow}>
+        <Text style={styles.detailLabel}>{t.oilHistory.points}</Text>
+        <Text style={styles.detailValue}>
+          {Math.round(item.points ?? item.pointsAwarded)}
+        </Text>
+      </View>
+    </View>
+  );
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: t.oilHistory.title,
-          headerShown: true,
-          headerTitleAlign: 'center',
-          headerStyle: { backgroundColor: Colors.light.background },
-          headerTintColor: '#2E7D32',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-            fontSize: 20,
-          },
-        }}
-      />
-      <View style={styles.container}>
-        <View style={styles.card}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.screen}>
+        <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
+              accessibilityRole="button"
+              accessibilityLabel={t.common.back}
+            >
+              <Ionicons name="arrow-back" size={22} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t.oilHistory.title}</Text>
+            <View style={styles.headerSpacer} />
+          </View>
+        </SafeAreaView>
+
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={DashboardTheme.walletGreen} />
+          </View>
+        ) : (
           <FlatList
             data={history}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => {
-              const { date, time } = formatDate(item.createdAt);
-              return (
-                <View style={styles.historyItem}>
-                  <View style={styles.historyHeader}>
-                    <Text style={styles.date}>{date}</Text>
-                    <Text style={styles.time}>{time}</Text>
-                  </View>
-                  <Text>{interpolate(t.oilHistory.oil, { amount: item.oilPoured })}</Text>
-                  <Text>{interpolate(t.oilHistory.co2Saved, { amount: item.cO2Saved })}</Text>
-                  <Text>{interpolate(t.oilHistory.points, { amount: item.pointsAwarded })}</Text>
-                </View>
-              );
-            }}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            renderItem={renderItem}
+            contentContainerStyle={styles.listContent}
+            ItemSeparatorComponent={() => <View style={styles.listSeparator} />}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>{t.oilHistory.empty}</Text>
+            }
           />
-        </View>
+        )}
       </View>
     </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: Colors.light.background,
-    padding: 16,
+    backgroundColor: DashboardTheme.screenBg,
   },
-  card: {
+  headerSafeArea: {
+    backgroundColor: DashboardTheme.headerGreen,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: DashboardTheme.headerGreen,
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 8,
-    elevation: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  label: {
+  headerTitle: {
+    flex: 1,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#2E7D32',
-    fontSize: 16,
+    color: DashboardTheme.textOnGreen,
+    textAlign: 'center',
   },
-  historyItem: {
-    paddingVertical: 8,
+  headerSpacer: {
+    width: 40,
   },
-  historyHeader: {
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  listContent: {
+    padding: 16,
+    paddingBottom: 32,
+    flexGrow: 1,
+  },
+  listSeparator: {
+    height: 12,
+  },
+  transactionCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: DashboardTheme.borderLight,
+    padding: 16,
+    gap: 8,
+  },
+  cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 4,
   },
-  date: {
+  rewardAmount: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#2E7D32',
+    color: DashboardTheme.walletGreen,
   },
-  time: {
-    fontWeight: 'bold',
-    color: '#2E7D32',
+  dateTime: {
+    fontSize: 13,
+    color: '#5B6B73',
+    textAlign: 'right',
+    flexShrink: 1,
+    marginLeft: 12,
   },
-  separator: {
-    height: 1,
-    backgroundColor: '#eee',
-    marginVertical: 8,
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  detailLabel: {
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  detailValue: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: DashboardTheme.walletGreen,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: '#5B6B73',
+    fontSize: 15,
+    marginTop: 40,
   },
 });

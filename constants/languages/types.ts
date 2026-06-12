@@ -17,6 +17,8 @@ export interface Translations {
     failedQrGeneration: string;
     somethingWentWrong: string;
     warning: string;
+    previous: string;
+    next: string;
   };
   tabs: {
     home: string;
@@ -99,11 +101,18 @@ export interface Translations {
   home: {
     greeting: string;
     subtitle: string;
+    walletTitle: string;
+    walletBalance: string;
+    withdraw: string;
+    ucoRecycled: string;
+    co2Saved: string;
     oilRecycled: string;
     rewards: string;
     savedCO2: string;
     scan: string;
     history: string;
+    transactionHistory: string;
+    nearby: string;
     nearbyPoints: string;
     viewOnMap: string;
     howToBegin: string;
@@ -148,10 +157,12 @@ export interface Translations {
     title: string;
     totalAmount: string;
     payoutTo: string;
+    default: string;
     changeBank: string;
     addBankAccount: string;
     withdrawalAmount: string;
     enterAmount: string;
+    withdrawUpTo: string;
     withdrawButton: string;
     withdrawalHistory: string;
     noWithdrawals: string;
@@ -169,9 +180,10 @@ export interface Translations {
   };
   oilHistory: {
     title: string;
-    oil: string;
+    ucoRecycled: string;
     co2Saved: string;
     points: string;
+    empty: string;
   };
   collectorTransaction: {
     title: string;
@@ -198,6 +210,9 @@ export interface Translations {
     nameLabel: string;
     emailLabel: string;
     phoneLabel: string;
+    defaultAccount: string;
+    changeDefault: string;
+    languageButton: string;
     updateProfile: string;
     changePassword: string;
     deleteAccount: string;
@@ -210,6 +225,7 @@ export interface Translations {
   updateProfile: {
     title: string;
     backTitle: string;
+    usernameLabel: string;
     nameLabel: string;
     namePlaceholder: string;
     phoneLabel: string;
@@ -223,6 +239,7 @@ export interface Translations {
   changePassword: {
     title: string;
     backTitle: string;
+    oldPasswordLabel: string;
     currentPasswordLabel: string;
     currentPasswordPlaceholder: string;
     newPasswordLabel: string;
@@ -238,6 +255,7 @@ export interface Translations {
   };
   deleteAccount: {
     title: string;
+    confirmTitle: string;
     backTitle: string;
     passwordLabel: string;
     passwordPlaceholder: string;
@@ -258,21 +276,29 @@ export interface Translations {
   };
   technicianHome: {
     greeting: string;
+    defaultName: string;
     subtitle: string;
-    hardwareStatus: string;
-    softwareStatus: string;
-    errorsDetected: string;
-    scan: string;
+    totalMachines: string;
+    machinesCount: string;
+    locationUnavailable: string;
     errorLogs: string;
     comingSoonErrorLog: string;
-    machinesOverview: string;
-    viewMachines: string;
+    maintenanceSchedule: string;
+    comingSoonMaintenance: string;
+    notifications: string;
+    machinesNeedAttention: string;
+    noMachinesNeedAttention: string;
+    nearby: string;
   };
   collectorHome: {
     greeting: string;
     subtitle: string;
-    ucoLevels: string;
     collectionsToday: string;
+    collectedThisWeek: string;
+    machineList: string;
+    nearby: string;
+    adSpace: string;
+    ucoLevels: string;
     transactions: string;
     monitorUCO: string;
     scanToCollect: string;
