@@ -71,6 +71,7 @@ export default ({ config }) => {
     plugins: [
       "expo-audio",
       "expo-router",
+      "expo-asset",
       [
         "expo-splash-screen",
         {

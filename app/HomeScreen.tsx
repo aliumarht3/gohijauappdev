@@ -1,367 +1,333 @@
-import HelpCarousel from '@/components/atoms/HelpCarousel';
+import HelpCarousel, { HelpTopic } from '@/components/atoms/HelpCarousel';
+import { useBottomTabOverflow } from '@/components/CustomTabBar';
+import { DashboardTheme } from '@/constants/dashboardTheme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, Image, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+    Image,
+    RefreshControl,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { interpolate } from '../constants/languages';
-import CustomAlert from '../components/molecules/CustomAlert';
-import { generateQrTokenCustomer } from '../services/qrService';
 import { getTotalTransaction } from '../services/transactionService';
 import { useLanguage } from '../services/languageService';
 import { useUser } from '../services/userService';
-const { width } = Dimensions.get('window');
-interface HelpStep {
-    image: any;
-    text: string;
-}
 
-interface HelpTopic {
-    router: string;
-    title: string;
-    description: string;
-    color: string;
-}
 export default function HomeScreen() {
     const { t } = useLanguage();
     const { user, loadUserProfile } = useUser();
-    const [refreshing, setRefreshing] = React.useState(false);
-    const [totalOilPoured, setTotalOilPoured] = React.useState(0);
-    const [totalCO2Saved, setTotalCO2Saved] = React.useState(0);
-    const [pointsAwarded, setPointsAwarded] = React.useState(0);
-    const [rewardsAlertVisible, setRewardsAlertVisible] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
+    const [totalOilPoured, setTotalOilPoured] = useState(0);
+    const [totalCO2Saved, setTotalCO2Saved] = useState(0);
+    const [pointsAwarded, setPointsAwarded] = useState(0);
+    const router = useRouter();
+    const tabBarPadding = useBottomTabOverflow();
+
+    const applyTransactionTotals = (result: Awaited<ReturnType<typeof getTotalTransaction>>) => {
+        if (result) {
+            setTotalOilPoured(result.totalOilPoured);
+            setTotalCO2Saved(result.totalCO2Saved);
+            setPointsAwarded(result.pointsAwarded);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setRefreshing(true);
-                const result = await getTotalTransaction();
-                if (result) {
-                    setTotalOilPoured(result.totalOilPoured);
-                    setTotalCO2Saved(result.totalCO2Saved);
-                    setPointsAwarded(result.pointsAwarded);
-                }
-                await loadUserProfile();
-            } finally {
-                setRefreshing(false);
+        let cancelled = false;
+        (async () => {
+            const result = await getTotalTransaction();
+            if (!cancelled) {
+                applyTransactionTotals(result);
             }
+        })();
+        return () => {
+            cancelled = true;
         };
-
-        fetchData();
     }, []);
 
     const onRefresh = async () => {
         try {
             setRefreshing(true);
             const result = await getTotalTransaction();
-            if (result) {
-                setTotalOilPoured(result.totalOilPoured);
-                setTotalCO2Saved(result.totalCO2Saved);
-                setPointsAwarded(result.pointsAwarded);
-            }
+            applyTransactionTotals(result);
             await loadUserProfile();
         } finally {
             setRefreshing(false);
         }
     };
 
-    const stats = [
-        { label: t.home.oilRecycled, value: totalOilPoured, unit: "KG" },
-        { label: t.home.rewards, value: pointsAwarded, unit: "RM" },
-        { label: t.home.savedCO2, value: totalCO2Saved, unit: "kg" },
-    ];
+    const formatAmount = (value: number) =>
+        Number.isInteger(value) ? String(value) : value.toFixed(1);
+
+    const walletBalance = interpolate(t.home.walletBalance, {
+        amount: Number(pointsAwarded).toFixed(2),
+    });
+
     const topics: HelpTopic[] = [
         {
             router: '/GetStartedScreen',
             title: t.home.howToBegin,
             description: t.home.howToBeginDesc,
-            color: "#4CAF50",
+            color: DashboardTheme.carouselPrimary,
         },
         {
             router: '/GetStartedScreen',
             title: t.home.withdrawal,
             description: t.home.withdrawalDesc,
-            color: "#FF9800",
-        }
+            color: DashboardTheme.carouselSecondary,
+        },
     ];
-    const [selectedTopic, setSelectedTopic] = useState<HelpTopic | null>(null);
-    const router = useRouter();
-    const [alertFailedToGenerateVisible, setAlertFailedToGenerateVisible] = useState(false);
-    const handleGenerateToken = async () => {
-        const token = await generateQrTokenCustomer();
-        console.log('Generated Token:', token);
-        if (token) {
-            router.push({
-                pathname: '/QRCodeScreen',
-                params: {
-                    token
-                }
-            });
-        } else {
-            setAlertFailedToGenerateVisible(true);
-        }
-    };
+
     const handleRewardPress = () => {
         router.push({
             pathname: '/WithdrawalScreen',
-            params: { pointsAwarded }
+            params: { pointsAwarded: String(pointsAwarded) },
         });
-    }
+    };
+
     return (
         <ScrollView
             style={styles.container}
+            contentContainerStyle={[styles.scrollContent, { paddingBottom: tabBarPadding }]}
+            showsVerticalScrollIndicator={false}
             refreshControl={
-                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor={DashboardTheme.headerGreen}
+                    colors={[DashboardTheme.headerGreen]}
+                    progressBackgroundColor={DashboardTheme.screenBg}
+                />
             }
         >
-            <View style={styles.header}>
-                <View>
-                    <Text style={styles.greeting}>{interpolate(t.home.greeting, { name: user?.name || '' })}</Text>
-                    <Text style={styles.subtitle}>{t.home.subtitle}</Text>
-                </View>
-                <Image
-                    source={require('../assets/images/icon.png')}
-                    style={styles.profileImage}
-                />
-            </View>
-
-            {/* ✅ Eco Stats */}
-            <View style={styles.statsContainer}>
-                {stats.map((item, index) => (
-                    <View key={index} style={styles.statCard}>
-                        <Text
-                            style={styles.statValue}
-                        // numberOfLines={1}
+            <View style={styles.heroSection}>
+                <SafeAreaView edges={['top']} style={styles.headerSafeArea}>
+                    <View style={styles.header}>
+                        <View style={styles.headerText}>
+                            <Text style={styles.greeting}>
+                                {interpolate(t.home.greeting, { name: user?.name || '' })}
+                            </Text>
+                            <Text style={styles.subtitle}>{t.home.subtitle}</Text>
+                        </View>
+                        <TouchableOpacity
+                            style={styles.profileButton}
+                            onPress={() => router.push('/(tabs)/profile')}
+                            accessibilityRole="button"
+                            accessibilityLabel={t.tabs.profile}
                         >
-                            {item.label === t.home.rewards
-                                ? `${item.unit} ${item.value}`
-                                : `${item.value} ${item.unit}`}
-                        </Text>
-                        <Text style={styles.statLabel}>{item.label}</Text>
+                            <Ionicons name="person" size={22} color="#333" />
+                        </TouchableOpacity>
                     </View>
-                ))}
+                </SafeAreaView>
+
+                <View style={styles.walletSection}>
+                    <Text style={styles.walletTitle}>{t.home.walletTitle}</Text>
+                    <Text style={styles.walletBalance}>{walletBalance}</Text>
+                    <TouchableOpacity
+                        style={styles.withdrawButton}
+                        onPress={handleRewardPress}
+                        accessibilityRole="button"
+                        accessibilityLabel={t.home.withdraw}
+                    >
+                        <Text style={styles.withdrawButtonText}>{t.home.withdraw}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.impactSection}>
+                    <Text style={styles.impactText}>
+                        {interpolate(t.home.ucoRecycled, { amount: formatAmount(totalOilPoured) })}
+                    </Text>
+                    <Text style={styles.impactText}>
+                        {interpolate(t.home.co2Saved, { amount: formatAmount(totalCO2Saved) })}
+                    </Text>
+                </View>
             </View>
 
-            {/* ✅ Quick Actions */}
-            <View style={styles.quickActions}>
-                <TouchableOpacity style={styles.actionButton}
-                    onPress={handleGenerateToken}>
-                    <Ionicons name="qr-code" size={28} color="#fff" />
-                    <Text style={styles.actionText}>{t.home.scan}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.actionButton}
-                    onPress={() => handleRewardPress()}>
-                    <Ionicons name="gift" size={28} color="#fff" />
-                    <Text style={styles.actionText}>{t.home.rewards}</Text>
-                </TouchableOpacity>
-                <CustomAlert
-                    visible={rewardsAlertVisible}
-                    title={t.common.comingSoon}
-                    message={t.home.rewardsComingSoon}
-                    onClose={() => { setRewardsAlertVisible(false); }}
-                />
-                <TouchableOpacity style={styles.actionButton}
-                    onPress={() => router.push('/OilHistoryScreen')}>
-                    <Ionicons name="time" size={28} color="#fff" />
-                    <Text style={styles.actionText}>{t.home.history}</Text>
-                </TouchableOpacity>
-                <CustomAlert
-                    visible={alertFailedToGenerateVisible}
-                    title={t.common.failedTitle}
-                    message={t.common.failedQrGeneration}
-                    onClose={() => { setAlertFailedToGenerateVisible(false); }}
-                />
-            </View>
+            <View style={styles.bodyContent}>
+                <View style={styles.quickActionRow}>
+                    <TouchableOpacity
+                        style={styles.historyCard}
+                        onPress={() => router.push('/OilHistoryScreen')}
+                        accessibilityRole="button"
+                        accessibilityLabel={t.home.transactionHistory}
+                    >
+                        <Ionicons
+                            name="time-outline"
+                            size={36}
+                            color={DashboardTheme.walletGreen}
+                        />
+                        <Text style={styles.historyCardText}>{t.home.transactionHistory}</Text>
+                    </TouchableOpacity>
 
-            {/* ✅ Nearby Collection Points */}
-            <View style={styles.mapCard}>
-                <Text style={styles.mapTitle}>{t.home.nearbyPoints}</Text>
-                <Image
-                    source={require('../assets/images/mapbackground.jpg')}
-                    style={styles.mapImage}
-                />
-                <TouchableOpacity style={styles.mapButton} onPress={() => router.push('/MapScreen')}>
-                    <Text style={styles.mapButtonText}>{t.home.viewOnMap}</Text>
-                </TouchableOpacity>
-            </View>
-            <View >
+                    <TouchableOpacity
+                        style={styles.nearbyCard}
+                        onPress={() => router.push('/MapScreen')}
+                        accessibilityRole="button"
+                        accessibilityLabel={t.home.nearby}
+                    >
+                        <Image
+                            source={require('../assets/images/mapbackground.jpg')}
+                            style={styles.nearbyMapPreview}
+                        />
+                        <Text style={styles.nearbyCardText}>{t.home.nearby}</Text>
+                    </TouchableOpacity>
+                </View>
 
+                <View style={styles.carouselSection}>
+                    <HelpCarousel topics={topics} />
+                </View>
             </View>
-            <HelpCarousel topics={topics} onSelectTopic={setSelectedTopic} />
         </ScrollView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 0,
-        backgroundColor: '#f2f8f3', // soft eco-friendly green background
-        paddingHorizontal: 20,
-        paddingTop: 50,
+        flex: 1,
+        backgroundColor: DashboardTheme.screenBg,
+    },
+    scrollContent: {
+        flexGrow: 1,
+    },
+    heroSection: {
+        backgroundColor: DashboardTheme.headerGreen,
+    },
+    headerSafeArea: {
+        backgroundColor: DashboardTheme.headerGreen,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 25,
+        alignItems: 'flex-start',
+        paddingHorizontal: 20,
+        paddingTop: 12,
+        paddingBottom: 20,
+    },
+    headerText: {
+        flex: 1,
+        paddingRight: 12,
     },
     greeting: {
-        fontSize: 22,
+        fontSize: 24,
         fontWeight: 'bold',
-        color: '#2E7D32',
+        color: DashboardTheme.textOnGreen,
     },
     subtitle: {
         fontSize: 14,
-        color: '#666',
-        marginTop: 4,
-    },
-    profileImage: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-    },
-    statsContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 25,
-    },
-    statCard: {
-        flex: 1,
-        backgroundColor: '#fff',
-        padding: 15,
-        marginHorizontal: 5,
-        borderRadius: 12,
-        alignItems: 'center',
-        elevation: 3,
-    },
-    statValue: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#388E3C',
-        textAlign: 'center',
-        flexShrink: 1,
-    },
-    statLabel: {
-        fontSize: 13,
-        color: '#666',
-        marginTop: 4,
-        textAlign: 'center',
-    },
-    quickActions: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 25,
-    },
-    actionButton: {
-        flex: 1,
-        backgroundColor: '#4CAF50',
-        padding: 15,
-        borderRadius: 12,
-        alignItems: 'center',
-        marginHorizontal: 5,
-    },
-    actionText: {
-        color: '#fff',
+        color: DashboardTheme.textOnGreenMuted,
         marginTop: 6,
-        fontWeight: '600',
+    },
+    profileButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    walletSection: {
+        backgroundColor: DashboardTheme.walletGreen,
+        alignItems: 'center',
+        paddingVertical: 24,
+        paddingHorizontal: 20,
+    },
+    walletTitle: {
         fontSize: 14,
+        color: DashboardTheme.textOnGreenMuted,
+        marginBottom: 8,
+    },
+    walletBalance: {
+        fontSize: 36,
+        fontWeight: 'bold',
+        color: DashboardTheme.textOnGreen,
+        marginBottom: 16,
+    },
+    withdrawButton: {
+        backgroundColor: '#fff',
+        paddingVertical: 10,
+        paddingHorizontal: 40,
+        borderRadius: 24,
+        minWidth: 160,
+        alignItems: 'center',
+    },
+    withdrawButtonText: {
+        color: DashboardTheme.walletGreen,
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    impactSection: {
+        backgroundColor: DashboardTheme.impactGreen,
+        alignItems: 'center',
+        paddingVertical: 20,
+        paddingHorizontal: 20,
+        gap: 6,
+    },
+    impactText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: DashboardTheme.textOnGreen,
         textAlign: 'center',
     },
-    mapCard: {
+    bodyContent: {
+        paddingTop: 20,
+    },
+    carouselSection: {
+        marginHorizontal: -20,
+        marginTop: 4,
+    },
+    quickActionRow: {
+        flexDirection: 'row',
+        gap: 12,
+        marginBottom: 24,
+        paddingHorizontal: 20,
+    },
+    historyCard: {
+        flex: 2,
+        flexDirection: 'row',
+        alignItems: 'center',
         backgroundColor: '#fff',
         borderRadius: 12,
-        padding: 15,
-        marginBottom: 25,
+        borderWidth: 2,
+        borderColor: DashboardTheme.borderLight,
+        padding: 16,
+        minHeight: 110,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOpacity: 0.08,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        gap: 12,
+    },
+    historyCardText: {
+        flex: 1,
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1a1a1a',
+    },
+    nearbyCard: {
+        flex: 1,
+        backgroundColor: DashboardTheme.headerGreen,
+        borderRadius: 12,
+        overflow: 'hidden',
+        minHeight: 110,
         elevation: 3,
     },
-    mapTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#2E7D32',
-        marginBottom: 10,
-    },
-    mapImage: {
+    nearbyMapPreview: {
         width: '100%',
-        height: 120,
-        borderRadius: 10,
-        marginBottom: 10,
+        height: 70,
+        resizeMode: 'cover',
     },
-    mapButton: {
-        backgroundColor: '#388E3C',
-        padding: 10,
-        borderRadius: 8,
-        alignItems: 'center',
-    },
-    mapButtonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#2E7D32',
-        marginBottom: 15,
-    },
-    categoryCard: {
-        width: 100,
-        height: 100,
-        borderRadius: 12,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginRight: 15,
-    },
-    categoryText: {
-        color: '#fff',
-        marginTop: 8,
-        fontWeight: 'bold',
-    },
-    //modal styles
-    modalCard: {
-        width: '85%',
-        backgroundColor: '#fff',
-        borderRadius: 16,
-        padding: 20,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        elevation: 10,
-    },
-    modalText: {
-        fontSize: 18,
-        marginBottom: 15,
-    },
-    modalTitle: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#333',
-        textAlign: 'center',
-    },
-    stepContainer: {
-        width: width - 60,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 20,
-    },
-    stepImage: {
-        width: 200,
-        height: 200,
-    },
-    stepText: {
-        textAlign: 'center',
-        marginTop: 10,
+    nearbyCardText: {
         fontSize: 16,
-        color: '#444',
-    },
-    closeButton: {
-        marginTop: 20,
-        backgroundColor: '#4CAF50',
-        borderRadius: 10,
-        alignSelf: 'center',
-        paddingHorizontal: 20,
+        fontWeight: 'bold',
+        color: DashboardTheme.textOnGreen,
+        textAlign: 'center',
         paddingVertical: 10,
-    },
-    closeButtonText: {
-        color: '#fff',
-        fontWeight: '600',
+        paddingHorizontal: 8,
     },
 });

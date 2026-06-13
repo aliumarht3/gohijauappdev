@@ -1,6 +1,7 @@
-import { Colors } from "@/constants/Colors";
+import { DashboardTheme } from "@/constants/dashboardTheme";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity } from "react-native";
+
 export default function SortButton({
     label,
     active,
@@ -19,15 +20,25 @@ export default function SortButton({
 
 const styles = StyleSheet.create({
     btn: {
-        borderWidth: 1,
-        borderColor: Colors.border,
+        borderWidth: 2,
+        borderColor: DashboardTheme.borderLight,
         borderRadius: 999,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        backgroundColor: Colors.surface,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        backgroundColor: '#fff',
         marginRight: 8,
     },
-    active: { borderColor: Colors.primary, backgroundColor: Colors.surfaceAlt },
-    text: { color: Colors.textSecondary, fontSize: 12, fontWeight: "600" },
-    textActive: { color: Colors.primary, fontWeight: "700" },
+    active: {
+        borderColor: DashboardTheme.walletGreen,
+        backgroundColor: '#E8F5E9',
+    },
+    text: {
+        color: '#5B6B73',
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    textActive: {
+        color: DashboardTheme.walletGreen,
+        fontWeight: '700',
+    },
 });

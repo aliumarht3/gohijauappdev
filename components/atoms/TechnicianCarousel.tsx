@@ -1,34 +1,32 @@
+import { DashboardTheme } from '@/constants/dashboardTheme';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import React, { useRef } from 'react';
 import { useLanguage } from '@/services/languageService';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Carousel, { ICarouselInstance } from 'react-native-reanimated-carousel';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CAROUSEL_HEIGHT = 260;
+const CAROUSEL_HEIGHT = 240;
 
-export interface HelpTopic {
-  router: string;
+export type TechnicianCarouselSlide = {
+  id: string;
   title: string;
-  description: string;
-  color: string;
+  message: string;
+};
+
+interface TechnicianCarouselProps {
+  slides: TechnicianCarouselSlide[];
 }
 
-interface HelpCarouselProps {
-  topics: HelpTopic[];
-}
-
-export default function HelpCarousel({ topics }: HelpCarouselProps) {
-  const router = useRouter();
+export default function TechnicianCarousel({ slides }: TechnicianCarouselProps) {
   const { t } = useLanguage();
   const carouselRef = useRef<ICarouselInstance>(null);
 
-  if (topics.length === 0) {
+  if (slides.length === 0) {
     return null;
   }
 
-  const showNav = topics.length > 1;
+  const showNav = slides.length > 1;
 
   return (
     <View style={styles.wrapper}>
@@ -36,7 +34,7 @@ export default function HelpCarousel({ topics }: HelpCarouselProps) {
         ref={carouselRef}
         width={SCREEN_WIDTH}
         height={CAROUSEL_HEIGHT}
-        data={topics}
+        data={slides}
         mode="parallax"
         modeConfig={{
           parallaxScrollingScale: 0.9,
@@ -46,16 +44,13 @@ export default function HelpCarousel({ topics }: HelpCarouselProps) {
         scrollAnimationDuration={600}
         style={styles.carousel}
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.card, { backgroundColor: item.color }]}
-            activeOpacity={0.9}
-            onPress={() => router.push(item.router as never)}
-            accessibilityRole="button"
-            accessibilityLabel={item.title}
-          >
+          <View style={styles.card} accessibilityRole="summary">
             <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardDesc}>{item.description}</Text>
-          </TouchableOpacity>
+            <View style={styles.comingSoonRow}>
+              <Ionicons name="alert-circle-outline" size={22} color={DashboardTheme.walletGreen} />
+              <Text style={styles.cardMessage}>{item.message}</Text>
+            </View>
+          </View>
         )}
       />
 
@@ -95,31 +90,37 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
+    backgroundColor: '#fff',
     borderRadius: 16,
+    borderWidth: 3,
+    borderColor: DashboardTheme.borderLight,
     marginHorizontal: 8,
-    paddingHorizontal: 24,
-    paddingVertical: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 18,
     shadowColor: '#000',
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 4 },
-    shadowRadius: 6,
-    elevation: 4,
+    shadowRadius: 8,
+    elevation: 3,
   },
   cardTitle: {
-    fontSize: 28,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
+    color: '#1a1a1a',
     textAlign: 'center',
+    marginBottom: 16,
   },
-  cardDesc: {
-    fontSize: 15,
-    color: '#fff',
-    marginTop: 10,
-    opacity: 0.9,
-    textAlign: 'center',
-    lineHeight: 22,
+  comingSoonRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    paddingHorizontal: 4,
+  },
+  cardMessage: {
+    flex: 1,
+    fontSize: 14,
+    color: '#5B6B73',
+    lineHeight: 20,
   },
   navButton: {
     position: 'absolute',
