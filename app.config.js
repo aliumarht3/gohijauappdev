@@ -72,6 +72,10 @@ export default ({ config }) => {
       "expo-audio",
       "expo-router",
       "expo-asset",
+      "expo-font",
+      "expo-image",
+      "expo-web-browser",
+      "react-native-maps",
       [
         "expo-splash-screen",
         {
