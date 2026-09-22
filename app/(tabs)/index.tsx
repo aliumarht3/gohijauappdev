@@ -1,19 +1,25 @@
 // app/(tabs)/index.tsx
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
-import { useUser } from "../../services/userService";
+import { ActivityIndicator, Text, View } from "react-native";
 import HomeScreen from "../HomeScreen";
 import OilCollectorHomeScreen from "../OilCollectorHomeScreen";
 import TechnicianHomeScreen from "../TechnicianHomeScreen";
 
 export default function TabIndex() {
-  const { user, loadUserProfile } = useUser();
   const [loading, setLoading] = useState(true);
+  
+  // --- MOCK USER ROLE START ---
+  const MOCK_USER = {
+    userRole: "OilCollector", // Forces the OilCollectorHomeScreen
+    name: "Test Collector",
+    email: "collector@test.com"
+  };
+  // --- MOCK USER ROLE END ---
 
   useEffect(() => {
     const init = async () => {
-      await loadUserProfile();
-      setLoading(false);
+      // Simulate app loading briefly
+      setTimeout(() => setLoading(false), 500);
     };
     init();
   }, []);
@@ -26,11 +32,13 @@ export default function TabIndex() {
     );
   }
 
-  if (!user) {
-    return <View><Text>No user found</Text></View>; // or redirect to login
+  const currentUser = MOCK_USER;
+
+  if (!currentUser) {
+    return <View><Text>No user found</Text></View>;
   }
 
-  switch (user.userRole) {
+  switch (currentUser.userRole) {
     case "Technician":
       return <TechnicianHomeScreen />;
     case "OilCollector":

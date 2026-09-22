@@ -10,12 +10,22 @@ const pct = (current: number, capacity: number) =>
 const formatLiters = (n: number) => `${n.toFixed(2)} L`;
 
 export default function MachineCard({ m }: { m: MachineVolume }) {
-    const percentFull = pct(m.bufferVolume, m.capacityLiters);
+    // Replicate Vue true capacity downscaling logic
+    const rawVolume = m.metrics?.mainTankVolumeLiters || 0;
+    const trueCapacity = m.capacityLiters || 100;
+    const correctedVolume = Math.max(0, (rawVolume / 500) * trueCapacity);
+    const percentFull = pct(correctedVolume, trueCapacity);
+
+    // Extract Status & Telemetry Metrics
+    const isOnline = m.isOnline ?? false;
+    const turbidity = m.metrics?.turbidityValue || 0;
+    const isPoorQuality = turbidity > 600;
 
     return (
         <View style={styles.card}>
             <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle} numberOfLines={1}>{m.machineLocationName}</Text>
+                <View style={[styles.statusDot, { backgroundColor: isOnline ? '#22c55e' : '#ef4444' }]} />
             </View>
 
             <View style={styles.cardBody}>
@@ -24,12 +34,28 @@ export default function MachineCard({ m }: { m: MachineVolume }) {
                 </View>
 
                 <View style={styles.details}>
-                    <Text style={styles.kvLabel}>Machine Name</Text>
+                    <Text style={styles.kvLabel}>Machine ID</Text>
                     <Text style={styles.kvValue} numberOfLines={1}>{m.machineId ?? "-"}</Text>
 
-                    <Text style={[styles.kvLabel, styles.kvLabelSpaced]}>Current Volume</Text>
+                    <Text style={[styles.kvLabel, styles.kvLabelSpaced]}>UCO Volume</Text>
                     <Text style={styles.kvValue}>
-                        {formatLiters(m.bufferVolume)} / {formatLiters(m.capacityLiters)}
+                        {formatLiters(correctedVolume)} / {formatLiters(trueCapacity)}
+                    </Text>
+                </View>
+            </View>
+
+            {/* Telemetry Metrics Container matching Vue styling */}
+            <View style={styles.metricsContainer}>
+                <View style={styles.metricBox}>
+                    <Text style={styles.metricLabel}>Oil Quality</Text>
+                    <Text style={[styles.metricValue, { color: isPoorQuality ? '#ef4444' : '#22c55e' }]}>
+                        {turbidity} <Text style={styles.metricSubtext}>({isPoorQuality ? 'Poor' : 'Good'})</Text>
+                    </Text>
+                </View>
+                <View style={styles.metricBox}>
+                    <Text style={styles.metricLabel}>Junk Tank</Text>
+                    <Text style={[styles.metricValue, { color: '#1f2937' }]}>
+                        {m.metrics?.junkTankDistanceCm || 0} cm <Text style={styles.metricSubtext}>to top</Text>
                     </Text>
                 </View>
             </View>
@@ -58,6 +84,11 @@ const styles = StyleSheet.create({
         flex: 1,
         marginRight: 8,
     },
+    statusDot: {
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+    },
     cardBody: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -83,5 +114,33 @@ const styles = StyleSheet.create({
         color: DashboardTheme.walletGreen,
         fontSize: 14,
         fontWeight: '600',
+    },
+    metricsContainer: {
+        flexDirection: 'row',
+        gap: 12,
+        marginTop: 16,
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: '#f3f4f6',
+    },
+    metricBox: {
+        flex: 1,
+        backgroundColor: '#f9fafb',
+        padding: 12,
+        borderRadius: 8,
+    },
+    metricLabel: {
+        fontSize: 12,
+        color: '#6b7280',
+        marginBottom: 4,
+    },
+    metricValue: {
+        fontSize: 14,
+        fontWeight: 'bold',
+    },
+    metricSubtext: {
+        fontSize: 12,
+        fontWeight: 'normal',
+        color: '#6b7280',
     },
 });

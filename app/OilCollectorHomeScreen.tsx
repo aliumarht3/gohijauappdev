@@ -1,8 +1,8 @@
 import HelpCarousel, { HelpTopic } from '@/components/atoms/HelpCarousel';
 import { useBottomTabOverflow } from '@/components/CustomTabBar';
 import { DashboardTheme } from '@/constants/dashboardTheme';
-import { MachineVolume } from '@/constants/Machine';
 import { interpolate } from '@/constants/languages';
+import { MachineVolume } from '@/constants/Machine';
 import { getCollectorCollectionStats } from '@/services/collectorService';
 import { fetchCollectorMachines } from '@/services/machine';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,9 +25,16 @@ import { useUser } from '../services/userService';
 const HIGH_FILL_THRESHOLD = 70;
 
 function machineFillPercent(m: MachineVolume) {
-  return m.capacityLiters <= 0
+  // Use the telemetry metric or fallback to bufferVolume
+  const rawVolume = m.metrics?.mainTankVolumeLiters || m.bufferVolume || 0;
+  const trueCapacity = m.capacityLiters || 100;
+  
+  // Downscale from Python's 500L to true 100L capacity
+  const correctedVolume = Math.max(0, (rawVolume / 500) * trueCapacity);
+
+  return trueCapacity <= 0
     ? 0
-    : Math.round((m.bufferVolume / m.capacityLiters) * 100);
+    : Math.round((correctedVolume / trueCapacity) * 100);
 }
 
 function formatKg(value: number) {
@@ -49,11 +56,17 @@ export default function OilCollectorHomeScreen() {
 
   const loadDashboard = useCallback(async () => {
     const [stats, machineList] = await Promise.all([
-      getCollectorCollectionStats(),
+      // Add a .catch() here to return dummy stats if the backend is offline
+      getCollectorCollectionStats().catch(() => ({ 
+        collectionsTodayKg: 125.5, 
+        collectedThisWeekKg: 450.2 
+      })),
       fetchCollectorMachines().catch(() => [] as MachineVolume[]),
     ]);
+    
     setCollectionsTodayKg(stats.collectionsTodayKg);
     setCollectedThisWeekKg(stats.collectedThisWeekKg);
+    
     const sorted = [...machineList].sort(
       (a, b) => machineFillPercent(b) - machineFillPercent(a),
     );
@@ -63,7 +76,9 @@ export default function OilCollectorHomeScreen() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      await loadUserProfile();
+      // --- COMMENT THIS OUT FOR LOCAL TESTING ---
+      // await loadUserProfile();
+      
       if (!cancelled) {
         await loadDashboard();
         if (!cancelled) setLoading(false);
@@ -72,7 +87,7 @@ export default function OilCollectorHomeScreen() {
     return () => {
       cancelled = true;
     };
-  }, [loadDashboard, loadUserProfile]);
+  }, [loadDashboard]); // Remove loadUserProfile from dependency array
 
   const onRefresh = async () => {
     try {

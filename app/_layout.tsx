@@ -8,10 +8,8 @@ import { UpdateRequiredScreen } from "../utils/UpdateRequiredScreen";
 
 import { LoadingScreen } from '@/components/molecules/loading';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setAudioModeAsync } from 'expo-audio';
 import { jwtDecode } from 'jwt-decode';
-import authStorage from '../api/authStorage';
 import { LanguageProvider } from '../services/languageService';
 import { UserProvider } from '../services/userService';
 export default function RootLayout() {
@@ -45,8 +43,18 @@ export default function RootLayout() {
         setIsUpdateRequired(true);
         return;
       }
+      
+      // --- BYPASS LOGIN START ---
+      console.log('Bypassing authentication for local testing...');
+      setIsLoggedIn(true);
+      setHasSeenOnboarding(true); 
+      setIsAuthChecked(true);
+      return; 
+      // --- BYPASS LOGIN END ---
+
+      // Comment out the real auth check for now
+      /*
       const token = await authStorage.getAccessToken();
-      console.log('Access Token:', token);
       if (!token || isTokenExpired(token)) {
         await authStorage.clear();
         setIsLoggedIn(false);
@@ -55,14 +63,12 @@ export default function RootLayout() {
       }
 
       const seenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
-      console.log('Has seen onboarding:', seenOnboarding);
       setHasSeenOnboarding(seenOnboarding === 'true' ? true : seenOnboarding === 'false' || seenOnboarding === null ? false : null);
       setIsAuthChecked(true);
+      */
     };
-
     checkAuth();
   }, []);
-
   if (isUpdateRequired) {
     return (
       <LanguageProvider>

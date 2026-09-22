@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import api from '../api/apiClient';
 import authStorage from '../api/authStorage';
 
@@ -125,9 +125,12 @@ export const UserProvider = ({ children }) => {
     () => !!bankAccount?.bankCode && !!bankAccount?.accountNumber,
     [bankAccount]
   );
-  useEffect(() => {
-    loadUserProfile();
-  }, [loadUserProfile]);
+  
+  // --- COMMENT THIS OUT FOR LOCAL TESTING ---
+  // useEffect(() => {
+  //   loadUserProfile();
+  // }, [loadUserProfile]);
+  // ------------------------------------------
 
   return (
     <UserContext.Provider value={{ user, loading, loadUserProfile, loginUser, justLogout, updateBankAccount, hasBankAccount, bankAccount, refreshBank, loadingBank, requestPasswordReset, validateResetToken, resetPassword }}>

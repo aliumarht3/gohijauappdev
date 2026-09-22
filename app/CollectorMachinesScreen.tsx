@@ -7,7 +7,6 @@ import { useMachineLiveUpdates } from "@/hooks/useMachineLiveUpdates";
 import { fetchCollectorMachines } from "@/services/machine";
 import { Stack } from 'expo-router';
 import React from "react";
-import { useLanguage } from '../services/languageService';
 import {
     ActivityIndicator,
     FlatList,
@@ -18,9 +17,17 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useLanguage } from '../services/languageService';
 
 type SortKey = "pct" | "name" | "status";
 const pct = (c: number, cap: number) => (cap <= 0 ? 0 : Math.round((c / cap) * 100));
+
+// Telemetry downscale formula from 500L hardcoded Python value to true 100L capacity
+const getTrueVolume = (m: MachineVolume) => {
+    const rawVolume = m.metrics?.mainTankVolumeLiters || 0;
+    const trueCapacity = m.capacityLiters || 100;
+    return Math.max(0, (rawVolume / 500) * trueCapacity);
+};
 
 export default function CollectorMachinesScreen() {
     const { t } = useLanguage();
@@ -35,6 +42,7 @@ export default function CollectorMachinesScreen() {
         setError(null);
         setLoading(true);
         try {
+            // Carefully spelled: fetchCollectorMachines
             const data = await fetchCollectorMachines();
             setMachines(data ?? []);
         } catch (e: any) {
@@ -42,8 +50,7 @@ export default function CollectorMachinesScreen() {
         } finally {
             setLoading(false);
         }
-    }, [t]);
-
+    }, [t])
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
         try { await load(); } finally { setRefreshing(false); }
@@ -58,6 +65,11 @@ export default function CollectorMachinesScreen() {
 
     React.useEffect(() => { load(); }, [load]);
 
+    // Calculate Grand Total UCO Volume across all machines
+    const totalUCOVolume = React.useMemo(() => {
+        return machines.reduce((total, m) => total + getTrueVolume(m), 0);
+    }, [machines]);
+
     const filtered = React.useMemo(() => {
         const q = search.trim().toLowerCase();
         let data = machines.filter((m) =>
@@ -68,7 +80,8 @@ export default function CollectorMachinesScreen() {
 
         switch (sortKey) {
             case "name": data = data.sort((a, b) => a.machineLocationName.localeCompare(b.machineLocationName)); break;
-            default: data = data.sort((a, b) => pct(b.bufferVolume, b.capacityLiters) - pct(a.bufferVolume, a.capacityLiters));
+            // Uses our mapped true volume for accurate sorting
+            default: data = data.sort((a, b) => pct(getTrueVolume(b), b.capacityLiters) - pct(getTrueVolume(a), a.capacityLiters));
         }
         return data;
     }, [machines, search, sortKey]);
@@ -80,6 +93,11 @@ export default function CollectorMachinesScreen() {
                 <GreenScreenHeader title={t.collectorMachines.title} />
 
                 <View style={styles.toolbar}>
+                    <View style={styles.summaryBox}>
+                        <Text style={styles.summaryLabel}>Total UCO Volume Ready</Text>
+                        <Text style={styles.summaryValue}>{totalUCOVolume.toFixed(2)} L</Text>
+                    </View>
+
                     <TextInput
                         value={search}
                         onChangeText={setSearch}
@@ -135,16 +153,18 @@ export default function CollectorMachinesScreen() {
 }
 
 const styles = StyleSheet.create({
-    screen: {
-        flex: 1,
-        backgroundColor: DashboardTheme.screenBg,
+    screen: { flex: 1, backgroundColor: DashboardTheme.screenBg },
+    toolbar: { gap: 10, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 },
+    summaryBox: {
+        backgroundColor: '#E8F5E9',
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: DashboardTheme.walletGreen,
     },
-    toolbar: {
-        gap: 10,
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 8,
-    },
+    summaryLabel: { fontSize: 14, color: '#374151', fontWeight: '500' },
+    summaryValue: { fontSize: 28, color: DashboardTheme.walletGreen, fontWeight: 'bold', marginTop: 4 },
     search: {
         backgroundColor: '#fff',
         borderColor: DashboardTheme.borderLight,
@@ -155,44 +175,12 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: '#1a1a1a',
     },
-    sortRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    listContent: {
-        paddingHorizontal: 16,
-        paddingBottom: 32,
-    },
-    listSeparator: {
-        height: 4,
-    },
-    center: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 24,
-    },
-    stateText: {
-        marginTop: 12,
-        fontSize: 15,
-        color: '#5B6B73',
-        textAlign: 'center',
-    },
-    errorText: {
-        fontSize: 15,
-        color: '#C62828',
-        textAlign: 'center',
-    },
-    retry: {
-        marginTop: 16,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        backgroundColor: DashboardTheme.walletGreen,
-        borderRadius: 8,
-    },
-    retryText: {
-        color: DashboardTheme.textOnGreen,
-        fontWeight: '600',
-        fontSize: 15,
-    },
+    sortRow: { flexDirection: 'row', alignItems: 'center' },
+    listContent: { paddingHorizontal: 16, paddingBottom: 32 },
+    listSeparator: { height: 4 },
+    center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+    stateText: { marginTop: 12, fontSize: 15, color: '#5B6B73', textAlign: 'center' },
+    errorText: { fontSize: 15, color: '#C62828', textAlign: 'center' },
+    retry: { marginTop: 16, paddingHorizontal: 20, paddingVertical: 10, backgroundColor: DashboardTheme.walletGreen, borderRadius: 8 },
+    retryText: { color: DashboardTheme.textOnGreen, fontWeight: '600', fontSize: 15 },
 });
