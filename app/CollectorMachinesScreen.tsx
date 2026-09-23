@@ -1,9 +1,9 @@
+import apiClient from "@/api/apiClient";
 import MachineCard from "@/components/atoms/MachineCard";
 import SortButton from "@/components/atoms/SortButton";
 import GreenScreenHeader from "@/components/GreenScreenHeader";
 import { DashboardTheme } from "@/constants/dashboardTheme";
-import { MachineVolume } from "@/constants/Machine";
-import { useMachineLiveUpdates } from "@/hooks/useMachineLiveUpdates";
+import { useTelemetryUpdates } from "@/hooks/useTelemetryUpdates";
 import { fetchCollectorMachines } from "@/services/machine";
 import { Stack } from 'expo-router';
 import React from "react";
@@ -22,10 +22,10 @@ import { useLanguage } from '../services/languageService';
 type SortKey = "pct" | "name" | "status";
 const pct = (c: number, cap: number) => (cap <= 0 ? 0 : Math.round((c / cap) * 100));
 
-// Telemetry downscale formula from 500L hardcoded Python value to true 100L capacity
-const getTrueVolume = (m: MachineVolume) => {
+// Uses bufferVolume (from Vue) instead of capacityLiters
+const getTrueVolume = (m: any) => {
     const rawVolume = m.metrics?.mainTankVolumeLiters || 0;
-    const trueCapacity = m.capacityLiters || 100;
+    const trueCapacity = m.bufferVolume || 100; 
     return Math.max(0, (rawVolume / 500) * trueCapacity);
 };
 
@@ -36,36 +36,68 @@ export default function CollectorMachinesScreen() {
     const [loading, setLoading] = React.useState(true);
     const [refreshing, setRefreshing] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
-    const [machines, setMachines] = React.useState<MachineVolume[]>([]);
+    const [machines, setMachines] = React.useState<any[]>([]);
 
     const load = React.useCallback(async () => {
         setError(null);
         setLoading(true);
         try {
-            // Carefully spelled: fetchCollectorMachines
-            const data = await fetchCollectorMachines();
-            setMachines(data ?? []);
+            // 1. Fetch base machines
+            const baseMachines = await fetchCollectorMachines();
+            
+            // 2. Fetch live telemetry 
+            const { data: telemetryData } = await apiClient.get('/api/machine/telemetry');
+
+            // 3. NEW: Fetch capacities exactly like MachineManagementView.vue does
+            const { data: capacityData } = await apiClient.get('/api/UCOTracking/get-all');
+
+            // 4. Merge everything together
+            const mergedMachines = (baseMachines ?? []).map((machine: any) => {
+                const liveData = telemetryData?.find((t: any) => t.machineId === machine.machineId);
+                const capacityInfo = capacityData?.find((c: any) => c.machineId === machine.machineId);
+                
+                return {
+                    ...machine,
+                    metrics: liveData?.metrics || machine.metrics,
+                    isOnline: liveData?.isOnline || false,
+                    timestamp: liveData?.timestamp || machine.timestamp,
+                    // Map the buffer volume from the UCO endpoint, fallback to 100
+                    bufferVolume: capacityInfo?.bufferVolume || 100 
+                };
+            });
+
+            setMachines(mergedMachines);
         } catch (e: any) {
             setError(e?.message ?? t.collectorMachines.failedToLoad);
         } finally {
             setLoading(false);
         }
-    }, [t])
+    }, [t]);
+
     const onRefresh = React.useCallback(async () => {
         setRefreshing(true);
         try { await load(); } finally { setRefreshing(false); }
     }, [load]);
 
-    useMachineLiveUpdates(true, (payload) => {
+    useTelemetryUpdates((payload) => {
         if (!payload.machineId) return;
         setMachines((prev) =>
-            prev.map((x) => (x.machineId === payload.machineId ? { ...x, ...payload, bufferVolume: payload.bufferVolume ?? x.bufferVolume } : x))
+            prev.map((x) => {
+                if (x.machineId === payload.machineId) {
+                    return { 
+                        ...x, 
+                        ...payload,
+                        metrics: payload.metrics ? { ...x.metrics, ...payload.metrics } : x.metrics,
+                        bufferVolume: payload.bufferVolume ?? x.bufferVolume 
+                    };
+                }
+                return x;
+            })
         );
     });
 
     React.useEffect(() => { load(); }, [load]);
 
-    // Calculate Grand Total UCO Volume across all machines
     const totalUCOVolume = React.useMemo(() => {
         return machines.reduce((total, m) => total + getTrueVolume(m), 0);
     }, [machines]);
@@ -74,14 +106,17 @@ export default function CollectorMachinesScreen() {
         const q = search.trim().toLowerCase();
         let data = machines.filter((m) =>
             !q ||
-            m.machineLocationName.toLowerCase().includes(q) ||
-            m.machineId.toLowerCase().includes(q)
+            m.location?.name?.toLowerCase().includes(q) || // Updated to match Vue location.name
+            m.machineId?.toLowerCase().includes(q)
         );
 
         switch (sortKey) {
-            case "name": data = data.sort((a, b) => a.machineLocationName.localeCompare(b.machineLocationName)); break;
-            // Uses our mapped true volume for accurate sorting
-            default: data = data.sort((a, b) => pct(getTrueVolume(b), b.capacityLiters) - pct(getTrueVolume(a), a.capacityLiters));
+            case "name": 
+                // Updated to match Vue location.name
+                data = data.sort((a, b) => (a.location?.name || "").localeCompare(b.location?.name || "")); 
+                break;
+            default: 
+                data = data.sort((a, b) => pct(getTrueVolume(b), b.bufferVolume || 100) - pct(getTrueVolume(a), a.bufferVolume || 100));
         }
         return data;
     }, [machines, search, sortKey]);
