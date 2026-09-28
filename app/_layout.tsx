@@ -1,17 +1,18 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
-import 'react-native-reanimated';
-import { checkAppVersion } from "../utils/checkAppVersion";
-import { UpdateRequiredScreen } from "../utils/UpdateRequiredScreen";
-
+import authStorage from '@/api/authStorage';
 import { LoadingScreen } from '@/components/molecules/loading';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { setAudioModeAsync } from 'expo-audio';
+import { Stack, useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { jwtDecode } from 'jwt-decode';
+import { useEffect, useState } from 'react';
+import 'react-native-reanimated';
 import { LanguageProvider } from '../services/languageService';
 import { UserProvider } from '../services/userService';
+import { checkAppVersion } from "../utils/checkAppVersion";
+import { UpdateRequiredScreen } from "../utils/UpdateRequiredScreen";
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [isAuthChecked, setIsAuthChecked] = useState(false);
@@ -44,17 +45,10 @@ export default function RootLayout() {
         return;
       }
       
-      // --- BYPASS LOGIN START ---
-      console.log('Bypassing authentication for local testing...');
-      setIsLoggedIn(true);
-      setHasSeenOnboarding(true); 
-      setIsAuthChecked(true);
-      return; 
-      // --- BYPASS LOGIN END ---
-
-      // Comment out the real auth check for now
-      /*
+      // 1. Fetch the real token from your device storage
       const token = await authStorage.getAccessToken();
+      
+      // 2. Validate the token
       if (!token || isTokenExpired(token)) {
         await authStorage.clear();
         setIsLoggedIn(false);
@@ -62,10 +56,12 @@ export default function RootLayout() {
         setIsLoggedIn(true);
       }
 
+      // 3. Check onboarding status
       const seenOnboarding = await AsyncStorage.getItem('hasSeenOnboarding');
       setHasSeenOnboarding(seenOnboarding === 'true' ? true : seenOnboarding === 'false' || seenOnboarding === null ? false : null);
+      
+      // 4. Mark auth check as complete so the loading screen drops
       setIsAuthChecked(true);
-      */
     };
     checkAuth();
   }, []);

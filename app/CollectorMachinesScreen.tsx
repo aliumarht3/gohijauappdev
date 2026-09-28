@@ -46,10 +46,10 @@ export default function CollectorMachinesScreen() {
             const baseMachines = await fetchCollectorMachines();
             
             // 2. Fetch live telemetry 
-            const { data: telemetryData } = await apiClient.get('/api/machine/telemetry');
+            const { data: telemetryData } = await apiClient.get('/machine/telemetry');
 
             // 3. NEW: Fetch capacities exactly like MachineManagementView.vue does
-            const { data: capacityData } = await apiClient.get('/api/UCOTracking/get-all');
+            const { data: capacityData } = await apiClient.get('/UCOTracking/get-all');
 
             // 4. Merge everything together
             const mergedMachines = (baseMachines ?? []).map((machine: any) => {

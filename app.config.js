@@ -61,12 +61,9 @@ export default ({ config }) => {
       eas: {
         projectId: "07f255f3-aa75-4a53-99ef-19078c357204"
       },
-      apiBaseUrl: isDev
-        ? "http://10.0.2.2:7192/api"
-        : "https://services.gohijau.org/api",
-      signalRUrl: isDev
-        ? "http://10.0.2.2:7192"
-        : "https://services.gohijau.org"
+      // Hardcoded to production for physical device testing
+      apiBaseUrl: "https://services.gohijau.org/api",
+      signalRUrl: "https://services.gohijau.org"
     },
     plugins: [
       "expo-audio",
